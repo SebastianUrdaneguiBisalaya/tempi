@@ -1,12 +1,42 @@
 {
   "name": "tempi",
-  "module": "index.ts",
-  "type": "module",
   "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
+  "license": "ISC",
+  "author": {
+    "name": "Sebastian Marat Urdanegui Bisalaya",
+    "url": "https://sebastianurdanegui.com"
   },
-  "peerDependencies": {
-    "typescript": "^7"
-  }
+  "type": "module",
+  "workspaces": {
+    "packages": ["apps/*", "packages/*"],
+    "catalog": {
+      "@tailwindcss/turbopack": "4.3.3",
+      "@types/node": "26.6.6",
+      "@types/react": "19.3.0",
+      "@types/react-dom": "19.3.0",
+      "next": "16.4.6",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "tailwindcss": "4.3.3",
+      "typescript": "7.0.2"
+    }
+  },
+  "scripts": {
+    "build": "bun run --filter '@tempi/*' build",
+    "build:desktop": "bun run --filter @tempi/web build && bun run --filter @tempi/desktop build",
+    "check": "biome check --write .",
+    "dev:desktop": "bun run --filter @tempi/desktop dev",
+    "dev:web": "bun run --filter @tempi/web dev",
+    "dev:www": "bun run --filter @tempi/www dev",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "typecheck": "bun run --filter '@tempi/*' typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "@types/bun": "1.4.2",
+    "typescript": "catalog:"
+  },
+  "packageManager": "bun@1.4.2",
+  "trustedDependencies": ["electron", "sharp", "unrs-resolver"]
 }
