@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Instrument_Sans, Manrope } from 'next/font/google';
 import './globals.css';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 const instrumentSansHeading = Instrument_Sans({ subsets: ['latin'], variable: '--font-heading' });
@@ -25,7 +26,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
 	return (
 		<html lang='en' className={cn('h-full', 'antialiased', geistSans.variable, geistMono.variable, 'font-sans', manrope.variable, instrumentSansHeading.variable)}>
-			<body className='min-h-full flex flex-col'>{children}</body>
+			<body className='min-h-full flex flex-col'>
+				<TooltipProvider>{children}</TooltipProvider>
+			</body>
 		</html>
 	);
 }
