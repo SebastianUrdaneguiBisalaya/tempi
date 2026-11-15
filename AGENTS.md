@@ -132,7 +132,7 @@ apps/desktop/src/
 
 apps/web/src/
   app/                       routes only (layout.tsx, page.tsx); thin, compose features
-  features/<feature>/        components/, hooks/, <feature>.test.ts (calendar, events, settings)
+  features/<feature>/        components/, hooks/ (calendar, events, settings)
   components/                shared app components
   components/ui/             generated (shadcn); do not edit by hand
   providers/                 repository provider (injects the port implementation)
@@ -147,10 +147,13 @@ apps/web/src/
 
 - Use `bun test` only (`import { describe, expect, test } from 'bun:test'`). Don't add Jest, Vitest or other test runners.
 - Colocate tests as `*.test.ts` next to the code they test.
-- Every package must have tests:
+- Write tests only for backend-like code:
   - `core`: test use cases with in-memory fakes of the ports.
-  - `db`: test against `new DatabaseSync(':memory:')` with real migrations. `node:sqlite` runs under Bun, so the tests exercise the same API Electron uses.
+  - `db`: test repositories against `new DatabaseSync(':memory:')` with real migrations. `node:sqlite` runs under Bun, so the tests exercise the same API Electron uses.
   - `ipc`: test schemas with valid and invalid payloads.
+  - `apps/desktop`: test main-process services.
+- No UI or component tests in `apps/web`. The user does all visual testing by hand.
+- Never install Playwright, Puppeteer or similar browser automation tools.
 - Test behavior, not implementation. No snapshot tests for logic.
 - Every bug fix comes with a test that fails without the fix.
 
@@ -182,7 +185,7 @@ apps/web/src/
 - Wrap multi-statement writes in a transaction (`BEGIN IMMEDIATE` … `COMMIT`/`ROLLBACK`).
 - Migrations: write ordered SQL files tracked by `PRAGMA user_version`, run each in a transaction, and only move forward. Back up with `VACUUM INTO` before migrating.
 - `DatabaseSync` blocks the main process. Keep queries indexed and small. Move bulk work (import, export, search) to a `utilityProcess`.
-- Store instants as UTC ISO-8601 text. Store the event's IANA time zone separately, and recurrence as RFC 5545 `RRULE` text.
+- Store every instant (`created_at`, `updated_at`, `deleted_at`, event start/end) as UTC ISO-8601 text. Convert to the user's time zone only for display. Store the event's IANA time zone separately, and recurrence as RFC 5545 `RRULE` text.
 - Close the database on `before-quit`.
 
 ## TypeScript 7
@@ -206,6 +209,16 @@ apps/web/src/
 - Keep components small and colocated. Lift state only as far as needed.
 - Accessibility is required: semantic elements, labelled controls and full keyboard navigation (the calendar grid included).
 - `src/components/ui` is generated code. Don't edit it by hand.
+
+## UI
+
+- Before building UI, list `apps/web/src/components/ui` and reuse what exists. If a component is missing, never create or install it: ask the user, naming the missing shadcn component or an npm alternative.
+- Use `drawer` for side panels. Never use `sheet`.
+- Show a toast on every create, update and delete. Show an `alert-dialog` to confirm before every delete.
+- Build forms with React Hook Form and zod (`zodResolver`), using the `field` and `label` components.
+- Every screen and component must be responsive.
+- All visible text goes through react-i18next, with English (`en`) and Spanish (`es`) translations.
+- Register keyboard shortcuts only through `@usehotkeys/core` / `@usehotkeys/react`.
 
 ## Style
 
