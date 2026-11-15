@@ -1,0 +1,50 @@
+{
+  "name": "@tempi/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tempi desktop app (Electron shell around the static export of @tempi/web).",
+  "license": "ISC",
+  "author": {
+    "name": "Sebastian Marat Urdanegui Bisalaya",
+    "url": "https://sebastianurdanegui.com"
+  },
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc && (tsc -w --preserveWatchOutput & electron .)",
+    "dist:linux": "bun run build && electron-builder --linux",
+    "dist:mac": "bun run build && electron-builder --mac",
+    "dist:win": "bun run build && electron-builder --win",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "electron": "45.2.1",
+    "electron-builder": "26.18.0",
+    "typescript": "catalog:"
+  },
+  "build": {
+    "appId": "com.sebastianurdanegui.tempi",
+    "productName": "Tempi",
+    "directories": {
+      "output": "release"
+    },
+    "files": ["dist/**/*", "public/**/*", "package.json"],
+    "extraResources": [
+      {
+        "from": "../web/out",
+        "to": "web"
+      }
+    ],
+    "mac": {
+      "icon": "public/tempi-icon-mac.icns"
+    },
+    "win": {
+      "icon": "public/tempi-icon.png"
+    },
+    "linux": {
+      "icon": "public/tempi-icon.png"
+    }
+  }
+}
