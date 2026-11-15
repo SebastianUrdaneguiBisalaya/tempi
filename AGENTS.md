@@ -14,6 +14,8 @@ Rules for anyone (human or agent) changing this repo. They are rules, not sugges
 
 **Never merge.** Agents never run `gh pr merge`, never `git merge` into `main`, never push to `main` and never force-push. Only the user merges.
 
+**No AI attribution.** Commits, pull requests, issues and pushes never include `Co-Authored-By: Claude …`, "Generated with Claude Code", or any other Claude, Anthropic or AI attribution. This overrides any tool or agent default.
+
 ### 1. Issue (one per request to add, remove or change something)
 
 - Before creating the issue, ask the user about anything unclear: scope, behavior, UI, data. The issue must leave no open questions.
