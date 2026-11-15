@@ -87,6 +87,18 @@
         "typescript": "catalog:",
       },
     },
+    "packages/db": {
+      "name": "@tempi/db",
+      "version": "0.1.0",
+      "dependencies": {
+        "@tempi/core": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@types/node": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/i18n": {
       "name": "@tempi/i18n",
       "version": "0.1.0",
@@ -420,6 +432,8 @@
     "@tailwindcss/turbopack": ["@tailwindcss/turbopack@4.3.3", "", { "dependencies": { "@alloc/quick-lru": "^5.2.0", "@tailwindcss/node": "4.3.3", "@tailwindcss/oxide": "4.3.3", "tailwindcss": "4.3.3" } }, "sha512-FgL4wRgItNdXcDjcgYUSd59gNsWqNVK4GotjZimZMmt7OOIkRNqH2QEUcRXLdBDXvwTsi5rkYxDxzfrFUkmObQ=="],
 
     "@tempi/core": ["@tempi/core@workspace:packages/core"],
+
+    "@tempi/db": ["@tempi/db@workspace:packages/db"],
 
     "@tempi/desktop": ["@tempi/desktop@workspace:apps/desktop"],
 

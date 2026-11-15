@@ -1,0 +1,103 @@
+import { afterEach, describe, expect, test } from 'bun:test';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+import { loadMigrations, migrate, readUserVersion } from './migrations';
+import { backupPath, openDatabase } from './open-database';
+
+const fixedClock = { now: () => new Date('2026-11-15T10:00:00.000Z') };
+
+const tempDirs: string[] = [];
+const tempDbPath = (): string => {
+	const dir = mkdtempSync(join(tmpdir(), 'tempi-db-'));
+	tempDirs.push(dir);
+	return join(dir, 'tempi.db');
+};
+
+afterEach(() => {
+	for (const dir of tempDirs.splice(0)) rmSync(dir, { force: true, recursive: true });
+});
+
+const pragma = (db: DatabaseSync, name: string): unknown => Object.values(db.prepare(`PRAGMA ${name}`).get() ?? {})[0];
+
+describe('loadMigrations', () => {
+	test('loads the bundled SQL files in order, starting at version 1', () => {
+		const migrations = loadMigrations();
+		expect(migrations.map(migration => migration.version)).toEqual(migrations.map((_, index) => index + 1));
+		expect(migrations[0]?.sql).toContain('CREATE TABLE events');
+	});
+});
+
+describe('openDatabase', () => {
+	test('applies every migration to a new database', () => {
+		const db = openDatabase(':memory:', { clock: fixedClock });
+		expect(readUserVersion(db)).toBe(loadMigrations().length);
+		const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all();
+		expect(tables.map(table => table.name)).toEqual(['calendars', 'events', 'profile', 'settings']);
+		db.close();
+	});
+
+	test('sets the required pragmas', () => {
+		const path = tempDbPath();
+		const db = openDatabase(path, { clock: fixedClock });
+		expect(pragma(db, 'journal_mode')).toBe('wal');
+		expect(pragma(db, 'foreign_keys')).toBe(1);
+		expect(pragma(db, 'synchronous')).toBe(1); // NORMAL
+		expect(pragma(db, 'busy_timeout')).toBe(5000);
+		db.close();
+	});
+
+	test('seeds one default calendar on first run only', () => {
+		const path = tempDbPath();
+		openDatabase(path, { clock: fixedClock }).close();
+		const db = openDatabase(path, { clock: fixedClock });
+		const calendars = db.prepare('SELECT is_default, source, created_at FROM calendars').all();
+		expect(calendars).toEqual([expect.objectContaining({ created_at: '2026-11-15T10:00:00.000Z', is_default: 1, source: 'local' })]);
+		db.close();
+	});
+
+	test('backs up an existing database with VACUUM INTO before migrating', () => {
+		const path = tempDbPath();
+		const v1 = loadMigrations();
+		openDatabase(path, { clock: fixedClock, migrations: v1 }).close();
+
+		const v2 = [...v1, { sql: 'ALTER TABLE calendars ADD COLUMN extra TEXT;', version: v1.length + 1 }];
+		openDatabase(path, { clock: fixedClock, migrations: v2 }).close();
+
+		const backup = new DatabaseSync(backupPath(path, v1.length), { readOnly: true });
+		expect(readUserVersion(backup)).toBe(v1.length);
+		expect(backup.prepare('SELECT COUNT(*) AS count FROM calendars').get()).toEqual(expect.objectContaining({ count: 1 }));
+		backup.close();
+	});
+
+	test('does not back up a new database or one already up to date', () => {
+		const path = tempDbPath();
+		openDatabase(path, { clock: fixedClock }).close();
+		openDatabase(path, { clock: fixedClock }).close();
+		expect(existsSync(backupPath(path, 0))).toBe(false);
+		expect(existsSync(backupPath(path, loadMigrations().length))).toBe(false);
+	});
+
+	test('refuses a database created by a newer app version', () => {
+		const path = tempDbPath();
+		const db = new DatabaseSync(path);
+		db.exec('PRAGMA user_version = 999');
+		db.close();
+		expect(() => openDatabase(path, { clock: fixedClock })).toThrow('newer than this app supports');
+	});
+});
+
+describe('migrate', () => {
+	test('rolls back a failing migration and leaves the version unchanged', () => {
+		const db = new DatabaseSync(':memory:');
+		const migrations = [
+			{ sql: 'CREATE TABLE a (id TEXT);', version: 1 },
+			{ sql: 'CREATE TABLE b (id TEXT); INSERT INTO missing VALUES (1);', version: 2 },
+		];
+		expect(() => migrate(db, migrations)).toThrow();
+		expect(readUserVersion(db)).toBe(1);
+		expect(db.prepare("SELECT name FROM sqlite_master WHERE name = 'b'").get()).toBeUndefined();
+		db.close();
+	});
+});
