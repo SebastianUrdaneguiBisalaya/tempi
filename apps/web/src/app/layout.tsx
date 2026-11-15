@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Sans, Manrope } from 'next/font/google';
 import './globals.css';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { I18nProvider } from '@/providers/i18n-provider';
 
 const instrumentSansHeading = Instrument_Sans({ subsets: ['latin'], variable: '--font-heading' });
 
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 	return (
 		<html lang='en' className={cn('h-full', 'antialiased', geistSans.variable, geistMono.variable, 'font-sans', manrope.variable, instrumentSansHeading.variable)}>
 			<body className='min-h-full flex flex-col'>
-				<TooltipProvider>{children}</TooltipProvider>
+				<I18nProvider>
+					<TooltipProvider>{children}</TooltipProvider>
+				</I18nProvider>
 			</body>
 		</html>
 	);

@@ -1,0 +1,21 @@
+{
+  "name": "@tempi/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared en/es translations for web and desktop. Plain data, no i18n runtime.",
+  "license": "ISC",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tempi/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
