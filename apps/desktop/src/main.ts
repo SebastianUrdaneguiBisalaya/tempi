@@ -1,22 +1,39 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, nativeImage, shell } from 'electron';
+import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol.js';
 import { loadWindowState, trackWindowState, windowOptions } from './window-state.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// The app only embeds the web app, it does not ship it. It loads the web app from this URL: the
-// vite dev server by default, or a deployed/self-hosted one through USEGONCHE_WEB_URL.
-const WEB_URL = (process.env.USEGONCHE_WEB_URL ?? 'http://localhost:5173').replace(/\/+$/, '');
+// Packaged: the static export of @tempi/web bundled in the app, served from app://tempi.
+// Dev: the Next dev server (`bun run dev:web`), or another URL through TEMPI_WEB_URL.
+const DEV_WEB_URL = (process.env.TEMPI_WEB_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
+const WEB_URL = app.isPackaged ? APP_ORIGIN : DEV_WEB_URL;
+const WEB_DIR = path.join(process.resourcesPath, 'web');
+
+// Chromium's net::ERR_CONNECTION_REFUSED: the dev server is not up yet.
+const ERR_CONNECTION_REFUSED = -102;
+const DEV_RETRY_MS = 1000;
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
-const ICON_PNG = path.join(PUBLIC_DIR, 'usegonche-icon.png');
-const ICON_MAC_PNG = path.join(PUBLIC_DIR, 'usegonche-icon-mac.png');
+const ICON_PNG = path.join(PUBLIC_DIR, 'tempi-icon.png');
+const ICON_MAC_PNG = path.join(PUBLIC_DIR, 'tempi-icon-mac.png');
+
+registerAppScheme();
 
 let mainWindow: BrowserWindow | null = null;
 
 function isTrustedUrl(url: string) {
 	return url === WEB_URL || url.startsWith(`${WEB_URL}/`);
+}
+
+function loadWebApp() {
+	mainWindow?.loadURL(`${WEB_URL}/`).catch(error => {
+		// A refused dev connection is retried from `did-fail-load`.
+		if (!app.isPackaged && error?.errno === ERR_CONNECTION_REFUSED) return;
+		console.error('Failed to load web app', error);
+	});
 }
 
 function createWindow() {
@@ -69,9 +86,13 @@ function createWindow() {
 		mainWindow?.show();
 	});
 
-	mainWindow.loadURL(WEB_URL).catch(error => {
-		console.error('Failed to load web app', error);
+	// In dev, Electron may start before `next dev` is listening: keep retrying until it answers.
+	mainWindow.webContents.on('did-fail-load', (_event, errorCode, _description, _url, isMainFrame) => {
+		if (app.isPackaged || !isMainFrame || errorCode !== ERR_CONNECTION_REFUSED) return;
+		setTimeout(() => loadWebApp(), DEV_RETRY_MS);
 	});
+
+	loadWebApp();
 
 	mainWindow.on('closed', () => {
 		mainWindow = null;
@@ -97,6 +118,7 @@ if (!gotLock) {
 			const dockIcon = nativeImage.createFromPath(ICON_MAC_PNG);
 			if (!dockIcon.isEmpty()) app.dock?.setIcon(dockIcon);
 		}
+		if (app.isPackaged) handleAppProtocol(WEB_DIR);
 		createWindow();
 	});
 
