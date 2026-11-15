@@ -1,0 +1,18 @@
+{
+  "name": "@tempi/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tempi domain entities, ports and use cases. No runtime dependencies.",
+  "license": "ISC",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
