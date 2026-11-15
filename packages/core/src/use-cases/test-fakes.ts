@@ -1,6 +1,8 @@
+import { expect } from 'bun:test';
 import type { Calendar } from '../domain/calendar';
 import { overlapsRange } from '../domain/date-range';
 import type { CalendarEvent } from '../domain/event';
+import type { DomainErrorCode } from '../domain/result';
 import type { Settings } from '../domain/settings';
 import type { UserProfile } from '../domain/user-profile';
 import type { CalendarRepository } from '../ports/calendar-repository';
@@ -87,3 +89,9 @@ export const makeDeps = () => {
 	} satisfies CoreDeps;
 	return deps;
 };
+
+/** Matcher for a failed Result with the given code, optionally reporting an issue on `field`. */
+export const failure = (code: DomainErrorCode, field?: string) => ({
+	error: { code, issues: field === undefined ? expect.any(Array) : expect.arrayContaining([expect.objectContaining({ field })]) },
+	ok: false as const,
+});

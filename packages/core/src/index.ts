@@ -2,10 +2,12 @@ export type { Calendar, CalendarFields, CalendarPatch, CalendarSource, NewCalend
 export { CALENDAR_SOURCES, calendarFieldsSchema, calendarPatchSchema, newCalendarInputSchema } from './domain/calendar';
 export type { DateRange } from './domain/date-range';
 export { dateRangeSchema, overlapsRange } from './domain/date-range';
+export type { ErrorKey } from './domain/error-keys';
+export { ERROR_KEYS, isErrorKey } from './domain/error-keys';
 export type { CalendarEvent, EventFields, EventPatch, EventStatus, NewEventInput } from './domain/event';
 export { EVENT_STATUSES, eventFieldsSchema, eventPatchSchema, newEventInputSchema } from './domain/event';
-export type { DomainError, DomainErrorCode, Result } from './domain/result';
-export { DOMAIN_ERROR_CODES, fail, ok, parseWith } from './domain/result';
+export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';
+export { DOMAIN_ERROR_CODES, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
 export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, WeekStart } from './domain/settings';
 export { DEFAULT_SETTINGS, LANGUAGES, settingsPatchSchema, settingsValuesSchema, THEMES, TIME_FORMATS, WEEK_STARTS } from './domain/settings';
 export type { Timestamps } from './domain/timestamps';

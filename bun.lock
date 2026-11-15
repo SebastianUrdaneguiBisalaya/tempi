@@ -27,6 +27,8 @@
       "dependencies": {
         "@base-ui/react": "1.9.0",
         "@shadcn/react": "^0.3.1",
+        "@tempi/core": "workspace:*",
+        "@tempi/i18n": "workspace:*",
         "@usehotkeys/core": "0.1.0",
         "@usehotkeys/react": "0.1.0",
         "class-variance-authority": "0.7.1",
@@ -80,6 +82,16 @@
       "version": "0.1.0",
       "dependencies": {
         "zod": "catalog:",
+      },
+      "devDependencies": {
+        "typescript": "catalog:",
+      },
+    },
+    "packages/i18n": {
+      "name": "@tempi/i18n",
+      "version": "0.1.0",
+      "dependencies": {
+        "@tempi/core": "workspace:*",
       },
       "devDependencies": {
         "typescript": "catalog:",
@@ -410,6 +422,8 @@
     "@tempi/core": ["@tempi/core@workspace:packages/core"],
 
     "@tempi/desktop": ["@tempi/desktop@workspace:apps/desktop"],
+
+    "@tempi/i18n": ["@tempi/i18n@workspace:packages/i18n"],
 
     "@tempi/web": ["@tempi/web@workspace:apps/web"],
 

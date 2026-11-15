@@ -7,7 +7,7 @@ export const createEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | '
 	if (!fields.ok) return fields;
 
 	const calendar = await deps.calendars.findById(fields.value.calendarId);
-	if (calendar === null || calendar.deletedAt !== null) return fail('not_found', 'calendar.notFound', 'calendarId');
+	if (calendar === null || calendar.deletedAt !== null) return fail('not_found', 'calendar.notFound', { detail: `Calendar ${fields.value.calendarId} not found`, field: 'calendarId' });
 
 	const now = nowIso(deps.clock);
 	const event: CalendarEvent = { ...fields.value, createdAt: now, deletedAt: null, id: deps.ids.next(), updatedAt: now };

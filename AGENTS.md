@@ -94,11 +94,17 @@ Anything else is forbidden unless the user asks for that exact command, in parti
 - Domain logic and ports (interfaces such as `EventRepository`) live in `packages/core`. Core imports no Electron, Next, React or Node APIs. Its only runtime dependency is zod.
 - Validation has a single source of truth: the zod schemas in `packages/core` (`newEventInputSchema`, `eventPatchSchema`, `profileInputSchema`, …). Use cases, IPC handlers and web forms all reuse them. Never rewrite a rule by hand or duplicate a schema elsewhere; if a rule changes, change the core schema.
 - Use zod for all runtime validation in every package. Don't hand-write validation with plain JS checks.
-- Schema error messages are i18n keys (for example `validation.required`, `event.endBeforeStart`), never user-facing text. The web app translates them.
-- Rules that need stored data (the calendar exists, the default calendar can't be deleted) stay in use cases and return `Result` errors with i18n keys too.
+- Errors cross every boundary (use cases, IPC) as plain data: `DomainError = { code, issues[] }`, and each issue is `{ key, params?, field?, detail }`.
+  - Return every issue (zod issues flattened), never only the first.
+  - `key` is an `ErrorKey` from core's `ERROR_KEYS` (for example `validation.required`, `event.endBeforeStart`). Schema messages are always keys, never user-facing text. Built-in zod errors map to `validation.<code>`.
+  - `params` carries interpolation values (`{ maximum: 1440 }`).
+  - `detail` is an English description for developers (the original zod message or a backend description with ids). Log it; never show it to users.
+- Rules that need stored data (the calendar exists, the default calendar can't be deleted) stay in use cases and return the same `DomainError` via `fail(code, key, { field, detail })`.
+- Only the UI translates. Backend code (core, db, ipc, desktop main services) never translates errors. Web and desktop translate `key` with `params` through `@tempi/i18n` (`issueTranslation(issue)`).
+- Adding an `ErrorKey` requires its `en` and `es` translations in `@tempi/i18n`. The typecheck fails otherwise.
 - Adapters implement ports: SQLite in desktop today, a sync or HTTP adapter later. To swap storage, write a new adapter; never change the domain.
 - Prepare for sync now: UUIDv7 text IDs, `created_at`/`updated_at` timestamps, `deleted_at` soft deletes, and no autoincrement IDs.
-- Dependency direction: `apps/*` → `packages/ipc` / `packages/db` → `packages/core`. Core depends only on zod. Packages never import from apps.
+- Dependency direction: `apps/*` → `packages/ipc` / `packages/db` / `packages/i18n` → `packages/core`. Core depends only on zod. Packages never import from apps.
 
 ## Structure
 
@@ -125,6 +131,10 @@ packages/
       desktop-api.ts         DesktopApi type exposed by preload, Window augmentation
       ipc-event-repository.ts  renderer adapter: implements core ports via window.desktop
       index.ts
+  i18n/                      @tempi/i18n: shared en/es translations for web and desktop (plain data, no i18n runtime)
+    src/
+      locales/               en.ts (source of keys), es.ts (must match en exactly)
+      index.ts               resources, namespaces (common, errors), issueTranslation
 
 apps/desktop/src/
   main.ts                    bootstrap only: app lifecycle, wiring
@@ -155,6 +165,7 @@ apps/web/src/
   - `core`: test use cases with in-memory fakes of the ports.
   - `db`: test repositories against `new DatabaseSync(':memory:')` with real migrations. `node:sqlite` runs under Bun, so the tests exercise the same API Electron uses.
   - `ipc`: test schemas with valid and invalid payloads.
+  - `i18n`: test that every locale has the same keys and placeholders as `en` and covers every core `ErrorKey`.
   - `apps/desktop`: test main-process services.
 - No UI or component tests in `apps/web`. The user does all visual testing by hand.
 - Never install Playwright, Puppeteer or similar browser automation tools.
@@ -219,9 +230,9 @@ apps/web/src/
 - Before building UI, list `apps/web/src/components/ui` and reuse what exists. If a component is missing, never create or install it: ask the user, naming the missing shadcn component or an npm alternative.
 - Use `drawer` for side panels. Never use `sheet`.
 - Show a toast on every create, update and delete. Show an `alert-dialog` to confirm before every delete.
-- Build forms with React Hook Form and zod (`zodResolver`), using the `field` and `label` components. Pass the core schema to `zodResolver` (extend it only for form-only fields), and translate its error keys with react-i18next.
+- Build forms with React Hook Form and zod (`zodResolver`), using the `field` and `label` components. Pass the core schema and core's error map to the resolver (`zodResolver(schema, { error: zodErrorKeyMap })`, extending the schema only for form-only fields), and translate field errors from the `errors` namespace.
 - Every screen and component must be responsive.
-- All visible text goes through react-i18next, with English (`en`) and Spanish (`es`) translations.
+- All visible text goes through react-i18next, with English (`en`) and Spanish (`es`) translations. Translations live only in `@tempi/i18n`: add a key to `en.ts` and `es.ts`, never hardcode strings or keep locale files in apps.
 - Register keyboard shortcuts only through `@usehotkeys/core` / `@usehotkeys/react`.
 
 ## Style

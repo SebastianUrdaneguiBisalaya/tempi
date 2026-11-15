@@ -5,7 +5,7 @@ import { getProfile } from './get-profile';
 import { getSettings } from './get-settings';
 import { saveProfile } from './save-profile';
 import { saveSettings } from './save-settings';
-import { makeDeps, T0 } from './test-fakes';
+import { failure, makeDeps, T0 } from './test-fakes';
 
 const profileInput: ProfileInput = { avatar: null, country: 'pe', firstName: ' Ana ', lastName: 'Quispe', timeZone: 'America/Lima' };
 
@@ -32,7 +32,7 @@ describe('profile', () => {
 	] as const)('rejects an invalid %s', async (field, override) => {
 		const deps = makeDeps();
 		const result = await saveProfile(deps, { ...profileInput, ...override });
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'validation', field }), ok: false });
+		expect(result).toEqual(failure('validation', field));
 		expect(await getProfile(deps)).toBeNull();
 	});
 });
@@ -56,6 +56,6 @@ describe('settings', () => {
 	test.each([0, -15, 1.5, 1441])('rejects a default event duration of %p', async duration => {
 		const deps = makeDeps();
 		const result = await saveSettings(deps, { defaultEventDuration: duration });
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'validation', field: 'defaultEventDuration' }), ok: false });
+		expect(result).toEqual(failure('validation', 'defaultEventDuration'));
 	});
 });

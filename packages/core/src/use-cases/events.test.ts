@@ -4,7 +4,7 @@ import { createCalendar } from './create-calendar';
 import { createEvent } from './create-event';
 import { deleteEvent } from './delete-event';
 import { listEvents } from './list-events';
-import { makeDeps, T0 } from './test-fakes';
+import { failure, makeDeps, T0 } from './test-fakes';
 import { updateEvent } from './update-event';
 
 const setup = async () => {
@@ -54,14 +54,14 @@ describe('createEvent', () => {
 	] as const)('rejects an invalid %s', async (field, override) => {
 		const { deps, input } = await setup();
 		const result = await createEvent(deps, { ...input, ...override });
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'validation', field }), ok: false });
+		expect(result).toEqual(failure('validation', field));
 		expect(deps.events.rows.size).toBe(0);
 	});
 
 	test('rejects an unknown calendar', async () => {
 		const { deps, input } = await setup();
 		const result = await createEvent(deps, { ...input, calendarId: 'missing' });
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'not_found', field: 'calendarId' }), ok: false });
+		expect(result).toEqual(failure('not_found', 'calendarId'));
 	});
 });
 
@@ -93,7 +93,7 @@ describe('updateEvent', () => {
 
 		// Simulates an unvalidated payload arriving from IPC.
 		const result = await updateEvent(deps, created.value.id, JSON.parse('{"allDay":"yes"}'));
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'validation', field: 'allDay' }), ok: false });
+		expect(result).toEqual(failure('validation', 'allDay'));
 	});
 
 	test('rejects a patch that ends the event before it starts', async () => {
@@ -113,7 +113,7 @@ describe('updateEvent', () => {
 		await deleteEvent(deps, created.value.id);
 
 		const result = await updateEvent(deps, created.value.id, { title: 'Again' });
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'not_found' }), ok: false });
+		expect(result).toEqual(failure('not_found'));
 	});
 });
 
@@ -155,6 +155,6 @@ describe('listEvents', () => {
 	test('rejects a range whose end is not after its start', async () => {
 		const { deps } = await setup();
 		const result = await listEvents(deps, { end: '2026-11-16T00:00:00Z', start: '2026-11-16T00:00:00Z' });
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'validation', field: 'end' }), ok: false });
+		expect(result).toEqual(failure('validation', 'end'));
 	});
 });

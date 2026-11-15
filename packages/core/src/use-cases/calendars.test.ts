@@ -3,7 +3,7 @@ import { createCalendar } from './create-calendar';
 import { createEvent } from './create-event';
 import { deleteCalendar } from './delete-calendar';
 import { listCalendars } from './list-calendars';
-import { makeDeps, T0 } from './test-fakes';
+import { failure, makeDeps, T0 } from './test-fakes';
 import { updateCalendar } from './update-calendar';
 
 const create = async (deps: ReturnType<typeof makeDeps>, name: string, isDefault?: boolean) => {
@@ -34,7 +34,7 @@ describe('createCalendar', () => {
 	] as const)('rejects an invalid %s', async (field, input) => {
 		const deps = makeDeps();
 		const result = await createCalendar(deps, input);
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'validation', field }), ok: false });
+		expect(result).toEqual(failure('validation', field));
 	});
 });
 
@@ -62,7 +62,7 @@ describe('updateCalendar', () => {
 		const deps = makeDeps();
 		const calendar = await create(deps, 'Personal');
 		const result = await updateCalendar(deps, calendar.id, { isDefault: false });
-		expect(result).toEqual({ error: expect.objectContaining({ code: 'conflict' }), ok: false });
+		expect(result).toEqual(failure('conflict'));
 	});
 });
 
@@ -85,7 +85,7 @@ describe('deleteCalendar', () => {
 	test('refuses to delete the default calendar', async () => {
 		const deps = makeDeps();
 		const calendar = await create(deps, 'Personal');
-		expect(await deleteCalendar(deps, calendar.id)).toEqual({ error: expect.objectContaining({ code: 'conflict' }), ok: false });
+		expect(await deleteCalendar(deps, calendar.id)).toEqual(failure('conflict'));
 	});
 });
 
