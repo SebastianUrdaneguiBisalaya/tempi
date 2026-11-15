@@ -47,7 +47,7 @@
         "react-resizable-panels": "^4.24.0",
         "shadcn": "4.23.0",
         "tw-animate-css": "1.4.0",
-        "zod": "4.6.7",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@tailwindcss/turbopack": "catalog:",
@@ -78,6 +78,9 @@
     "packages/core": {
       "name": "@tempi/core",
       "version": "0.1.0",
+      "dependencies": {
+        "zod": "catalog:",
+      },
       "devDependencies": {
         "typescript": "catalog:",
       },
@@ -97,6 +100,7 @@
     "react-dom": "19.3.0",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
+    "zod": "4.6.7",
   },
   "packages": {
     "@alloc/quick-lru": ["@alloc/quick-lru@5.3.0", "", {}, "sha512-U4+70Pc5ZS9osnCBCE5Jha/ciHM+Yp+CNMNC/7HvYbNRk1Ldd+f7qO65W5qfhu/TCv+/ozljlXXe9Nj8419DMA=="],

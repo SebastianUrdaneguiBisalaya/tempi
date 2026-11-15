@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 // Requires an explicit offset so a value never depends on the machine's local zone.
 const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,9})?)?(Z|[+-]\d{2}:\d{2})$/;
 
@@ -18,8 +20,29 @@ export const isValidTimeZone = (value: string): boolean => {
 	}
 };
 
-/** Trims text and maps blank values to null. */
-export const optionalText = (value: string | null | undefined): string | null => {
-	const trimmed = value?.trim() ?? '';
-	return trimmed === '' ? null : trimmed;
-};
+// Field schemas shared by every entity. Messages are i18n keys, translated by the UI.
+
+export const idSchema = z.string().trim().min(1, 'validation.required');
+
+export const requiredTextSchema = z.string().trim().min(1, 'validation.required');
+
+/** Trims text and maps blank or missing values to null. */
+export const optionalTextSchema = z
+	.string()
+	.nullish()
+	.transform(value => {
+		const trimmed = value?.trim() ?? '';
+		return trimmed === '' ? null : trimmed;
+	});
+
+/** Accepts an ISO-8601 instant with offset and outputs it in UTC. */
+export const utcInstantSchema = z.string().transform((value, ctx) => {
+	const utc = toUtcInstant(value);
+	if (utc === null) {
+		ctx.addIssue({ code: 'custom', message: 'validation.instant' });
+		return z.NEVER;
+	}
+	return utc;
+});
+
+export const timeZoneSchema = z.string().refine(isValidTimeZone, 'validation.timeZone');

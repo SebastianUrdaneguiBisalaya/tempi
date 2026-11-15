@@ -1,10 +1,10 @@
-import { ok, type Result } from '../domain/result';
-import { type ProfileInput, type UserProfile, validateProfileInput } from '../domain/user-profile';
+import { ok, parseWith, type Result } from '../domain/result';
+import { type ProfileInput, profileInputSchema, type UserProfile } from '../domain/user-profile';
 import { type CoreDeps, nowIso } from './deps';
 
 /** Creates the profile on first save and replaces its fields afterwards, keeping `createdAt`. */
 export const saveProfile = async (deps: Pick<CoreDeps, 'clock' | 'profile'>, input: ProfileInput): Promise<Result<UserProfile>> => {
-	const fields = validateProfileInput(input);
+	const fields = parseWith(profileInputSchema, input);
 	if (!fields.ok) return fields;
 
 	const current = await deps.profile.get();

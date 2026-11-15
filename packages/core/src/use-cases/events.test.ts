@@ -77,6 +77,25 @@ describe('updateEvent', () => {
 		expect(result.ok && result.value).toMatchObject({ createdAt: T0, status: 'tentative', title: 'Daily', updatedAt: '2026-11-16T08:00:00.000Z' });
 	});
 
+	test('leaves fields that are not in the patch untouched', async () => {
+		const { deps, input } = await setup();
+		const created = await createEvent(deps, { ...input, description: 'Notes', reminderMinutes: 10 });
+		if (!created.ok) throw new Error('setup failed');
+
+		const result = await updateEvent(deps, created.value.id, { title: 'Daily' });
+		expect(result.ok && result.value).toMatchObject({ description: 'Notes', reminderMinutes: 10, title: 'Daily' });
+	});
+
+	test('rejects a patch with a wrongly typed field', async () => {
+		const { deps, input } = await setup();
+		const created = await createEvent(deps, input);
+		if (!created.ok) throw new Error('setup failed');
+
+		// Simulates an unvalidated payload arriving from IPC.
+		const result = await updateEvent(deps, created.value.id, JSON.parse('{"allDay":"yes"}'));
+		expect(result).toEqual({ error: expect.objectContaining({ code: 'validation', field: 'allDay' }), ok: false });
+	});
+
 	test('rejects a patch that ends the event before it starts', async () => {
 		const { deps, input } = await setup();
 		const created = await createEvent(deps, input);

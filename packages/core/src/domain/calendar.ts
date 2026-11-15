@@ -1,38 +1,39 @@
-import { fail, ok, type Result } from './result';
+import { z } from 'zod';
 import type { Timestamps } from './timestamps';
+import { requiredTextSchema } from './values';
 
 export const CALENDAR_SOURCES = ['local', 'google'] as const;
 
 export type CalendarSource = (typeof CALENDAR_SOURCES)[number];
 
-export type Calendar = Timestamps & {
-	/** Hex color `#rrggbb`, lowercase. */
-	color: string;
-	id: string;
-	isDefault: boolean;
-	isVisible: boolean;
-	name: string;
-	source: CalendarSource;
+const calendarShape = {
+	/** Hex color `#rrggbb`, stored lowercase. */
+	color: z
+		.string()
+		.regex(/^#[0-9a-f]{6}$/i, 'calendar.color')
+		.transform(value => value.toLowerCase()),
+	isDefault: z.boolean(),
+	isVisible: z.boolean(),
+	name: requiredTextSchema,
+	source: z.enum(CALENDAR_SOURCES),
 };
 
-export type CalendarFields = Omit<Calendar, keyof Timestamps | 'id'>;
+export const calendarFieldsSchema = z.object(calendarShape);
 
-export type NewCalendarInput = {
-	color: string;
-	isDefault?: boolean;
-	isVisible?: boolean;
-	name: string;
-	source?: CalendarSource;
-};
+/** Input for a new calendar. `isDefault` is decided by the use case when omitted. */
+export const newCalendarInputSchema = z.object({
+	color: calendarShape.color,
+	isDefault: calendarShape.isDefault.optional(),
+	isVisible: calendarShape.isVisible.default(true),
+	name: calendarShape.name,
+	source: calendarShape.source.default('local'),
+});
 
-export type CalendarPatch = Partial<Pick<CalendarFields, 'color' | 'isDefault' | 'isVisible' | 'name'>>;
+/** Fields the user may change. The source is fixed at creation. */
+export const calendarPatchSchema = z.object(calendarShape).omit({ source: true }).partial();
 
-const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+export type CalendarFields = z.output<typeof calendarFieldsSchema>;
+export type NewCalendarInput = z.input<typeof newCalendarInputSchema>;
+export type CalendarPatch = z.input<typeof calendarPatchSchema>;
 
-export const validateCalendarFields = (fields: CalendarFields): Result<CalendarFields> => {
-	const name = fields.name.trim();
-	if (name === '') return fail('validation', 'Name is required', 'name');
-	if (!HEX_COLOR.test(fields.color)) return fail('validation', 'Color must be a #rrggbb hex value', 'color');
-	if (!CALENDAR_SOURCES.includes(fields.source)) return fail('validation', 'Source must be local or google', 'source');
-	return ok({ ...fields, color: fields.color.toLowerCase(), name });
-};
+export type Calendar = CalendarFields & Timestamps & { id: string };

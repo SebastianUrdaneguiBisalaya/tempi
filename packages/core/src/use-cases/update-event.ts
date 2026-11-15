@@ -1,18 +1,22 @@
-import { type CalendarEvent, type EventPatch, validateEventFields } from '../domain/event';
-import { fail, ok, type Result } from '../domain/result';
+import { type CalendarEvent, type EventPatch, eventFieldsSchema, eventPatchSchema } from '../domain/event';
+import { fail, ok, parseWith, type Result } from '../domain/result';
 import { type CoreDeps, nowIso } from './deps';
 
 export const updateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | 'events'>, id: string, patch: EventPatch): Promise<Result<CalendarEvent>> => {
 	const current = await deps.events.findById(id);
-	if (current === null || current.deletedAt !== null) return fail('not_found', 'Event not found', 'id');
+	if (current === null || current.deletedAt !== null) return fail('not_found', 'event.notFound', 'id');
 
+	const changes = parseWith(eventPatchSchema, patch);
+	if (!changes.ok) return changes;
+
+	// Cross-field rules (end after start) only make sense on the merged event.
 	const { createdAt, deletedAt, id: _id, updatedAt: _updatedAt, ...currentFields } = current;
-	const fields = validateEventFields({ ...currentFields, ...patch });
+	const fields = parseWith(eventFieldsSchema, { ...currentFields, ...changes.value });
 	if (!fields.ok) return fields;
 
 	if (fields.value.calendarId !== current.calendarId) {
 		const calendar = await deps.calendars.findById(fields.value.calendarId);
-		if (calendar === null || calendar.deletedAt !== null) return fail('not_found', 'Calendar not found', 'calendarId');
+		if (calendar === null || calendar.deletedAt !== null) return fail('not_found', 'calendar.notFound', 'calendarId');
 	}
 
 	const event: CalendarEvent = { ...fields.value, createdAt, deletedAt, id, updatedAt: nowIso(deps.clock) };

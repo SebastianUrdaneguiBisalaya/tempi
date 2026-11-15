@@ -2,7 +2,7 @@
   "name": "@tempi/core",
   "version": "0.1.0",
   "private": true,
-  "description": "Tempi domain entities, ports and use cases. No runtime dependencies.",
+  "description": "Tempi domain entities, ports, zod schemas and use cases.",
   "license": "ISC",
   "type": "module",
   "exports": {
@@ -11,6 +11,9 @@
   "scripts": {
     "test": "bun test",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:"

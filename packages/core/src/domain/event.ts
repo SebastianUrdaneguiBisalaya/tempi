@@ -1,107 +1,51 @@
-import { fail, ok, type Result } from './result';
+import { z } from 'zod';
 import type { Timestamps } from './timestamps';
-import { isValidTimeZone, optionalText, toUtcInstant } from './values';
+import { idSchema, optionalTextSchema, requiredTextSchema, timeZoneSchema, utcInstantSchema } from './values';
 
 export const EVENT_STATUSES = ['confirmed', 'tentative'] as const;
 
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
-// Named CalendarEvent so it never shadows the DOM `Event` in the renderer.
-export type CalendarEvent = Timestamps & {
-	allDay: boolean;
-	calendarId: string;
-	description: string | null;
-	endAt: string;
-	id: string;
-	location: string | null;
-	reminderMinutes: number | null;
-	/** RFC 5545 RRULE value without the `RRULE:` prefix. */
-	rrule: string | null;
-	startAt: string;
-	status: EventStatus;
-	/** IANA time zone the event was created in. */
-	timeZone: string;
-	title: string;
-	videoUrl: string | null;
-};
-
-export type EventFields = Omit<CalendarEvent, keyof Timestamps | 'id'>;
-
-export type NewEventInput = {
-	allDay?: boolean;
-	calendarId: string;
-	description?: string | null;
-	endAt: string;
-	location?: string | null;
-	reminderMinutes?: number | null;
-	rrule?: string | null;
-	startAt: string;
-	status?: EventStatus;
-	timeZone: string;
-	title: string;
-	videoUrl?: string | null;
-};
-
-export type EventPatch = Partial<EventFields>;
-
-const HTTP_URL = /^https?:\/\/\S+$/i;
 const RRULE = /^(RRULE:)?FREQ=/i;
 
-export const toEventFields = (input: NewEventInput): EventFields => ({
-	allDay: input.allDay ?? false,
-	calendarId: input.calendarId,
-	description: input.description ?? null,
-	endAt: input.endAt,
-	location: input.location ?? null,
-	reminderMinutes: input.reminderMinutes ?? null,
-	rrule: input.rrule ?? null,
-	startAt: input.startAt,
-	status: input.status ?? 'confirmed',
-	timeZone: input.timeZone,
-	title: input.title,
-	videoUrl: input.videoUrl ?? null,
-});
-
-/** Validates event fields and normalizes them (trimmed text, UTC instants, bare RRULE). */
-export const validateEventFields = (fields: EventFields): Result<EventFields> => {
-	const title = fields.title.trim();
-	if (title === '') return fail('validation', 'Title is required', 'title');
-
-	if (fields.calendarId.trim() === '') return fail('validation', 'Calendar is required', 'calendarId');
-
-	const startAt = toUtcInstant(fields.startAt);
-	if (startAt === null) return fail('validation', 'Start must be an ISO-8601 instant with offset', 'startAt');
-	const endAt = toUtcInstant(fields.endAt);
-	if (endAt === null) return fail('validation', 'End must be an ISO-8601 instant with offset', 'endAt');
-	if (endAt <= startAt) return fail('validation', 'End must be after start', 'endAt');
-
-	if (!isValidTimeZone(fields.timeZone)) return fail('validation', 'Time zone must be a valid IANA zone', 'timeZone');
-
-	if (!EVENT_STATUSES.includes(fields.status)) return fail('validation', 'Status must be confirmed or tentative', 'status');
-
-	const videoUrl = optionalText(fields.videoUrl);
-	if (videoUrl !== null && !HTTP_URL.test(videoUrl)) return fail('validation', 'Video URL must be an http(s) URL', 'videoUrl');
-
-	const rruleText = optionalText(fields.rrule);
-	if (rruleText !== null && !RRULE.test(rruleText)) return fail('validation', 'Recurrence must be an RFC 5545 RRULE', 'rrule');
-
-	const { reminderMinutes } = fields;
-	if (reminderMinutes !== null && (!Number.isInteger(reminderMinutes) || reminderMinutes < 0)) {
-		return fail('validation', 'Reminder must be a non-negative whole number of minutes', 'reminderMinutes');
-	}
-
-	return ok({
-		allDay: fields.allDay,
-		calendarId: fields.calendarId,
-		description: optionalText(fields.description),
-		endAt,
-		location: optionalText(fields.location),
-		reminderMinutes,
-		rrule: rruleText?.replace(/^RRULE:/i, '') ?? null,
-		startAt,
-		status: fields.status,
-		timeZone: fields.timeZone,
-		title,
-		videoUrl,
-	});
+const eventShape = {
+	allDay: z.boolean(),
+	calendarId: idSchema,
+	description: optionalTextSchema,
+	endAt: utcInstantSchema,
+	location: optionalTextSchema,
+	reminderMinutes: z
+		.number()
+		.int('validation.integer')
+		.min(0, 'validation.min')
+		.nullish()
+		.transform(value => value ?? null),
+	/** Stored without the `RRULE:` prefix. */
+	rrule: optionalTextSchema.refine(value => value === null || RRULE.test(value), 'event.rrule').transform(value => value?.replace(/^RRULE:/i, '') ?? null),
+	startAt: utcInstantSchema,
+	status: z.enum(EVENT_STATUSES),
+	/** IANA time zone the event was created in. */
+	timeZone: timeZoneSchema,
+	title: requiredTextSchema,
+	videoUrl: optionalTextSchema.refine(value => value === null || /^https?:\/\/\S+$/i.test(value), 'validation.url'),
 };
+
+const endAfterStart = { message: 'event.endBeforeStart', path: ['endAt'] };
+
+/** Every event field, fully specified. Used to re-validate after merging a patch. */
+export const eventFieldsSchema = z.object(eventShape).refine(event => event.endAt > event.startAt, endAfterStart);
+
+/** Input for a new event: optional fields default to null, `allDay` to false and `status` to confirmed. */
+export const newEventInputSchema = z
+	.object({ ...eventShape, allDay: eventShape.allDay.default(false), status: eventShape.status.default('confirmed') })
+	.refine(event => event.endAt > event.startAt, endAfterStart);
+
+/** Shape check for a partial update. Cross-field rules run after merging, with `eventFieldsSchema`. */
+export const eventPatchSchema = z.object(eventShape).partial();
+
+export type EventFields = z.output<typeof eventFieldsSchema>;
+export type NewEventInput = z.input<typeof newEventInputSchema>;
+export type EventPatch = z.input<typeof eventPatchSchema>;
+
+// Named CalendarEvent so it never shadows the DOM `Event` in the renderer.
+export type CalendarEvent = EventFields & Timestamps & { id: string };

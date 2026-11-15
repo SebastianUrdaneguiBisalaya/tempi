@@ -1,4 +1,4 @@
-import { fail, ok, type Result } from './result';
+import { z } from 'zod';
 
 export const THEMES = ['system', 'light', 'dark'] as const;
 export const LANGUAGES = ['en', 'es'] as const;
@@ -10,26 +10,29 @@ export type Language = (typeof LANGUAGES)[number];
 export type WeekStart = (typeof WEEK_STARTS)[number];
 export type TimeFormat = (typeof TIME_FORMATS)[number];
 
-export type SettingsValues = {
-	/** Minutes. */
-	defaultEventDuration: number;
-	language: Language;
-	menuBarEnabled: boolean;
-	onboardingCompleted: boolean;
-	showWeekends: boolean;
-	showWeekNumbers: boolean;
-	theme: Theme;
-	timeFormat: TimeFormat;
-	weekStart: WeekStart;
-};
+export const settingsValuesSchema = z.object({
+	/** Minutes, up to one day. */
+	defaultEventDuration: z.number().int('validation.integer').min(1, 'validation.min').max(1440, 'validation.max'),
+	language: z.enum(LANGUAGES),
+	menuBarEnabled: z.boolean(),
+	onboardingCompleted: z.boolean(),
+	showWeekends: z.boolean(),
+	showWeekNumbers: z.boolean(),
+	theme: z.enum(THEMES),
+	timeFormat: z.enum(TIME_FORMATS),
+	weekStart: z.enum(WEEK_STARTS),
+});
+
+export const settingsPatchSchema = settingsValuesSchema.partial();
+
+export type SettingsValues = z.output<typeof settingsValuesSchema>;
+export type SettingsPatch = z.input<typeof settingsPatchSchema>;
 
 /** App-wide preferences. There is one settings record per installation. */
 export type Settings = SettingsValues & {
 	createdAt: string;
 	updatedAt: string;
 };
-
-export type SettingsPatch = Partial<SettingsValues>;
 
 export const DEFAULT_SETTINGS = {
 	defaultEventDuration: 60,
@@ -42,17 +45,3 @@ export const DEFAULT_SETTINGS = {
 	timeFormat: '24h',
 	weekStart: 'monday',
 } as const satisfies SettingsValues;
-
-const MAX_EVENT_DURATION = 24 * 60;
-
-export const validateSettingsValues = (values: SettingsValues): Result<SettingsValues> => {
-	if (!THEMES.includes(values.theme)) return fail('validation', 'Unknown theme', 'theme');
-	if (!LANGUAGES.includes(values.language)) return fail('validation', 'Unsupported language', 'language');
-	if (!WEEK_STARTS.includes(values.weekStart)) return fail('validation', 'Unknown week start', 'weekStart');
-	if (!TIME_FORMATS.includes(values.timeFormat)) return fail('validation', 'Time format must be 12h or 24h', 'timeFormat');
-	const duration = values.defaultEventDuration;
-	if (!Number.isInteger(duration) || duration <= 0 || duration > MAX_EVENT_DURATION) {
-		return fail('validation', 'Default event duration must be between 1 and 1440 minutes', 'defaultEventDuration');
-	}
-	return ok(values);
-};

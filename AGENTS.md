@@ -91,18 +91,22 @@ Anything else is forbidden unless the user asks for that exact command, in parti
 
 ## Architecture
 
-- Domain logic and ports (interfaces such as `EventRepository`) live in `packages/core`. Core imports no Electron, Next, React or Node APIs.
+- Domain logic and ports (interfaces such as `EventRepository`) live in `packages/core`. Core imports no Electron, Next, React or Node APIs. Its only runtime dependency is zod.
+- Validation has a single source of truth: the zod schemas in `packages/core` (`newEventInputSchema`, `eventPatchSchema`, `profileInputSchema`, …). Use cases, IPC handlers and web forms all reuse them. Never rewrite a rule by hand or duplicate a schema elsewhere; if a rule changes, change the core schema.
+- Use zod for all runtime validation in every package. Don't hand-write validation with plain JS checks.
+- Schema error messages are i18n keys (for example `validation.required`, `event.endBeforeStart`), never user-facing text. The web app translates them.
+- Rules that need stored data (the calendar exists, the default calendar can't be deleted) stay in use cases and return `Result` errors with i18n keys too.
 - Adapters implement ports: SQLite in desktop today, a sync or HTTP adapter later. To swap storage, write a new adapter; never change the domain.
 - Prepare for sync now: UUIDv7 text IDs, `created_at`/`updated_at` timestamps, `deleted_at` soft deletes, and no autoincrement IDs.
-- Dependency direction: `apps/*` → `packages/ipc` / `packages/db` → `packages/core`. Core depends on nothing. Packages never import from apps.
+- Dependency direction: `apps/*` → `packages/ipc` / `packages/db` → `packages/core`. Core depends only on zod. Packages never import from apps.
 
 ## Structure
 
 ```
 packages/
-  core/                      @tempi/core: domain + ports, no runtime deps
+  core/                      @tempi/core: domain + ports + zod schemas; zod is its only runtime dep
     src/
-      domain/                entities and value objects (event.ts, recurrence.ts)
+      domain/                entities, value objects and their zod schemas (event.ts, recurrence.ts)
       ports/                 interfaces (event-repository.ts, clock.ts, id-generator.ts)
       use-cases/             application logic using ports only (create-event.ts)
       index.ts               public API; consumers import only from here
@@ -117,7 +121,7 @@ packages/
   ipc/                       @tempi/ipc: contract between desktop and web
     src/
       channels.ts            channel names ('events:list', …)
-      schemas.ts             runtime payload validation
+      schemas.ts             runtime payload validation (composes core zod schemas)
       desktop-api.ts         DesktopApi type exposed by preload, Window augmentation
       ipc-event-repository.ts  renderer adapter: implements core ports via window.desktop
       index.ts
@@ -172,7 +176,7 @@ apps/web/src/
 - Use only `ipcRenderer.invoke` and `ipcMain.handle`. Don't use `send`/`sendSync` for request/response.
 - Name channels `domain:action`, for example `events:list` and `events:upsert`. Use one handler per channel.
 - The preload exposes small, typed functions with `contextBridge`, for example `window.desktop.events.list(range)`. Never expose `ipcRenderer`, Node modules or generic `invoke(channel, …)` passthroughs.
-- In every handler, check `event.senderFrame.url` against the trusted origin, then validate the payload at runtime. TypeScript types do not exist at runtime.
+- In every handler, check `event.senderFrame.url` against the trusted origin, then validate the payload at runtime with the core zod schemas. TypeScript types do not exist at runtime.
 - Pass only plain serializable data. Return results; don't throw raw errors across IPC.
 - Define the bridge type once (`DesktopApi`), share it with web, and declare it on `Window`.
 - `apps/web` must not assume Electron: feature-detect `window.desktop` and go through the repository port.
@@ -196,7 +200,7 @@ apps/web/src/
 - Write erasable syntax only: no `enum`, `namespace` or parameter properties. Use `as const` objects and union types instead.
 - Use `import type` for type-only imports (`verbatimModuleSyntax`).
 - No `any`. Use `unknown` and narrow it. Use `satisfies` for typed literals. Use `!` only with a comment explaining why.
-- Validate external data (IPC, files, storage) at the boundary, then trust the types inside.
+- Validate external data (IPC, files, storage) at the boundary with zod, then trust the types inside. Derive types from schemas (`z.input`/`z.output`) instead of declaring them twice.
 
 ## React (19, Next static export)
 
@@ -215,7 +219,7 @@ apps/web/src/
 - Before building UI, list `apps/web/src/components/ui` and reuse what exists. If a component is missing, never create or install it: ask the user, naming the missing shadcn component or an npm alternative.
 - Use `drawer` for side panels. Never use `sheet`.
 - Show a toast on every create, update and delete. Show an `alert-dialog` to confirm before every delete.
-- Build forms with React Hook Form and zod (`zodResolver`), using the `field` and `label` components.
+- Build forms with React Hook Form and zod (`zodResolver`), using the `field` and `label` components. Pass the core schema to `zodResolver` (extend it only for form-only fields), and translate its error keys with react-i18next.
 - Every screen and component must be responsive.
 - All visible text goes through react-i18next, with English (`en`) and Spanish (`es`) translations.
 - Register keyboard shortcuts only through `@usehotkeys/core` / `@usehotkeys/react`.
