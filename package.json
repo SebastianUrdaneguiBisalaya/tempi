@@ -30,11 +30,14 @@
     "dev:www": "bun run --filter @tempi/www dev",
     "format": "biome format --write .",
     "lint": "biome check .",
+    "prepare": "husky",
+    "test": "bun test --pass-with-no-tests",
     "typecheck": "bun run --filter '@tempi/*' typecheck"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
     "@types/bun": "1.4.2",
+    "husky": "9.1.7",
     "typescript": "catalog:"
   },
   "packageManager": "bun@1.4.2",
