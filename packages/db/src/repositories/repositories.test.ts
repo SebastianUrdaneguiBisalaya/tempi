@@ -156,8 +156,8 @@ describe('SqliteSettingsRepository', () => {
 		const settings = { ...DEFAULT_SETTINGS, createdAt: T0, updatedAt: T0 };
 		expect(await repos.settings.get()).toBeNull();
 		await repos.settings.save(settings);
-		await repos.settings.save({ ...settings, showWeekNumbers: true, theme: 'dark' });
-		expect(await repos.settings.get()).toEqual({ ...settings, showWeekNumbers: true, theme: 'dark' });
+		await repos.settings.save({ ...settings, allDayCollapsed: true, showWeekNumbers: true, theme: 'dark' });
+		expect(await repos.settings.get()).toEqual({ ...settings, allDayCollapsed: true, showWeekNumbers: true, theme: 'dark' });
 		expect(db.prepare('SELECT COUNT(*) AS count FROM settings').get()).toMatchObject({ count: 1 });
 	});
 });

@@ -12,6 +12,8 @@ export type WeekStart = (typeof WEEK_STARTS)[number];
 export type TimeFormat = (typeof TIME_FORMATS)[number];
 
 export const settingsValuesSchema = z.object({
+	/** The all-day lane above the week/day grid shows at most two rows. */
+	allDayCollapsed: z.boolean(),
 	/** Minutes, up to one day. */
 	defaultEventDuration: z.number().int('validation.integer').min(1, 'validation.min').max(1440, 'validation.max'),
 	language: z.enum(LANGUAGES),
@@ -35,6 +37,7 @@ export const settingsSchema = settingsValuesSchema.extend(singletonTimestampsSch
 export type Settings = z.output<typeof settingsSchema>;
 
 export const DEFAULT_SETTINGS = {
+	allDayCollapsed: false,
 	defaultEventDuration: 60,
 	language: 'en',
 	menuBarEnabled: false,
