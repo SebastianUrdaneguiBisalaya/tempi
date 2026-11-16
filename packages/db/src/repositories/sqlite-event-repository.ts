@@ -11,6 +11,7 @@ const eventRowSchema = z
 		deleted_at: z.string().nullable(),
 		description: z.string().nullable(),
 		end_at: z.string(),
+		ical_uid: z.string().nullable(),
 		// JSON text; the domain schema below checks what it holds.
 		ex_dates: z.string().transform((text, ctx): unknown => {
 			try {
@@ -42,6 +43,7 @@ const eventRowSchema = z
 			description: row.description,
 			endAt: row.end_at,
 			exDates: row.ex_dates,
+			icalUid: row.ical_uid,
 			id: row.id,
 			location: row.location,
 			originalStartAt: row.original_start_at,
@@ -67,6 +69,7 @@ const toRow = (event: CalendarEvent) => ({
 	description: event.description,
 	end_at: toInstantColumn(event.endAt),
 	ex_dates: JSON.stringify(event.exDates.map(toInstantColumn)),
+	ical_uid: event.icalUid,
 	id: event.id,
 	location: event.location,
 	original_start_at: event.originalStartAt === null ? null : toInstantColumn(event.originalStartAt),
@@ -94,10 +97,12 @@ export const toSearchQuery = (text: string): string | null => {
 };
 
 const COLUMNS =
-	'id, calendar_id, title, description, location, video_url, start_at, end_at, all_day, time_zone, rrule, ex_dates, recurring_event_id, original_start_at, reminder_minutes, status, created_at, updated_at, deleted_at';
+	'id, calendar_id, title, description, location, video_url, start_at, end_at, all_day, time_zone, rrule, ex_dates, recurring_event_id, original_start_at, reminder_minutes, status, ical_uid, created_at, updated_at, deleted_at';
 
 export class SqliteEventRepository implements EventRepository {
 	private readonly findByIdStatement: StatementSync;
+	private readonly findByUidStatement: StatementSync;
+	private readonly listByCalendarStatement: StatementSync;
 	private readonly listBySeriesStatement: StatementSync;
 	private readonly listInRangeStatement: StatementSync;
 	private readonly listSeriesStatement: StatementSync;
@@ -108,6 +113,10 @@ export class SqliteEventRepository implements EventRepository {
 
 	constructor(db: DatabaseSync) {
 		this.findByIdStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE id = :id`);
+		this.findByUidStatement = db.prepare(
+			`SELECT ${COLUMNS} FROM events WHERE calendar_id = :calendar_id AND deleted_at IS NULL AND recurring_event_id IS NULL AND (ical_uid = :uid OR (ical_uid IS NULL AND id = :uid)) ORDER BY created_at, id LIMIT 1`
+		);
+		this.listByCalendarStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE calendar_id = :calendar_id AND deleted_at IS NULL ORDER BY start_at, id`);
 		// Half-open overlap: [start_at, end_at) intersects [start, end). Text comparison works because instants are normalized UTC.
 		// Series are expanded by core, so only events without a recurrence are listed by their own times.
 		this.listInRangeStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NULL AND start_at < :end AND end_at > :start ORDER BY start_at, id`);
@@ -118,13 +127,13 @@ export class SqliteEventRepository implements EventRepository {
 		);
 		this.saveStatement = db.prepare(
 			`INSERT INTO events (${COLUMNS})
-			VALUES (:id, :calendar_id, :title, :description, :location, :video_url, :start_at, :end_at, :all_day, :time_zone, :rrule, :ex_dates, :recurring_event_id, :original_start_at, :reminder_minutes, :status, :created_at, :updated_at, :deleted_at)
+			VALUES (:id, :calendar_id, :title, :description, :location, :video_url, :start_at, :end_at, :all_day, :time_zone, :rrule, :ex_dates, :recurring_event_id, :original_start_at, :reminder_minutes, :status, :ical_uid, :created_at, :updated_at, :deleted_at)
 			ON CONFLICT (id) DO UPDATE SET
 				calendar_id = excluded.calendar_id, title = excluded.title, description = excluded.description,
 				location = excluded.location, video_url = excluded.video_url, start_at = excluded.start_at, end_at = excluded.end_at,
 				all_day = excluded.all_day, time_zone = excluded.time_zone, rrule = excluded.rrule, ex_dates = excluded.ex_dates,
 				recurring_event_id = excluded.recurring_event_id, original_start_at = excluded.original_start_at,
-				reminder_minutes = excluded.reminder_minutes, status = excluded.status,
+				reminder_minutes = excluded.reminder_minutes, status = excluded.status, ical_uid = excluded.ical_uid,
 				created_at = excluded.created_at, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at`
 		);
 		this.moveToCalendarStatement = db.prepare('UPDATE events SET calendar_id = :to, updated_at = :updated_at WHERE calendar_id = :from AND deleted_at IS NULL');
@@ -136,6 +145,17 @@ export class SqliteEventRepository implements EventRepository {
 			const row = this.findByIdStatement.get({ id });
 			return row === undefined ? null : parseRow(eventRowSchema, row);
 		});
+	}
+
+	findByUid(calendarId: string, uid: string): Promise<CalendarEvent | null> {
+		return defer(() => {
+			const row = this.findByUidStatement.get({ calendar_id: calendarId, uid });
+			return row === undefined ? null : parseRow(eventRowSchema, row);
+		});
+	}
+
+	listByCalendar(calendarId: string): Promise<CalendarEvent[]> {
+		return defer(() => this.listByCalendarStatement.all({ calendar_id: calendarId }).map(row => parseRow(eventRowSchema, row)));
 	}
 
 	listInRange(range: DateRange): Promise<CalendarEvent[]> {

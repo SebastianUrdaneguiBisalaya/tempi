@@ -16,6 +16,8 @@ type Api<Raw extends boolean> = {
 	calendars: {
 		create: Call<'calendars:create', Raw>;
 		delete: Call<'calendars:delete', Raw>;
+		export: Call<'calendars:export', Raw>;
+		import: Call<'calendars:import', Raw>;
 		list: CallWithoutInput<'calendars:list', Raw>;
 		update: Call<'calendars:update', Raw>;
 	};

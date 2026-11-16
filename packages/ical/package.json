@@ -1,0 +1,22 @@
+{
+  "name": "@tempi/ical",
+  "version": "0.1.0",
+  "private": true,
+  "description": "iCalendar (.ics) parsing and serialization for import and export.",
+  "license": "ISC",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tempi/core": "workspace:*",
+    "ical.js": "2.2.1"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

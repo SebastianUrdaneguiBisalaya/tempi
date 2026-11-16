@@ -41,6 +41,13 @@ export class InMemoryEventRepository implements EventRepository {
 	findById(id: string) {
 		return Promise.resolve(this.rows.get(id) ?? null);
 	}
+	findByUid(calendarId: string, uid: string) {
+		const found = [...this.rows.values()].find(event => event.calendarId === calendarId && event.deletedAt === null && event.recurringEventId === null && (event.icalUid ?? event.id) === uid);
+		return Promise.resolve(found ?? null);
+	}
+	listByCalendar(calendarId: string) {
+		return Promise.resolve([...this.rows.values()].filter(event => event.calendarId === calendarId && event.deletedAt === null).sort((a, b) => a.startAt.localeCompare(b.startAt)));
+	}
 	listInRange(range: { end: string; start: string }) {
 		return Promise.resolve([...this.rows.values()].filter(event => event.deletedAt === null && event.rrule === null && overlapsRange(event.startAt, event.endAt, range)));
 	}

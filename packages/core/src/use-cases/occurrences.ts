@@ -121,7 +121,8 @@ export const updateOccurrence = async (deps: Pick<CoreDeps, 'calendars' | 'clock
 	const shown = edited ?? seriesOccurrence(series, originalStartAt);
 
 	if (scope === 'this') {
-		const base = edited === undefined ? { ...fieldsOf(series), endAt: shown.endAt, exDates: [], originalStartAt, recurringEventId: series.id, startAt: originalStartAt } : fieldsOf(edited);
+		const base =
+			edited === undefined ? { ...fieldsOf(series), endAt: shown.endAt, exDates: [], icalUid: null, originalStartAt, recurringEventId: series.id, startAt: originalStartAt } : fieldsOf(edited);
 		const fields = parseWith(eventFieldsSchema, { ...base, ...changes.value, rrule: null });
 		if (!fields.ok) return fields;
 		const occurrence: CalendarEvent = { ...fields.value, createdAt: edited?.createdAt ?? now, deletedAt: null, id: edited?.id ?? deps.ids.next(), updatedAt: now };

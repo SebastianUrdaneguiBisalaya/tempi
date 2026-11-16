@@ -4,11 +4,13 @@ import { registerAppHandlers } from './app';
 import { registerCalendarHandlers } from './calendars';
 import { registerEventHandlers } from './events';
 import type { HandlerContext } from './handle';
+import { type IcalIo, registerIcalHandlers } from './ical';
 import { registerOnboardingHandlers } from './onboarding';
 import { registerProfileHandlers } from './profile';
 import { registerSettingsHandlers } from './settings';
 
 export type { HandlerContext, IpcRegistrar, IpcSender } from './handle';
+export type { IcalIo } from './ical';
 
 /** Main-process reactions to committed changes made from the renderer. */
 export type IpcListeners = {
@@ -21,10 +23,11 @@ export type IpcListeners = {
 };
 
 /** Registers every channel of the `@tempi/ipc` contract, each running its core use case against `deps`. */
-export const registerIpc = (context: HandlerContext, deps: CoreDeps, listeners: IpcListeners = {}): void => {
+export const registerIpc = (context: HandlerContext, deps: CoreDeps, ical: IcalIo, listeners: IpcListeners = {}): void => {
 	registerAppHandlers(context, listeners.showEvent);
 	registerCalendarHandlers(context, deps, listeners.eventsChanged);
 	registerEventHandlers(context, deps, listeners.eventsChanged);
+	registerIcalHandlers(context, deps, ical, listeners.eventsChanged);
 	registerOnboardingHandlers(context, deps, listeners.settingsSaved);
 	registerProfileHandlers(context, deps);
 	registerSettingsHandlers(context, deps, listeners.settingsSaved);

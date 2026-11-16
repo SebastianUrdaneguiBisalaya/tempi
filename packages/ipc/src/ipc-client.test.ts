@@ -22,7 +22,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 			},
 			showEvent: answer,
 		},
-		calendars: { create: answer, delete: answer, list: answer, update: answer },
+		calendars: { create: answer, delete: answer, export: answer, import: answer, list: answer, update: answer },
 		events: { create: answer, delete: answer, deleteOccurrence: answer, duplicate: answer, list: answer, restore: answer, search: answer, update: answer, updateOccurrence: answer },
 		onboarding: { complete: answer },
 		profile: { get: answer, update: answer },

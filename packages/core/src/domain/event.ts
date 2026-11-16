@@ -34,12 +34,15 @@ const eventShape = {
 };
 
 /**
- * Links between a recurring series and its exceptions. Set only by use cases, never by input: a series keeps the
- * original starts of occurrences that were deleted or edited on their own (`exDates`), and each edited occurrence
- * is its own event pointing at its series and the start it replaces.
+ * Links between a recurring series and its exceptions, and to the file an event came from. Set only by use cases,
+ * never by input: a series keeps the original starts of occurrences that were deleted or edited on their own
+ * (`exDates`), each edited occurrence is its own event pointing at its series and the start it replaces, and an
+ * imported event keeps its iCalendar UID so importing the file again updates it instead of adding a copy.
  */
 const seriesShape = {
 	exDates: z.array(utcInstantSchema),
+	/** The iCalendar UID of an imported event; null for events made in Tempi, whose UID is their id. */
+	icalUid: z.string().min(1).nullable(),
 	/** Start of the series occurrence this event replaces. */
 	originalStartAt: utcInstantSchema.nullable(),
 	recurringEventId: idSchema.nullable(),
@@ -68,8 +71,8 @@ export const calendarEventSchema = eventFieldsSchema.and(storedEntitySchema);
 // Named CalendarEvent so it never shadows the DOM `Event` in the renderer.
 export type CalendarEvent = z.output<typeof calendarEventSchema>;
 
-/** Fields of a new stored event that isn't part of a series. */
-export const NO_SERIES = { exDates: [], originalStartAt: null, recurringEventId: null } as const satisfies Pick<CalendarEvent, keyof typeof seriesShape>;
+/** Fields of a new stored event that isn't part of a series nor imported. */
+export const NO_SERIES = { exDates: [], icalUid: null, originalStartAt: null, recurringEventId: null } as const satisfies Pick<CalendarEvent, keyof typeof seriesShape>;
 
 /**
  * An event as views list it: a single event, an edited occurrence (its own event), or one occurrence of a series,

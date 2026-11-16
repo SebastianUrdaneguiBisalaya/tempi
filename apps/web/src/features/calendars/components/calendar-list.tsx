@@ -1,7 +1,7 @@
 'use client';
 
 import { type Calendar, pickCalendarColor } from '@tempi/core';
-import { EyeIcon, EyeOffIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, StarIcon, Trash2Icon } from 'lucide-react';
+import { DownloadIcon, EyeIcon, EyeOffIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, StarIcon, Trash2Icon, UploadIcon } from 'lucide-react';
 import { type ComponentType, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
@@ -10,17 +10,20 @@ import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabe
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { cn } from '@/lib/utils';
 import { useSetCalendarVisible, useUpdateCalendar } from '../hooks/use-calendar-mutations';
+import { useExportCalendars, useImportCalendar } from '../hooks/use-calendar-transfer';
 import { CalendarDialog } from './calendar-dialog';
 import { DeleteCalendarDialog } from './delete-calendar-dialog';
 
 type RowAction = { destructive?: boolean; icon: ComponentType; label: string; run: () => void };
 
-/** The sidebar's calendars: show or hide each one's events, and create, edit, make default or delete them. */
+/** The sidebar's calendars: show or hide each one's events, and create, edit, make default, import into, export or delete them. */
 export function CalendarList() {
 	const { t } = useTranslation();
 	const { data: calendars } = useCalendars();
 	const setVisible = useSetCalendarVisible();
 	const updateCalendar = useUpdateCalendar();
+	const importCalendar = useImportCalendar();
+	const exportCalendars = useExportCalendars();
 	const [editing, setEditing] = useState<{ calendar: Calendar | null; color: string } | null>(null);
 	const [deleting, setDeleting] = useState<Calendar | null>(null);
 
@@ -28,6 +31,8 @@ export function CalendarList() {
 
 	const actionsOf = (calendar: Calendar): RowAction[] => [
 		{ icon: PencilIcon, label: t('actions.edit'), run: () => setEditing({ calendar, color: calendar.color }) },
+		{ icon: DownloadIcon, label: t('calendars.import'), run: () => importCalendar.mutate(calendar.id) },
+		{ icon: UploadIcon, label: t('calendars.export'), run: () => exportCalendars.mutate(calendar.id) },
 		...(calendar.isDefault
 			? []
 			: [

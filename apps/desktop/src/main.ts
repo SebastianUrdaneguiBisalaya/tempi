@@ -1,16 +1,18 @@
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { type CoreDeps, getProfile, getSettings, initializeSettings, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, type TransactionQueue } from '@tempi/db';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
-import { app, BrowserWindow, type BrowserWindowConstructorOptions, globalShortcut, ipcMain, nativeImage, nativeTheme, powerMonitor, protocol, shell } from 'electron';
+import { app, BrowserWindow, type BrowserWindowConstructorOptions, dialog, globalShortcut, ipcMain, nativeImage, nativeTheme, powerMonitor, protocol, shell } from 'electron';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
 import { createFileAvatarStore } from './avatar-store.js';
 import { openAppDatabase } from './database.js';
 import { openExternalUrl } from './external-links.js';
-import { registerIpc } from './ipc/register-ipc.js';
+import { createIcalWorker } from './ical-worker-client.js';
+import { type IcalIo, registerIpc } from './ipc/register-ipc.js';
 import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
 import { fileReminderCheckpoint } from './reminder-checkpoint.js';
 import { createReminderNotifier } from './reminder-notifier.js';
@@ -219,6 +221,42 @@ function startReminders(deps: CoreDeps, transaction: TransactionQueue) {
 
 if (process.platform === 'win32') app.setAppUserModelId(APP_ID);
 
+const ICS_FILTERS = [{ extensions: ['ics'], name: 'iCalendar' }];
+
+// Native dialogs and files for .ics import and export; parsing and writing the text run in a utility process.
+function icalIo(): IcalIo {
+	const worker = createIcalWorker(path.join(__dirname, 'ical-worker.js'));
+	// Dialogs attach to the window that asked, so they open as its sheet on macOS.
+	const parent = () => BrowserWindow.getFocusedWindow() ?? mainWindow;
+	return {
+		chooseExportPath: async defaultName => {
+			const options = { defaultPath: path.join(app.getPath('documents'), defaultName), filters: ICS_FILTERS };
+			const window = parent();
+			const { canceled, filePath } = await (window === null ? dialog.showSaveDialog(options) : dialog.showSaveDialog(window, options));
+			return canceled || filePath === undefined || filePath === '' ? null : filePath;
+		},
+		chooseImportFile: async () => {
+			const options = { filters: ICS_FILTERS, properties: ['openFile' as const] };
+			const window = parent();
+			const { canceled, filePaths } = await (window === null ? dialog.showOpenDialog(options) : dialog.showOpenDialog(window, options));
+			const [file] = filePaths;
+			return canceled || file === undefined ? null : readFile(file, 'utf8');
+		},
+		now: () => new Date(),
+		parse: async (text, options) => {
+			const response = await worker({ kind: 'parse', options, text });
+			if (response.kind === 'parsed') return response.result;
+			throw new Error(response.kind === 'failed' ? response.detail : `Unexpected ${response.kind} answer to parse`);
+		},
+		serialize: async (data, now) => {
+			const response = await worker({ data, kind: 'serialize', now: now.toISOString() });
+			if (response.kind === 'serialized') return response.text;
+			throw new Error(response.kind === 'failed' ? response.detail : `Unexpected ${response.kind} answer to serialize`);
+		},
+		writeFile: (file, text) => writeFile(file, text, 'utf8'),
+	};
+}
+
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
@@ -240,7 +278,11 @@ if (!gotLock) {
 		database = openAppDatabase();
 		const transaction = createTransactionQueue(database);
 		const deps: CoreDeps = { ...createRepositories(database), avatars: createFileAvatarStore(avatarsDir), clock: systemClock, ids: uuidv7Ids };
-		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction }, deps, { eventsChanged: () => void reminders?.reschedule(), settingsSaved: applySettings, showEvent: showInMainWindow });
+		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction }, deps, icalIo(), {
+			eventsChanged: () => void reminders?.reschedule(),
+			settingsSaved: applySettings,
+			showEvent: showInMainWindow,
+		});
 		await loadSettings(deps, transaction);
 		createWindow();
 		reminders = startReminders(deps, transaction);
