@@ -11,7 +11,17 @@ export { layoutDay, MINUTES_PER_DAY } from './domain/day-layout';
 export type { ErrorKey } from './domain/error-keys';
 export { ERROR_KEYS, isErrorKey } from './domain/error-keys';
 export type { CalendarEvent, EventFields, EventOccurrence, EventPatch, EventStatus, NewEventInput, OccurrenceScope, OccurrenceTarget } from './domain/event';
-export { calendarEventSchema, EVENT_STATUSES, eventFieldsSchema, eventOccurrenceSchema, eventPatchSchema, newEventInputSchema, OCCURRENCE_SCOPES, occurrenceTargetSchema } from './domain/event';
+export {
+	calendarEventSchema,
+	EVENT_STATUSES,
+	eventFieldsSchema,
+	eventOccurrenceSchema,
+	eventPatchSchema,
+	MAX_REMINDER_MINUTES,
+	newEventInputSchema,
+	OCCURRENCE_SCOPES,
+	occurrenceTargetSchema,
+} from './domain/event';
 export type { WeekSegment } from './domain/month-layout';
 export { belongsInAllDayLane, fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './domain/month-layout';
 export type { OnboardingInput } from './domain/onboarding';
@@ -66,6 +76,8 @@ export { getSettings } from './use-cases/get-settings';
 export { initializeSettings } from './use-cases/initialize-settings';
 export { listCalendars } from './use-cases/list-calendars';
 export { listEvents } from './use-cases/list-events';
+export type { Reminder } from './use-cases/list-reminders';
+export { listReminders } from './use-cases/list-reminders';
 export { asOccurrence, deleteOccurrence, updateOccurrence } from './use-cases/occurrences';
 export { restoreEvent } from './use-cases/restore-event';
 export { saveProfile } from './use-cases/save-profile';
