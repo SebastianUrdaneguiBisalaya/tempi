@@ -15,6 +15,7 @@ const desktop: DesktopApi = {
 		create: input => ipcRenderer.invoke(CHANNELS.events.create, input),
 		delete: id => ipcRenderer.invoke(CHANNELS.events.delete, id),
 		deleteOccurrence: input => ipcRenderer.invoke(CHANNELS.events.deleteOccurrence, input),
+		duplicate: id => ipcRenderer.invoke(CHANNELS.events.duplicate, id),
 		list: range => ipcRenderer.invoke(CHANNELS.events.list, range),
 		restore: id => ipcRenderer.invoke(CHANNELS.events.restore, id),
 		update: input => ipcRenderer.invoke(CHANNELS.events.update, input),

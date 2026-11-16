@@ -3,6 +3,7 @@
 import type { DaySegment, EventOccurrence } from '@tempi/core';
 import type { PointerEvent, Ref } from 'react';
 import { useTranslation } from 'react-i18next';
+import { EventContextMenu } from '@/features/events/components/event-context-menu';
 import { cn } from '@/lib/utils';
 import { boxStyle, MIN_EVENT_MINUTES, SLOT_MINUTES } from './grid-geometry';
 
@@ -33,41 +34,43 @@ export function TimeGridEvent({ color, dayCount, dayIndex, focusKey, isActive, i
 	const compact = drawnEnd - startMinute < SLOT_MINUTES * 2;
 
 	return (
-		<button
-			aria-description={t('calendar.event.keyboard')}
-			aria-keyshortcuts='Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Alt+Shift+ArrowUp Alt+Shift+ArrowDown'
-			aria-label={`${event.title}, ${timeLabel}`}
-			aria-pressed={isSelected}
-			className={cn(
-				'absolute z-[5] flex overflow-hidden rounded-md shadow-[0_0_0_1px_var(--background)] border-l-[3px] px-1.5 py-0.5 text-left text-xs/tight text-foreground outline-none ring-offset-1 focus-visible:z-[7] focus-visible:ring-2 focus-visible:ring-ring',
-				compact ? 'flex-row items-baseline gap-1' : 'flex-col',
-				continuesBefore && 'rounded-t-none',
-				continuesAfter && 'rounded-b-none',
-				event.status === 'tentative' && 'border-dashed',
-				isSelected && 'z-[6] ring-2 ring-primary',
-				isDragged && 'opacity-40'
-			)}
-			data-event-key={event.key}
-			data-focus-key={focusKey}
-			onClick={clickEvent => {
-				// The slot under the event would start a new one.
-				clickEvent.stopPropagation();
-				onOpen();
-			}}
-			onPointerDown={onMovePointerDown}
-			ref={ref}
-			style={{
-				...boxStyle(dayIndex, dayCount, startMinute, drawnEnd, column, columns),
-				backgroundColor: `color-mix(in oklab, ${color} 22%, var(--background))`,
-				borderLeftColor: color,
-			}}
-			tabIndex={isActive ? 0 : -1}
-			type='button'
-		>
-			<span className='truncate font-medium'>{event.title}</span>
-			<span className='truncate text-muted-foreground'>{timeLabel}</span>
-			{/* The end can only be dragged where the event ends; a segment that continues tomorrow has none. */}
-			{!continuesAfter && <span aria-hidden className='absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize' onPointerDown={onResizePointerDown} />}
-		</button>
+		<EventContextMenu event={event}>
+			<button
+				aria-description={t('calendar.event.keyboard')}
+				aria-keyshortcuts='Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Alt+Shift+ArrowUp Alt+Shift+ArrowDown Shift+F10 ContextMenu'
+				aria-label={`${event.title}, ${timeLabel}`}
+				aria-pressed={isSelected}
+				className={cn(
+					'absolute z-[5] flex overflow-hidden rounded-md shadow-[0_0_0_1px_var(--background)] border-l-[3px] px-1.5 py-0.5 text-left text-xs/tight text-foreground outline-none ring-offset-1 focus-visible:z-[7] focus-visible:ring-2 focus-visible:ring-ring',
+					compact ? 'flex-row items-baseline gap-1' : 'flex-col',
+					continuesBefore && 'rounded-t-none',
+					continuesAfter && 'rounded-b-none',
+					event.status === 'tentative' && 'border-dashed',
+					isSelected && 'z-[6] ring-2 ring-primary',
+					isDragged && 'opacity-40'
+				)}
+				data-event-key={event.key}
+				data-focus-key={focusKey}
+				onClick={clickEvent => {
+					// The slot under the event would start a new one.
+					clickEvent.stopPropagation();
+					onOpen();
+				}}
+				onPointerDown={onMovePointerDown}
+				ref={ref}
+				style={{
+					...boxStyle(dayIndex, dayCount, startMinute, drawnEnd, column, columns),
+					backgroundColor: `color-mix(in oklab, ${color} 22%, var(--background))`,
+					borderLeftColor: color,
+				}}
+				tabIndex={isActive ? 0 : -1}
+				type='button'
+			>
+				<span className='truncate font-medium'>{event.title}</span>
+				<span className='truncate text-muted-foreground'>{timeLabel}</span>
+				{/* The end can only be dragged where the event ends; a segment that continues tomorrow has none. */}
+				{!continuesAfter && <span aria-hidden className='absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize' onPointerDown={onResizePointerDown} />}
+			</button>
+		</EventContextMenu>
 	);
 }

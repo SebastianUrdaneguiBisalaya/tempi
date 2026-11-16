@@ -59,6 +59,7 @@ export { createEvent } from './use-cases/create-event';
 export { deleteCalendar } from './use-cases/delete-calendar';
 export { deleteEvent } from './use-cases/delete-event';
 export type { CoreDeps } from './use-cases/deps';
+export { duplicateEvent } from './use-cases/duplicate-event';
 export { getProfile } from './use-cases/get-profile';
 export { getSettings } from './use-cases/get-settings';
 export { initializeSettings } from './use-cases/initialize-settings';

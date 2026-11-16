@@ -93,6 +93,15 @@ describe('registerIpc', () => {
 		expect(await invoke(CHANNELS.events.list, range)).toMatchObject({ ok: true, value: [{ key: `${seriesId}:2026-11-20T14:00:00.000Z`, title: 'Standup' }, { title: 'Moved' }] });
 	});
 
+	test('duplicates an event', async () => {
+		const created = await invoke(CHANNELS.events.create, newEvent(seededCalendarId()));
+		if (typeof created !== 'object' || created === null || !('value' in created) || typeof created.value !== 'object' || created.value === null || !('id' in created.value))
+			throw new Error('create failed');
+		const copy = await invoke(CHANNELS.events.duplicate, created.value.id);
+		expect(copy).toMatchObject({ ok: true, value: { startAt: '2026-11-20T14:00:00.000Z', title: 'Standup' } });
+		expect(copy).not.toMatchObject({ value: { id: created.value.id } });
+	});
+
 	test('updates take the id next to the patch fields', async () => {
 		const id = seededCalendarId();
 		expect(await invoke(CHANNELS.calendars.update, { id, name: 'Home' })).toMatchObject({ ok: true, value: { id, name: 'Home' } });

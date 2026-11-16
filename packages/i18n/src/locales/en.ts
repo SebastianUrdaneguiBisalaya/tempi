@@ -8,6 +8,7 @@ export const en = {
 			create: 'Create',
 			delete: 'Delete',
 			discard: 'Discard',
+			duplicate: 'Duplicate',
 			edit: 'Edit',
 			save: 'Save',
 			undo: 'Undo',
@@ -20,7 +21,7 @@ export const en = {
 				more: '+{{count}} more',
 			},
 			event: {
-				keyboard: 'Alt plus arrows move it, Alt plus Shift plus up or down arrow changes its end.',
+				keyboard: 'Alt plus arrows move it, Alt plus Shift plus up or down arrow changes its end, Shift plus F10 shows its actions.',
 			},
 			grid: 'Schedule',
 			month: {
@@ -47,6 +48,10 @@ export const en = {
 				timeZoneSearch: 'Search time zones…',
 				title: 'Title',
 				titlePlaceholder: 'Add a title',
+			},
+			menu: {
+				calendar: 'Calendar',
+				label: 'Event actions',
 			},
 			newEvent: 'New event',
 			repeat: {
@@ -182,6 +187,7 @@ export const en = {
 		toasts: {
 			eventCreated: 'Event created.',
 			eventDeleted: 'Event deleted.',
+			eventDuplicated: 'Event duplicated.',
 			eventRestored: 'Event restored.',
 			eventUpdated: 'Event updated.',
 			onboardingCompleted: 'You’re all set.',

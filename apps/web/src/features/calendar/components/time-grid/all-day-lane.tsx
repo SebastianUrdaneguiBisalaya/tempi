@@ -4,6 +4,7 @@ import type { EventOccurrence, WeekSegment } from '@tempi/core';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { EventContextMenu } from '@/features/events/components/event-context-menu';
 import { EventChip } from '../event-chip';
 import { ALL_DAY_LANE_REM, DAY_HEADER_REM } from './grid-geometry';
 
@@ -31,17 +32,18 @@ export function AllDayLane({ colorOf, days, hiddenByColumn, lanes, onExpand, onO
 	return (
 		<div className='pointer-events-none sticky top-0 z-[21]' role='presentation' style={{ gridColumn: '2 / -1', gridRow: 1 }}>
 			{segments.map(segment => (
-				<button
-					className='pointer-events-auto absolute px-0.5 text-left'
-					key={segment.item.key}
-					onClick={() => onOpen(segment.item)}
-					style={{ height, left: percent(segment.firstColumn), top: top(segment.lane), width: percent(segment.span) }}
-					// Screen readers get these events from the day headers.
-					tabIndex={-1}
-					type='button'
-				>
-					<EventChip bar color={colorOf(segment.item)} segment={segment} time='' />
-				</button>
+				<EventContextMenu event={segment.item} key={segment.item.key}>
+					<button
+						className='pointer-events-auto absolute px-0.5 text-left'
+						onClick={() => onOpen(segment.item)}
+						style={{ height, left: percent(segment.firstColumn), top: top(segment.lane), width: percent(segment.span) }}
+						// Screen readers get these events from the day headers.
+						tabIndex={-1}
+						type='button'
+					>
+						<EventChip bar color={colorOf(segment.item)} segment={segment} time='' />
+					</button>
+				</EventContextMenu>
 			))}
 			{days.map((day, column) => {
 				const hidden = hiddenByColumn[column] ?? 0;
