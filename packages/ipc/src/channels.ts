@@ -31,6 +31,14 @@ export const CHANNELS = {
 		update: 'events:update',
 		updateOccurrence: 'events:updateOccurrence',
 	},
+	google: {
+		/** The connected Google account, or null. */
+		account: 'google:account',
+		/** Signs in with Google in the system browser and keeps the tokens, encrypted, in the main process. */
+		connect: 'google:connect',
+		/** Revokes the tokens at Google and deletes them. */
+		disconnect: 'google:disconnect',
+	},
 	onboarding: {
 		complete: 'onboarding:complete',
 	},
