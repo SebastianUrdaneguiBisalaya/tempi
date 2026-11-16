@@ -17,6 +17,7 @@
   "dependencies": {
     "@base-ui/react": "1.9.0",
     "@shadcn/react": "^0.3.1",
+    "@tanstack/react-query": "5.107.1",
     "@tempi/core": "workspace:*",
     "@tempi/i18n": "workspace:*",
     "@tempi/ipc": "workspace:*",
