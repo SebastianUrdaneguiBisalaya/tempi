@@ -26,11 +26,17 @@ import type { Channel } from './channels';
 
 const noPayload = z.undefined();
 
+/** An occurrence to show: its listing key and start, enough to find it again in the renderer. */
+export const occurrenceRefSchema = z.object({ key: z.string().min(1), startAt: utcInstantSchema });
+
+export type OccurrenceRef = z.output<typeof occurrenceRefSchema>;
+
 /**
  * What the renderer sends on each channel: the core use case input. The main process parses every payload with these.
  * Updates carry the id next to the patch fields, so field errors keep the same paths the forms use (`title`, not `patch.title`).
  */
 export const payloadSchemas = {
+	'app:showEvent': occurrenceRefSchema,
 	'calendars:create': newCalendarInputSchema,
 	'calendars:delete': deleteCalendarInputSchema,
 	'calendars:list': noPayload,
@@ -53,6 +59,7 @@ export const payloadSchemas = {
 
 /** The value inside a successful result on each channel. The renderer parses responses with these. */
 export const responseValueSchemas = {
+	'app:showEvent': z.null(),
 	'calendars:create': calendarSchema,
 	'calendars:delete': z.null(),
 	'calendars:list': z.array(calendarSchema),
@@ -90,11 +97,6 @@ export const domainErrorSchema = z.object({
 	code: z.enum(DOMAIN_ERROR_CODES),
 	issues: z.array(domainIssueSchema).min(1),
 });
-
-/** The occurrence a clicked reminder is about: its listing key and start, enough to find it again in the renderer. */
-export const reminderTargetSchema = z.object({ key: z.string().min(1), startAt: utcInstantSchema });
-
-export type ReminderTarget = z.output<typeof reminderTargetSchema>;
 
 /** A core `Result` carrying `value`, as it crosses IPC. */
 export const resultSchema = <S extends z.ZodType>(value: S) => z.discriminatedUnion('ok', [z.object({ ok: z.literal(true), value }), z.object({ error: domainErrorSchema, ok: z.literal(false) })]);

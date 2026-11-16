@@ -22,6 +22,7 @@ describe('payloadSchemas', () => {
 	});
 
 	test.each([
+		['app:showEvent', { key: 'event-1', startAt: '2026-11-20T09:00:00-05:00' }],
 		['calendars:create', { color: '#3B82F6', name: 'Work' }],
 		['calendars:delete', { id: 'cal-1', moveEventsTo: null }],
 		['calendars:delete', { id: 'cal-1', moveEventsTo: 'cal-2' }],
@@ -49,6 +50,7 @@ describe('payloadSchemas', () => {
 	});
 
 	test.each([
+		['app:showEvent', { key: '', startAt: 'tomorrow' }, ['key', 'startAt']],
 		['calendars:create', { color: 'blue', name: ' ' }, ['color', 'name']],
 		['calendars:delete', { id: '', moveEventsTo: '' }, ['id', 'moveEventsTo']],
 		['calendars:list', { unexpected: true }, ['']],

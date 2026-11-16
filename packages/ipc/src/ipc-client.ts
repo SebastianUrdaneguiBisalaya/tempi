@@ -1,7 +1,7 @@
 import { fail, type Result } from '@tempi/core';
 import { CHANNELS, type Channel } from './channels';
 import type { DesktopApi, TempiApi } from './desktop-api';
-import { type ChannelValue, reminderTargetSchema, responseValueSchemas, resultSchema } from './schemas';
+import { type ChannelValue, occurrenceRefSchema, responseValueSchemas, resultSchema } from './schemas';
 
 const message = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
@@ -21,6 +21,16 @@ const call = async <C extends Channel>(channel: C, invoke: () => Promise<unknown
 
 /** Renderer client: the app's use cases over `window.desktop`. */
 export const createIpcClient = (api: DesktopApi): TempiApi => ({
+	app: {
+		// Pushed payloads are as untrusted as answers: a malformed one is logged and dropped.
+		onShowEvent: listener =>
+			api.app.onShowEvent(payload => {
+				const parsed = occurrenceRefSchema.safeParse(payload);
+				if (parsed.success) listener(parsed.data);
+				else console.error('events:show sent a malformed payload');
+			}),
+		showEvent: ref => call(CHANNELS.app.showEvent, () => api.app.showEvent(ref)),
+	},
 	calendars: {
 		create: input => call(CHANNELS.calendars.create, () => api.calendars.create(input)),
 		delete: input => call(CHANNELS.calendars.delete, () => api.calendars.delete(input)),
@@ -44,15 +54,6 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 	profile: {
 		get: () => call(CHANNELS.profile.get, () => api.profile.get()),
 		update: input => call(CHANNELS.profile.update, () => api.profile.update(input)),
-	},
-	reminders: {
-		// Pushed payloads are as untrusted as answers: a malformed one is logged and dropped.
-		onOpen: listener =>
-			api.reminders.onOpen(payload => {
-				const parsed = reminderTargetSchema.safeParse(payload);
-				if (parsed.success) listener(parsed.data);
-				else console.error('reminders:open sent a malformed payload');
-			}),
 	},
 	settings: {
 		get: () => call(CHANNELS.settings.get, () => api.settings.get()),

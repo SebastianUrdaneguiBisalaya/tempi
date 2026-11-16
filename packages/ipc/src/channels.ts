@@ -1,5 +1,9 @@
 /** Every IPC channel, named `domain:action`. Each one runs a single core use case; one `ipcMain.handle` per channel. */
 export const CHANNELS = {
+	app: {
+		/** Brings the main window forward on an occurrence, e.g. one picked in the menu bar calendar. */
+		showEvent: 'app:showEvent',
+	},
 	calendars: {
 		create: 'calendars:create',
 		delete: 'calendars:delete',
@@ -35,9 +39,9 @@ export const CHANNELS = {
  * payload the renderer validates with its schema in `pushSchemas`.
  */
 export const PUSH_CHANNELS = {
-	reminders: {
-		/** A reminder notification was clicked: show its occurrence. */
-		open: 'reminders:open',
+	events: {
+		/** Show an occurrence in the main window: a clicked reminder, or an event picked in the menu bar calendar. */
+		show: 'events:show',
 	},
 } as const;
 

@@ -1,6 +1,6 @@
 import type { Result } from '@tempi/core';
 import type { Channel } from './channels';
-import type { ChannelInput, ChannelValue, ReminderTarget } from './schemas';
+import type { ChannelInput, ChannelValue, OccurrenceRef } from './schemas';
 
 // `Raw` answers are what crosses the bridge, still unvalidated; checked answers are parsed `Result`s.
 type Answer<C extends Channel, Raw extends boolean> = Raw extends true ? unknown : Result<ChannelValue<C>>;
@@ -8,6 +8,11 @@ type Call<C extends Channel, Raw extends boolean> = (input: ChannelInput<C>) => 
 type CallWithoutInput<C extends Channel, Raw extends boolean> = () => Promise<Answer<C, Raw>>;
 
 type Api<Raw extends boolean> = {
+	app: {
+		showEvent: Call<'app:showEvent', Raw>;
+		/** Calls `listener` each time the main process asks this window to show an occurrence; returns the unsubscribe function. */
+		onShowEvent: (listener: (ref: Raw extends true ? unknown : OccurrenceRef) => void) => () => void;
+	};
 	calendars: {
 		create: Call<'calendars:create', Raw>;
 		delete: Call<'calendars:delete', Raw>;
@@ -35,10 +40,6 @@ type Api<Raw extends boolean> = {
 	settings: {
 		get: CallWithoutInput<'settings:get', Raw>;
 		save: Call<'settings:save', Raw>;
-	};
-	reminders: {
-		/** Calls `listener` for each clicked reminder notification; returns the unsubscribe function. */
-		onOpen: (listener: (target: Raw extends true ? unknown : ReminderTarget) => void) => () => void;
 	};
 };
 
