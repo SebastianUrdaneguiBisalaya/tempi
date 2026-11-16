@@ -2,10 +2,10 @@
 
 import {
 	belongsInAllDayLane,
-	type CalendarEvent,
 	type DaySegment,
 	DEFAULT_SETTINGS,
 	daysToUtcRange,
+	type EventOccurrence,
 	fitWeek,
 	layoutDay,
 	layoutWeek,
@@ -40,7 +40,7 @@ const FALLBACK_COLOR = 'var(--muted-foreground)';
 const COLLAPSED_LANES = 2;
 
 /** New times for a focused event's keyboard shortcut: Alt+↑/↓ move 15 minutes, Alt+←/→ a day, Alt+Shift+↑/↓ move the end. */
-const rescheduleByKey = (event: CalendarEvent, key: string, shiftKey: boolean, timeZone: string): TimeRange | null => {
+const rescheduleByKey = (event: EventOccurrence, key: string, shiftKey: boolean, timeZone: string): TimeRange | null => {
 	const minutes = key === 'ArrowUp' ? -SNAP_MINUTES : key === 'ArrowDown' ? SNAP_MINUTES : 0;
 	if (shiftKey) return minutes === 0 ? null : resizeRange(event, Temporal.Instant.from(event.endAt).toZonedDateTimeISO(timeZone).add({ minutes }));
 	if (minutes !== 0) return moveRange(event, { days: 0, minutes }, timeZone);
@@ -64,7 +64,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const language = resolveLanguage([i18n.language]);
 	const { data: settings } = useSettings();
 	const { allDayCollapsed, defaultEventDuration, timeFormat } = settings ?? DEFAULT_SETTINGS;
-	const { newEvent, openEvent, refreshEvent, selection } = useEventPanel();
+	const { chooseScope, newEvent, openEvent, refreshEvent, selection } = useEventPanel();
 	const reschedule = useRescheduleEvent();
 	const setAllDayCollapsed = useSetAllDayCollapsed();
 	const { data: calendars } = useCalendars();
@@ -76,11 +76,11 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const refocusId = useRef<string | null>(null);
 
 	const calendarById = new Map((calendars ?? []).map(calendar => [calendar.id, calendar]));
-	const colorOf = (event: CalendarEvent) => calendarById.get(event.calendarId)?.color ?? FALLBACK_COLOR;
+	const colorOf = (event: EventOccurrence) => calendarById.get(event.calendarId)?.color ?? FALLBACK_COLOR;
 	// Hidden calendars stay out; all-day and day-long events go to the lane above the hours.
 	const visible = (events ?? []).filter(event => calendarById.get(event.calendarId)?.isVisible !== false);
 	const timed = visible.filter(event => !belongsInAllDayLane(event));
-	const segmentsByDay: DaySegment<CalendarEvent>[][] = days.map(day => layoutDay(timed, day, timeZone, MIN_EVENT_MINUTES));
+	const segmentsByDay: DaySegment<EventOccurrence>[][] = days.map(day => layoutDay(timed, day, timeZone, MIN_EVENT_MINUTES));
 
 	const laneSegments = layoutWeek(visible.filter(belongsInAllDayLane), days, timeZone);
 	const laneCount = Math.max(0, ...laneSegments.map(segment => segment.lane + 1));
@@ -91,7 +91,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const allDayTitles = (column: number) => laneSegments.filter(segment => column >= segment.firstColumn && column < segment.firstColumn + segment.span).map(segment => segment.item.title);
 	const dayEvents: DayEvents = segmentsByDay.map(segments =>
 		segments
-			.map(segment => ({ column: segment.column, id: segment.item.id, slot: Math.floor(segment.startMinute / SLOT_MINUTES), start: segment.startMinute }))
+			.map(segment => ({ column: segment.column, id: segment.item.key, slot: Math.floor(segment.startMinute / SLOT_MINUTES), start: segment.startMinute }))
 			.sort((a, b) => a.start - b.start || a.column - b.column)
 	);
 
@@ -120,23 +120,29 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 		if (day !== undefined) newEvent(draftAt(day, slot * SLOT_MINUTES, timeZone, defaultEventDuration));
 	};
 
-	const applyReschedule = (event: CalendarEvent, range: TimeRange) => {
+	const applyReschedule = async (event: EventOccurrence, range: TimeRange) => {
 		if (range.startAt === event.startAt && range.endAt === event.endAt) return;
+		// An occurrence of a recurring event asks how far the change reaches; cancelling leaves it where it was.
+		const scope = event.series === null ? undefined : await chooseScope({ action: 'edit', allowThis: true, title: event.title });
+		if (scope === null) {
+			refocusId.current = null;
+			return;
+		}
 		reschedule.mutate(
-			{ id: event.id, range },
+			{ occurrence: event, range, scope },
 			{
 				onSettled: () => {
 					refocusId.current = null;
 				},
-				onSuccess: refreshEvent,
+				onSuccess: saved => refreshEvent(event.key, saved),
 			}
 		);
 	};
 
-	const drag = useTimeGridDrag({ days, onCreate: range => newEvent({ allDay: false, ...range }), onReschedule: applyReschedule, timeZone });
+	const drag = useTimeGridDrag({ days, onCreate: range => newEvent({ allDay: false, ...range }), onReschedule: (event, range) => void applyReschedule(event, range), timeZone });
 
-	const refocus = (node: HTMLElement | null, eventId: string) => {
-		if (node === null || refocusId.current !== eventId || node === document.activeElement) return;
+	const refocus = (node: HTMLElement | null, eventKey: string) => {
+		if (node === null || refocusId.current !== eventKey || node === document.activeElement) return;
 		refocusId.current = null;
 		node.focus();
 	};
@@ -145,16 +151,16 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const draft = selection?.kind === 'new' && !selection.draft.allDay ? selection.draft : null;
 	const ghost = drag.preview ?? draft;
 	const ghostSegments = ghost === null ? [] : days.flatMap((day, dayIndex) => layoutDay([{ ...ghost, id: 'ghost' }], day, timeZone, MIN_EVENT_MINUTES).map(segment => ({ dayIndex, segment })));
-	const selectedId = selection?.kind === 'event' ? selection.event.id : null;
+	const selectedKey = selection?.kind === 'event' ? selection.event.key : null;
 
 	const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-		const eventId = event.target instanceof HTMLElement ? event.target.dataset.eventId : undefined;
-		const focused = eventId === undefined ? undefined : timed.find(item => item.id === eventId);
+		const eventKey = event.target instanceof HTMLElement ? event.target.dataset.eventKey : undefined;
+		const focused = eventKey === undefined ? undefined : timed.find(item => item.key === eventKey);
 		const range = focused !== undefined && event.altKey ? rescheduleByKey(focused, event.key, event.shiftKey, timeZone) : null;
 		if (focused !== undefined && range !== null) {
 			event.preventDefault();
-			refocusId.current = focused.id;
-			applyReschedule(focused, range);
+			refocusId.current = focused.key;
+			void applyReschedule(focused, range);
 			return;
 		}
 		if (event.key === 'Enter' && event.target instanceof HTMLElement && event.target.getAttribute('role') === 'gridcell') {
@@ -242,7 +248,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 										{segmentsByDay[dayIndex]
 											?.filter(segment => Math.floor(segment.startMinute / SLOT_MINUTES) === slot)
 											.map(segment => {
-												const eventKey = focusKey({ day: dayIndex, eventId: segment.item.id, slot });
+												const eventKey = focusKey({ day: dayIndex, eventId: segment.item.key, slot });
 												return (
 													<TimeGridEvent
 														color={colorOf(segment.item)}
@@ -250,13 +256,13 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 														dayIndex={dayIndex}
 														focusKey={eventKey}
 														isActive={eventKey === activeKey}
-														isDragged={segment.item.id === drag.draggedId}
-														isSelected={segment.item.id === selectedId}
-														key={segment.item.id}
+														isDragged={segment.item.key === drag.draggedKey}
+														isSelected={segment.item.key === selectedKey}
+														key={segment.item.key}
 														onMovePointerDown={pointer => drag.startMove(pointer, segment.item)}
 														onOpen={() => openEvent(segment.item)}
 														onResizePointerDown={pointer => drag.startResize(pointer, segment.item)}
-														ref={node => refocus(node, segment.item.id)}
+														ref={node => refocus(node, segment.item.key)}
 														segment={segment}
 														timeLabel={formatTimeRange(segment.item.startAt, segment.item.endAt, { language, timeFormat, timeZone })}
 													/>

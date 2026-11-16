@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { CalendarEvent, EventPatch, NewEventInput, TimeRange } from '@tempi/core';
+import { asOccurrence, type EventOccurrence, type EventPatch, type NewEventInput, type OccurrenceScope, type TimeRange } from '@tempi/core';
 import { queryKeys, STORAGE_UNAVAILABLE, unwrap } from '@/lib/query';
 import { useApi } from '@/providers/api-provider';
 
@@ -46,16 +46,48 @@ export const useRescheduleEvent = () => {
 	const queryClient = useQueryClient();
 	const invalidate = useInvalidateEvents();
 	return useMutation({
-		mutationFn: async ({ id, range }: { id: string; range: TimeRange }) => {
+		/** `scope` is required for an occurrence of a recurring event. */
+		mutationFn: async ({ occurrence, range, scope }: { occurrence: EventOccurrence; range: TimeRange; scope?: OccurrenceScope }): Promise<EventOccurrence> => {
 			if (api === null) throw STORAGE_UNAVAILABLE;
-			return unwrap(await api.events.update({ endAt: range.endAt, id, startAt: range.startAt }));
+			const times = { endAt: range.endAt, startAt: range.startAt };
+			if (occurrence.series === null || scope === undefined) return asOccurrence(unwrap(await api.events.update({ ...times, id: occurrence.id })));
+			return unwrap(await api.events.updateOccurrence({ ...times, originalStartAt: occurrence.series.originalStartAt, scope, seriesId: occurrence.series.id }));
 		},
 		meta: { successMessage: 'toasts.eventUpdated' },
-		onMutate: async ({ id, range }) => {
+		// Only the moved occurrence moves until the refetch shows the rest of its series.
+		onMutate: async ({ occurrence, range }) => {
 			await queryClient.cancelQueries({ queryKey: queryKeys.events.all });
-			queryClient.setQueriesData<CalendarEvent[]>({ queryKey: queryKeys.events.all }, events => events?.map(event => (event.id === id ? { ...event, ...range } : event)));
+			queryClient.setQueriesData<EventOccurrence[]>({ queryKey: queryKeys.events.all }, events => events?.map(event => (event.key === occurrence.key ? { ...event, ...range } : event)));
 		},
 		onSettled: invalidate,
+	});
+};
+
+/** Edits one occurrence of a recurring event, it and the following ones, or the whole series. */
+export const useUpdateOccurrence = () => {
+	const api = useApi();
+	const invalidate = useInvalidateEvents();
+	return useMutation({
+		mutationFn: async ({ occurrence, patch, scope }: { occurrence: EventOccurrence & { series: NonNullable<EventOccurrence['series']> }; patch: EventPatch; scope: OccurrenceScope }) => {
+			if (api === null) throw STORAGE_UNAVAILABLE;
+			return unwrap(await api.events.updateOccurrence({ ...patch, originalStartAt: occurrence.series.originalStartAt, scope, seriesId: occurrence.series.id }));
+		},
+		meta: { handlesFieldErrors: true, successMessage: 'toasts.eventUpdated' },
+		onSuccess: invalidate,
+	});
+};
+
+/** Deletes one occurrence of a recurring event, it and the following ones, or the whole series. There is no undo. */
+export const useDeleteOccurrence = () => {
+	const api = useApi();
+	const invalidate = useInvalidateEvents();
+	return useMutation({
+		mutationFn: async ({ series, scope }: { scope: OccurrenceScope; series: NonNullable<EventOccurrence['series']> }) => {
+			if (api === null) throw STORAGE_UNAVAILABLE;
+			return unwrap(await api.events.deleteOccurrence({ originalStartAt: series.originalStartAt, scope, seriesId: series.id }));
+		},
+		meta: { successMessage: 'toasts.eventDeleted' },
+		onSuccess: invalidate,
 	});
 };
 

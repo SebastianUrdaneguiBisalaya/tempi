@@ -46,5 +46,8 @@ export const formatTimeRange = (start: Date | string, end: Date | string, { lang
 export const formatWeekday = (instant: Date | string, { language, timeZone }: DateFormatOptions, style: 'long' | 'narrow' | 'short' = 'short'): string =>
 	formatter(language, { timeZone, weekday: style }).format(toDate(instant));
 
+/** Month and day, e.g. "March 5" / "5 de marzo". */
+export const formatMonthDay = (instant: Date | string, { language, timeZone }: DateFormatOptions): string => formatter(language, { day: 'numeric', month: 'long', timeZone }).format(toDate(instant));
+
 /** Month and year for calendar headers, e.g. "November 2026" / "noviembre de 2026". */
 export const formatMonthYear = (instant: Date | string, { language, timeZone }: DateFormatOptions): string => formatter(language, { month: 'long', timeZone, year: 'numeric' }).format(toDate(instant));
