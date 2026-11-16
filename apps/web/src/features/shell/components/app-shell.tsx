@@ -12,13 +12,13 @@ import { MiniCalendar } from '@/features/calendar/components/mini-calendar';
 import { CalendarList } from '@/features/calendars/components/calendar-list';
 import { EventPanel } from '@/features/events/components/event-panel';
 import { EventPanelProvider, useEventPanel } from '@/features/events/components/event-panel-provider';
+import { SearchablePanel } from '@/features/events/components/event-search';
 import { EventShortcuts } from '@/features/events/components/event-shortcuts';
 import { ShortcutsDialog } from '@/features/shortcuts/components/shortcuts-dialog';
 import { UsefulShortcuts } from '@/features/shortcuts/components/useful-shortcuts';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { AppHeader } from './app-header';
-import { RightPanel } from './right-panel';
 
 // Tailwind's `md` and `lg` breakpoints. Below them the sidebar and the right panel move into drawers.
 const SIDEBAR_INLINE_QUERY = '(min-width: 48rem)';
@@ -53,9 +53,9 @@ function ShellLayout() {
 	useShortcut('toggleSidebar', toggleSidebar);
 	const panelContent =
 		selection === null ? (
-			<RightPanel>
+			<SearchablePanel>
 				<UsefulShortcuts />
-			</RightPanel>
+			</SearchablePanel>
 		) : (
 			<EventPanel />
 		);

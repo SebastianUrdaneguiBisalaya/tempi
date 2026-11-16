@@ -33,8 +33,9 @@ describe('openDatabase', () => {
 	test('applies every migration to a new database', () => {
 		const db = openDatabase(':memory:', { clock: fixedClock });
 		expect(readUserVersion(db)).toBe(loadMigrations().length);
-		const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all();
-		expect(tables.map(table => table.name)).toEqual(['calendars', 'events', 'profile', 'settings']);
+		// FTS5 keeps its index in shadow tables (`events_search_data`, …) next to the virtual table.
+		const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'events_search_%' ORDER BY name").all();
+		expect(tables.map(table => table.name)).toEqual(['calendars', 'events', 'events_search', 'profile', 'settings']);
 		db.close();
 	});
 

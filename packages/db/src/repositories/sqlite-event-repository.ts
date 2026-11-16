@@ -81,6 +81,18 @@ const toRow = (event: CalendarEvent) => ({
 	video_url: event.videoUrl,
 });
 
+/**
+ * FTS5 query for `text`: each word becomes a quoted prefix term (`"reu"*`), and every term must match. Quoting keeps
+ * FTS syntax typed by the user (`AND`, `-`, `:`, `"`) literal. Null when there is no word to look for.
+ */
+export const toSearchQuery = (text: string): string | null => {
+	const terms = text
+		.split(/\s+/)
+		.filter(word => word !== '')
+		.map(word => `"${word.replaceAll('"', '""')}"*`);
+	return terms.length === 0 ? null : terms.join(' ');
+};
+
 const COLUMNS =
 	'id, calendar_id, title, description, location, video_url, start_at, end_at, all_day, time_zone, rrule, ex_dates, recurring_event_id, original_start_at, reminder_minutes, status, created_at, updated_at, deleted_at';
 
@@ -90,6 +102,7 @@ export class SqliteEventRepository implements EventRepository {
 	private readonly listInRangeStatement: StatementSync;
 	private readonly listSeriesStatement: StatementSync;
 	private readonly saveStatement: StatementSync;
+	private readonly searchStatement: StatementSync;
 	private readonly moveToCalendarStatement: StatementSync;
 	private readonly softDeleteByCalendarStatement: StatementSync;
 
@@ -100,6 +113,9 @@ export class SqliteEventRepository implements EventRepository {
 		this.listInRangeStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NULL AND start_at < :end AND end_at > :start ORDER BY start_at, id`);
 		this.listSeriesStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NOT NULL AND start_at < :before ORDER BY start_at, id`);
 		this.listBySeriesStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND recurring_event_id = :series_id ORDER BY original_start_at, id`);
+		this.searchStatement = db.prepare(
+			`SELECT ${COLUMNS} FROM events WHERE rowid IN (SELECT rowid FROM events_search WHERE events_search MATCH :query) AND deleted_at IS NULL ORDER BY start_at DESC, id LIMIT :limit`
+		);
 		this.saveStatement = db.prepare(
 			`INSERT INTO events (${COLUMNS})
 			VALUES (:id, :calendar_id, :title, :description, :location, :video_url, :start_at, :end_at, :all_day, :time_zone, :rrule, :ex_dates, :recurring_event_id, :original_start_at, :reminder_minutes, :status, :created_at, :updated_at, :deleted_at)
@@ -132,6 +148,13 @@ export class SqliteEventRepository implements EventRepository {
 
 	listSeries(before: string): Promise<CalendarEvent[]> {
 		return defer(() => this.listSeriesStatement.all({ before: toInstantColumn(before) }).map(row => parseRow(eventRowSchema, row)));
+	}
+
+	search(text: string, limit: number): Promise<CalendarEvent[]> {
+		return defer(() => {
+			const query = toSearchQuery(text);
+			return query === null ? [] : this.searchStatement.all({ limit, query }).map(row => parseRow(eventRowSchema, row));
+		});
 	}
 
 	save(event: CalendarEvent): Promise<void> {

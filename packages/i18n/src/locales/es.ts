@@ -194,6 +194,13 @@ export const es = {
 			},
 			title: 'Te damos la bienvenida a Tempi',
 		},
+		search: {
+			allDay: '{{day}} · Todo el día',
+			empty: 'No se encontraron eventos.',
+			label: 'Buscar eventos',
+			placeholder: 'Buscar eventos',
+			results: 'Resultados de búsqueda',
+		},
 		shell: {
 			header: {
 				label: 'Navegación del calendario',

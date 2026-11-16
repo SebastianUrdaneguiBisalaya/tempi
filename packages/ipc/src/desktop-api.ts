@@ -21,6 +21,7 @@ type Api<Raw extends boolean> = {
 		duplicate: Call<'events:duplicate', Raw>;
 		list: Call<'events:list', Raw>;
 		restore: Call<'events:restore', Raw>;
+		search: Call<'events:search', Raw>;
 		update: Call<'events:update', Raw>;
 		updateOccurrence: Call<'events:updateOccurrence', Raw>;
 	};

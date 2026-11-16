@@ -69,5 +69,6 @@ export { asOccurrence, deleteOccurrence, updateOccurrence } from './use-cases/oc
 export { restoreEvent } from './use-cases/restore-event';
 export { saveProfile } from './use-cases/save-profile';
 export { saveSettings } from './use-cases/save-settings';
+export { eventSearchQuerySchema, SEARCH_LIMIT, searchEvents } from './use-cases/search-events';
 export { updateCalendar } from './use-cases/update-calendar';
 export { updateEvent } from './use-cases/update-event';
