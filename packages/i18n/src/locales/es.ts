@@ -13,6 +13,12 @@ export const es = {
 			save: 'Guardar',
 		},
 		calendar: {
+			allDay: {
+				collapse: 'Mostrar menos eventos de todo el día',
+				expand: 'Mostrar todos los eventos de todo el día',
+				events: 'Todo el día: {{titles}}',
+				more: '+{{count}} más',
+			},
 			grid: 'Agenda',
 			month: {
 				more: '+{{count}} más',
