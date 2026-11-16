@@ -47,6 +47,7 @@ export { getSettings } from './use-cases/get-settings';
 export { initializeSettings } from './use-cases/initialize-settings';
 export { listCalendars } from './use-cases/list-calendars';
 export { listEvents } from './use-cases/list-events';
+export { restoreEvent } from './use-cases/restore-event';
 export { saveProfile } from './use-cases/save-profile';
 export { saveSettings } from './use-cases/save-settings';
 export { updateCalendar } from './use-cases/update-calendar';
