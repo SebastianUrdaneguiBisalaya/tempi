@@ -9,8 +9,10 @@ export const es = {
 			confirm: 'Confirmar',
 			create: 'Crear',
 			delete: 'Eliminar',
+			discard: 'Descartar',
 			edit: 'Editar',
 			save: 'Guardar',
+			undo: 'Deshacer',
 		},
 		calendar: {
 			allDay: {
@@ -24,6 +26,34 @@ export const es = {
 				more: '+{{count}} más',
 				week: 'Semana {{number}}',
 				weekNumber: 'Semana',
+			},
+		},
+		events: {
+			delete: {
+				description: 'Se eliminará «{{title}}». Podrás deshacerlo justo después.',
+				title: '¿Eliminar este evento?',
+			},
+			form: {
+				allDay: 'Todo el día',
+				calendar: 'Calendario',
+				description: 'Descripción',
+				end: 'Termina',
+				location: 'Ubicación',
+				reminder: 'Recordatorio',
+				start: 'Empieza',
+				timeZone: 'Zona horaria',
+				timeZoneEmpty: 'No se encontraron zonas horarias.',
+				timeZoneSearch: 'Buscar zonas horarias…',
+				title: 'Título',
+				titlePlaceholder: 'Añade un título',
+			},
+			newEvent: 'Nuevo evento',
+			reminders: {
+				atStart: 'A la hora de inicio',
+				day: '1 día antes',
+				hour: '1 hora antes',
+				minutes: '{{count}} minutos antes',
+				none: 'Sin recordatorio',
 			},
 		},
 		onboarding: {
@@ -107,6 +137,10 @@ export const es = {
 			},
 		},
 		toasts: {
+			eventCreated: 'Evento creado.',
+			eventDeleted: 'Evento eliminado.',
+			eventRestored: 'Evento restaurado.',
+			eventUpdated: 'Evento actualizado.',
 			onboardingCompleted: 'Todo listo.',
 			settingsSaved: 'Configuración guardada.',
 		},

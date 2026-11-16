@@ -7,8 +7,10 @@ export const en = {
 			confirm: 'Confirm',
 			create: 'Create',
 			delete: 'Delete',
+			discard: 'Discard',
 			edit: 'Edit',
 			save: 'Save',
+			undo: 'Undo',
 		},
 		calendar: {
 			allDay: {
@@ -22,6 +24,34 @@ export const en = {
 				more: '+{{count}} more',
 				week: 'Week {{number}}',
 				weekNumber: 'Week',
+			},
+		},
+		events: {
+			delete: {
+				description: '“{{title}}” will be deleted. You can undo it right after.',
+				title: 'Delete this event?',
+			},
+			form: {
+				allDay: 'All day',
+				calendar: 'Calendar',
+				description: 'Description',
+				end: 'Ends',
+				location: 'Location',
+				reminder: 'Reminder',
+				start: 'Starts',
+				timeZone: 'Time zone',
+				timeZoneEmpty: 'No time zones found.',
+				timeZoneSearch: 'Search time zones…',
+				title: 'Title',
+				titlePlaceholder: 'Add a title',
+			},
+			newEvent: 'New event',
+			reminders: {
+				atStart: 'At start time',
+				day: '1 day before',
+				hour: '1 hour before',
+				minutes: '{{count}} minutes before',
+				none: 'No reminder',
 			},
 		},
 		onboarding: {
@@ -105,6 +135,10 @@ export const en = {
 			},
 		},
 		toasts: {
+			eventCreated: 'Event created.',
+			eventDeleted: 'Event deleted.',
+			eventRestored: 'Event restored.',
+			eventUpdated: 'Event updated.',
 			onboardingCompleted: 'You’re all set.',
 			settingsSaved: 'Settings saved.',
 		},

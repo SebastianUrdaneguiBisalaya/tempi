@@ -2,8 +2,10 @@ import { describe, expect, test } from 'bun:test';
 import type { NewEventInput } from '../domain/event';
 import { createCalendar } from './create-calendar';
 import { createEvent } from './create-event';
+import { deleteCalendar } from './delete-calendar';
 import { deleteEvent } from './delete-event';
 import { listEvents } from './list-events';
+import { restoreEvent } from './restore-event';
 import { failure, makeDeps, T0 } from './test-fakes';
 import { updateEvent } from './update-event';
 
@@ -133,6 +135,40 @@ describe('deleteEvent', () => {
 	test('fails for an unknown event', async () => {
 		const { deps } = await setup();
 		expect((await deleteEvent(deps, 'missing')).ok).toBe(false);
+	});
+});
+
+describe('restoreEvent', () => {
+	test('brings a deleted event back as it was', async () => {
+		const { deps, input } = await setup();
+		const created = await createEvent(deps, input);
+		if (!created.ok) throw new Error('setup failed');
+		await deleteEvent(deps, created.value.id);
+
+		deps.clock.set('2026-11-18T00:00:00.000Z');
+		expect(await restoreEvent(deps, created.value.id)).toEqual({ ok: true, value: { ...created.value, updatedAt: '2026-11-18T00:00:00.000Z' } });
+		const listed = await listEvents(deps, { end: '2026-11-21T00:00:00Z', start: '2026-11-20T00:00:00Z' });
+		expect(listed.ok && listed.value.map(event => event.id)).toEqual([created.value.id]);
+	});
+
+	test('leaves an event that is not deleted unchanged', async () => {
+		const { deps, input } = await setup();
+		const created = await createEvent(deps, input);
+		if (!created.ok) throw new Error('setup failed');
+		expect(await restoreEvent(deps, created.value.id)).toEqual({ ok: true, value: created.value });
+	});
+
+	test('fails when the event never existed or its calendar was deleted', async () => {
+		const { calendarId, deps, input } = await setup();
+		expect(await restoreEvent(deps, 'missing')).toEqual(failure('not_found', 'id'));
+
+		const other = await createCalendar(deps, { color: '#22aa55', name: 'Work' });
+		if (!other.ok) throw new Error('setup failed');
+		const created = await createEvent(deps, { ...input, calendarId: other.value.id });
+		if (!created.ok) throw new Error('setup failed');
+		expect(calendarId).not.toBe(other.value.id);
+		await deleteCalendar(deps, other.value.id);
+		expect(await restoreEvent(deps, created.value.id)).toEqual(failure('not_found', 'calendarId'));
 	});
 });
 
