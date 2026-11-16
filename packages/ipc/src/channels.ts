@@ -30,6 +30,17 @@ export const CHANNELS = {
 	},
 } as const;
 
+/**
+ * Messages the main process pushes to the renderer (`webContents.send`), outside request/response. Each carries a
+ * payload the renderer validates with its schema in `pushSchemas`.
+ */
+export const PUSH_CHANNELS = {
+	reminders: {
+		/** A reminder notification was clicked: show its occurrence. */
+		open: 'reminders:open',
+	},
+} as const;
+
 type ChannelGroups = typeof CHANNELS;
 
 export type Channel = { [Domain in keyof ChannelGroups]: ChannelGroups[Domain][keyof ChannelGroups[Domain]] }[keyof ChannelGroups];

@@ -19,6 +19,7 @@ import {
 	settingsPatchSchema,
 	settingsSchema,
 	userProfileSchema,
+	utcInstantSchema,
 } from '@tempi/core';
 import { z } from 'zod';
 import type { Channel } from './channels';
@@ -89,6 +90,11 @@ export const domainErrorSchema = z.object({
 	code: z.enum(DOMAIN_ERROR_CODES),
 	issues: z.array(domainIssueSchema).min(1),
 });
+
+/** The occurrence a clicked reminder is about: its listing key and start, enough to find it again in the renderer. */
+export const reminderTargetSchema = z.object({ key: z.string().min(1), startAt: utcInstantSchema });
+
+export type ReminderTarget = z.output<typeof reminderTargetSchema>;
 
 /** A core `Result` carrying `value`, as it crosses IPC. */
 export const resultSchema = <S extends z.ZodType>(value: S) => z.discriminatedUnion('ok', [z.object({ ok: z.literal(true), value }), z.object({ error: domainErrorSchema, ok: z.literal(false) })]);

@@ -7,6 +7,9 @@ export const EVENT_STATUSES = ['confirmed', 'tentative'] as const;
 
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
+/** The earliest a reminder may fire: a week before the start. Bounds how far ahead reminders must be looked for. */
+export const MAX_REMINDER_MINUTES = 7 * 24 * 60;
+
 const eventShape = {
 	allDay: z.boolean(),
 	calendarId: idSchema,
@@ -17,6 +20,7 @@ const eventShape = {
 		.number()
 		.int('validation.integer')
 		.min(0, 'validation.min')
+		.max(MAX_REMINDER_MINUTES, 'validation.max')
 		.nullish()
 		.transform(value => value ?? null),
 	/** Stored without the `RRULE:` prefix. */
