@@ -12,6 +12,11 @@ export const en = {
 		},
 		calendar: {
 			grid: 'Schedule',
+			month: {
+				more: '+{{count}} more',
+				week: 'Week {{number}}',
+				weekNumber: 'Week',
+			},
 		},
 		onboarding: {
 			actions: {
