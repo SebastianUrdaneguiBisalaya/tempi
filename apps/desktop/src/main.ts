@@ -8,6 +8,7 @@ import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
 import { createFileAvatarStore } from './avatar-store.js';
 import { openAppDatabase } from './database.js';
+import { openExternalUrl } from './external-links.js';
 import { registerIpc } from './ipc/register-ipc.js';
 import { loadWindowState, trackWindowState, windowOptions } from './window-state.js';
 
@@ -84,10 +85,10 @@ function createWindow() {
 
 	// Never let the renderer open arbitrary windows/navigations to a
 	// different origin - only our own local app URL is allowed in-app,
-	// everything else is handed off to the OS browser.
+	// http(s) and mailto links go to the OS, and anything else is dropped.
 	mainWindow.webContents.setWindowOpenHandler(({ url }) => {
 		if (!isTrustedUrl(url)) {
-			shell.openExternal(url);
+			openExternalUrl(url, shell.openExternal);
 			return {
 				action: 'deny',
 			};
@@ -100,7 +101,7 @@ function createWindow() {
 	mainWindow.webContents.on('will-navigate', (event, url) => {
 		if (!isTrustedUrl(url)) {
 			event.preventDefault();
-			shell.openExternal(url);
+			openExternalUrl(url, shell.openExternal);
 		}
 	});
 
