@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { CalendarMain } from '@/features/calendar/components/calendar-main';
 import { CalendarNavigationProvider } from '@/features/calendar/components/calendar-navigation-provider';
 import { MiniCalendar } from '@/features/calendar/components/mini-calendar';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -61,7 +62,9 @@ export function AppShell() {
 						sidebarOpen={sidebarInline ? sidebarExpanded : sidebarDrawerOpen}
 					/>
 					<div className='flex min-h-0 flex-1'>
-						<div className='min-w-0 flex-1' />
+						<div className='min-w-0 flex-1'>
+							<CalendarMain />
+						</div>
 						{panelInline ? (
 							<aside aria-label={t('shell.panel.label')} className='w-72 shrink-0 border-l'>
 								<RightPanel />
