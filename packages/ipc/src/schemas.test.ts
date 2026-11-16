@@ -38,6 +38,9 @@ describe('payloadSchemas', () => {
 		['google:selectCalendars', { googleIds: ['ada@example.com'] }],
 		['google:sync', undefined],
 		['google:syncStatus', undefined],
+		['updates:check', undefined],
+		['updates:install', undefined],
+		['updates:status', undefined],
 		['calendars:update', { id: 'cal-1', isVisible: false }],
 		['events:create', newEvent],
 		['events:delete', 'evt-1'],
@@ -115,5 +118,29 @@ describe('google answers', () => {
 	test('drop anything but the email, so tokens could never reach the renderer', () => {
 		const parsed = connect.parse({ ok: true, value: { account: { email: 'ada@example.com', refreshToken: 'secret' }, status: 'connected' } });
 		expect(parsed).toEqual({ ok: true, value: { account: { email: 'ada@example.com' }, status: 'connected' } });
+	});
+});
+
+describe('update answers', () => {
+	const status = resultSchema(responseValueSchemas['updates:status']);
+	const available = {
+		checkedAt: '2026-11-16T12:00:00Z',
+		currentVersion: '0.1.0',
+		downloadUrl: 'https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/tag/v0.2.0',
+		latestVersion: '0.2.0',
+		state: 'available',
+	};
+
+	test('accept a newer release to download', () => {
+		expect(status.safeParse({ ok: true, value: available }).success).toBe(true);
+	});
+
+	test('reject a download link that is not https', () => {
+		expect(status.safeParse({ ok: true, value: { ...available, downloadUrl: 'http://example.com/tempi.dmg' } }).success).toBe(false);
+		expect(status.safeParse({ ok: true, value: { ...available, downloadUrl: 'file:///Applications/Tempi.app' } }).success).toBe(false);
+	});
+
+	test('reject an unknown state', () => {
+		expect(status.safeParse({ ok: true, value: { ...available, state: 'installing' } }).success).toBe(false);
 	});
 });

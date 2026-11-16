@@ -58,6 +58,14 @@ export const CHANNELS = {
 		get: 'settings:get',
 		save: 'settings:save',
 	},
+	updates: {
+		/** Looks for a newer release now and answers with where the update stands. */
+		check: 'updates:check',
+		/** Quits and installs a downloaded update (Windows, Linux AppImage); Tempi reopens on the new version. */
+		install: 'updates:install',
+		/** Where the update stands. */
+		status: 'updates:status',
+	},
 } as const;
 
 /**
@@ -68,6 +76,10 @@ export const PUSH_CHANNELS = {
 	google: {
 		/** Sync started or ended: the new status. Data may have changed, so views refresh. */
 		syncStatus: 'google:syncStatusChanged',
+	},
+	updates: {
+		/** The update status changed: a check started or ended, a download finished. */
+		status: 'updates:statusChanged',
 	},
 	events: {
 		/** Show an occurrence in the main window: a clicked reminder, or an event picked in the menu bar calendar. */

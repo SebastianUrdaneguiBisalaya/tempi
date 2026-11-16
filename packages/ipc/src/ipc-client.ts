@@ -1,4 +1,4 @@
-import { fail, googleSyncStatusSchema, type Result } from '@tempi/core';
+import { appUpdateStatusSchema, fail, googleSyncStatusSchema, type Result } from '@tempi/core';
 import { CHANNELS, type Channel, PUSH_CHANNELS } from './channels';
 import type { DesktopApi, TempiApi } from './desktop-api';
 import { type ChannelValue, occurrenceRefSchema, responseValueSchemas, resultSchema } from './schemas';
@@ -79,5 +79,16 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 	settings: {
 		get: () => call(CHANNELS.settings.get, () => api.settings.get()),
 		save: patch => call(CHANNELS.settings.save, () => api.settings.save(patch)),
+	},
+	updates: {
+		check: () => call(CHANNELS.updates.check, () => api.updates.check()),
+		install: () => call(CHANNELS.updates.install, () => api.updates.install()),
+		onStatus: listener =>
+			api.updates.onStatus(payload => {
+				const parsed = appUpdateStatusSchema.safeParse(payload);
+				if (parsed.success) listener(parsed.data);
+				else console.error(`${PUSH_CHANNELS.updates.status} sent a malformed payload`);
+			}),
+		status: () => call(CHANNELS.updates.status, () => api.updates.status()),
 	},
 });

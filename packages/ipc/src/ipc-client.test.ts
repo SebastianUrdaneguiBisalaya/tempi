@@ -10,6 +10,7 @@ const calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1'
 const fakeApi = (response: () => Promise<unknown>) => {
 	const sent: unknown[] = [];
 	const showListeners: ((payload: unknown) => void)[] = [];
+	const updateListeners: ((payload: unknown) => void)[] = [];
 	const answer = (input?: unknown) => {
 		sent.push(input);
 		return response();
@@ -29,13 +30,26 @@ const fakeApi = (response: () => Promise<unknown>) => {
 		onboarding: { complete: answer },
 		profile: { get: answer, update: answer },
 		settings: { get: answer, save: answer },
+		updates: {
+			check: answer,
+			install: answer,
+			onStatus: listener => {
+				updateListeners.push(listener);
+				return () => updateListeners.splice(updateListeners.indexOf(listener), 1);
+			},
+			status: answer,
+		},
 		version: 'test',
 	};
 	/** Simulates the main process asking to show an occurrence. */
 	const pushShowEvent = (payload: unknown) => {
 		for (const listener of showListeners) listener(payload);
 	};
-	return { api, pushShowEvent, sent };
+	/** Simulates the main process pushing an update status. */
+	const pushUpdateStatus = (payload: unknown) => {
+		for (const listener of updateListeners) listener(payload);
+	};
+	return { api, pushShowEvent, pushUpdateStatus, sent };
 };
 
 describe('createIpcClient', () => {
@@ -80,5 +94,25 @@ describe('createIpcClient', () => {
 		pushShowEvent({ key: 'event-2', startAt: '2026-11-21T14:00:00Z' });
 
 		expect(opened).toEqual([{ key: 'event-1', startAt: '2026-11-20T14:00:00.000Z' }]);
+	});
+});
+
+describe('pushed update statuses', () => {
+	const status = { checkedAt: null, currentVersion: '0.1.0', downloadUrl: null, latestVersion: '0.2.0', state: 'ready' };
+
+	test('reach the listener once validated', () => {
+		const { api, pushUpdateStatus } = fakeApi(() => Promise.resolve(ok(null)));
+		const received: unknown[] = [];
+		createIpcClient(api).updates.onStatus(next => received.push(next));
+		pushUpdateStatus(status);
+		expect(received).toEqual([status]);
+	});
+
+	test('are dropped when malformed', () => {
+		const { api, pushUpdateStatus } = fakeApi(() => Promise.resolve(ok(null)));
+		const received: unknown[] = [];
+		createIpcClient(api).updates.onStatus(next => received.push(next));
+		pushUpdateStatus({ ...status, downloadUrl: 'http://example.com' });
+		expect(received).toEqual([]);
 	});
 });
