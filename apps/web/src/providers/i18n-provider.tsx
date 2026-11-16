@@ -6,6 +6,7 @@ import { type ReactNode, useEffect, useSyncExternalStore } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { i18n } from '@/lib/i18n';
+import { useAppearancePreview } from '@/providers/appearance-preview-provider';
 
 const subscribeToSystemLanguage = (onChange: () => void) => {
 	window.addEventListener('languagechange', onChange);
@@ -14,11 +15,12 @@ const subscribeToSystemLanguage = (onChange: () => void) => {
 const getSystemLanguage = (): Language => resolveLanguage(navigator.languages);
 const getServerLanguage = (): Language => FALLBACK_LANGUAGE;
 
-/** The language from settings; the system locale until settings load, or when there is no storage (plain browser). */
+/** The previewed language, else the one from settings; the system locale until settings load, or when there is no storage (plain browser). */
 const useLanguage = (): Language => {
 	const { data: settings } = useSettings();
+	const { preview } = useAppearancePreview();
 	const systemLanguage = useSyncExternalStore(subscribeToSystemLanguage, getSystemLanguage, getServerLanguage);
-	return settings?.language ?? systemLanguage;
+	return preview.language ?? settings?.language ?? systemLanguage;
 };
 
 export function I18nProvider({ children }: { children: ReactNode }) {
