@@ -5,6 +5,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { ApiProvider } from '@/providers/api-provider';
 import { I18nProvider } from '@/providers/i18n-provider';
+import { SettingsProvider } from '@/providers/settings-provider';
+import { ThemeProvider } from '@/providers/theme-provider';
 
 const instrumentSansHeading = Instrument_Sans({ subsets: ['latin'], variable: '--font-heading' });
 
@@ -30,9 +32,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 		<html lang='en' className={cn('h-full', 'antialiased', geistSans.variable, geistMono.variable, 'font-sans', manrope.variable, instrumentSansHeading.variable)}>
 			<body className='min-h-full flex flex-col'>
 				<ApiProvider>
-					<I18nProvider>
-						<TooltipProvider>{children}</TooltipProvider>
-					</I18nProvider>
+					<SettingsProvider>
+						<I18nProvider>
+							<ThemeProvider>
+								<TooltipProvider>{children}</TooltipProvider>
+							</ThemeProvider>
+						</I18nProvider>
+					</SettingsProvider>
 				</ApiProvider>
 			</body>
 		</html>
