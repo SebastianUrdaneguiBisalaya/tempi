@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import type { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync } from 'node:sqlite';
 import { type Calendar, type CalendarEvent, createCalendar, createEvent, DEFAULT_SETTINGS, deleteCalendar, listEvents, saveProfile, saveSettings, type UserProfile } from '@tempi/core';
-import { createRepositories, type SqliteRepositories } from '../index';
+import { createRepositories, loadMigrations, migrate, type SqliteRepositories } from '../index';
 import { openDatabase } from '../open-database';
 
 const T0 = '2026-11-15T10:00:00.000Z';
@@ -170,6 +170,63 @@ describe('SqliteEventRepository', () => {
 			"INSERT INTO events (id, calendar_id, title, start_at, end_at, all_day, time_zone, status, created_at, updated_at) VALUES ('bad', 'cal-1', 'x', '2026-11-20T09:00:00.000Z', '2026-11-20T10:00:00.000Z', 0, 'UTC', 'cancelled', ?, ?)"
 		).run(T0, T0);
 		await expect(repos.events.findById('bad')).rejects.toThrow('Invalid row');
+	});
+});
+
+describe('SqliteEventRepository.search', () => {
+	beforeEach(() => repos.calendars.save(makeCalendar()));
+
+	const titles = async (text: string, limit = 50) => (await repos.events.search(text, limit)).map(event => event.title);
+
+	test('matches title, location and description by word prefix, ignoring case and accents', async () => {
+		await repos.events.save(makeEvent({ id: 'title', title: 'Reunión de equipo' }));
+		await repos.events.save(makeEvent({ id: 'location', location: 'Café Central', title: 'Breakfast' }));
+		await repos.events.save(makeEvent({ description: 'Bring the ÑANDÚ slides', id: 'description', title: 'Review' }));
+
+		expect(await titles('REUNION')).toEqual(['Reunión de equipo']);
+		expect(await titles('cafe')).toEqual(['Breakfast']);
+		expect(await titles('nan slid')).toEqual(['Review']);
+		expect(await titles('union')).toEqual([]);
+	});
+
+	test('follows edits and never returns deleted events', async () => {
+		await repos.events.save(makeEvent({ id: 'renamed', title: 'Dentist' }));
+		await repos.events.save(makeEvent({ id: 'renamed', title: 'Doctor' }));
+		await repos.events.save(makeEvent({ deletedAt: T0, id: 'deleted', title: 'Doctor checkup' }));
+
+		expect(await titles('dentist')).toEqual([]);
+		expect(await titles('doctor')).toEqual(['Doctor']);
+	});
+
+	test('lists the latest start first, up to the limit', async () => {
+		await repos.events.save(makeEvent({ endAt: '2026-11-01T10:00:00.000Z', id: 'early', startAt: '2026-11-01T09:00:00.000Z', title: 'Gym early' }));
+		await repos.events.save(makeEvent({ endAt: '2026-11-30T10:00:00.000Z', id: 'late', startAt: '2026-11-30T09:00:00.000Z', title: 'Gym late' }));
+		await repos.events.save(makeEvent({ endAt: '2026-11-10T10:00:00.000Z', id: 'middle', startAt: '2026-11-10T09:00:00.000Z', title: 'Gym middle' }));
+
+		expect(await titles('gym', 2)).toEqual(['Gym late', 'Gym middle']);
+	});
+
+	test('treats FTS syntax as plain text', async () => {
+		await repos.events.save(makeEvent({ title: 'Q&A: "roadmap" - NOT final' }));
+
+		expect(await titles('"roadmap')).toEqual(['Q&A: "roadmap" - NOT final']);
+		expect(await titles('not final')).toEqual(['Q&A: "roadmap" - NOT final']);
+		expect(await titles('title:roadmap OR x*')).toEqual([]);
+		expect(await titles('   ')).toEqual([]);
+	});
+
+	test('indexes events saved before the search migration', () => {
+		const migrations = loadMigrations();
+		const before = new DatabaseSync(':memory:');
+		migrate(before, migrations.slice(0, 3));
+		before.exec(`INSERT INTO calendars VALUES ('cal-1', 'Work', '#ff0000', 'local', 0, 1, '${T0}', '${T0}', NULL)`);
+		before.exec(
+			`INSERT INTO events (id, calendar_id, title, start_at, end_at, all_day, time_zone, status, created_at, updated_at) VALUES ('old', 'cal-1', 'Planificación', '${T0}', '${T0}', 0, 'UTC', 'confirmed', '${T0}', '${T0}')`
+		);
+		migrate(before, migrations);
+
+		expect(before.prepare("SELECT rowid FROM events_search WHERE events_search MATCH 'planificacion'").all()).toHaveLength(1);
+		before.close();
 	});
 });
 
