@@ -17,9 +17,11 @@ type Api<Raw extends boolean> = {
 	events: {
 		create: Call<'events:create', Raw>;
 		delete: Call<'events:delete', Raw>;
+		deleteOccurrence: Call<'events:deleteOccurrence', Raw>;
 		list: Call<'events:list', Raw>;
 		restore: Call<'events:restore', Raw>;
 		update: Call<'events:update', Raw>;
+		updateOccurrence: Call<'events:updateOccurrence', Raw>;
 	};
 	onboarding: {
 		complete: Call<'onboarding:complete', Raw>;

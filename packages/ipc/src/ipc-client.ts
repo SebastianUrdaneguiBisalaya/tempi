@@ -30,9 +30,11 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 	events: {
 		create: input => call(CHANNELS.events.create, () => api.events.create(input)),
 		delete: id => call(CHANNELS.events.delete, () => api.events.delete(id)),
+		deleteOccurrence: input => call(CHANNELS.events.deleteOccurrence, () => api.events.deleteOccurrence(input)),
 		list: range => call(CHANNELS.events.list, () => api.events.list(range)),
 		restore: id => call(CHANNELS.events.restore, () => api.events.restore(id)),
 		update: input => call(CHANNELS.events.update, () => api.events.update(input)),
+		updateOccurrence: input => call(CHANNELS.events.updateOccurrence, () => api.events.updateOccurrence(input)),
 	},
 	onboarding: {
 		complete: input => call(CHANNELS.onboarding.complete, () => api.onboarding.complete(input)),

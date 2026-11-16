@@ -9,9 +9,11 @@ export const CHANNELS = {
 	events: {
 		create: 'events:create',
 		delete: 'events:delete',
+		deleteOccurrence: 'events:deleteOccurrence',
 		list: 'events:list',
 		restore: 'events:restore',
 		update: 'events:update',
+		updateOccurrence: 'events:updateOccurrence',
 	},
 	onboarding: {
 		complete: 'onboarding:complete',
