@@ -149,6 +149,18 @@ describe('SqliteEventRepository', () => {
 		expect(await repos.events.findById('other-calendar')).toMatchObject({ deletedAt: null });
 	});
 
+	test('moves only the live events of one calendar to another', async () => {
+		const later = '2026-11-16T10:00:00.000Z';
+		await repos.calendars.save(makeCalendar({ id: 'cal-2' }));
+		await repos.events.save(makeEvent({ id: 'live' }));
+		await repos.events.save(makeEvent({ deletedAt: T0, id: 'already-deleted' }));
+
+		await repos.events.moveToCalendar('cal-1', 'cal-2', later);
+
+		expect(await repos.events.findById('live')).toMatchObject({ calendarId: 'cal-2', updatedAt: later });
+		expect(await repos.events.findById('already-deleted')).toMatchObject({ calendarId: 'cal-1', updatedAt: T0 });
+	});
+
 	test('rejects an event whose calendar does not exist', async () => {
 		await expect(repos.events.save(makeEvent({ calendarId: 'missing' }))).rejects.toThrow();
 	});
@@ -197,14 +209,14 @@ describe('core use cases over SQLite', () => {
 		const range = { end: '2026-11-21T00:00:00.000Z', start: '2026-11-20T00:00:00.000Z' };
 		expect(await listEvents(deps(), range)).toMatchObject({ ok: true, value: [{ startAt: '2026-11-20T14:00:00.000Z', title: 'Review' }] });
 
-		expect(await deleteCalendar(deps(), work.value.id)).toEqual({ ok: true, value: null });
+		expect(await deleteCalendar(deps(), { id: work.value.id, moveEventsTo: null })).toEqual({ ok: true, value: null });
 		expect(await listEvents(deps(), range)).toEqual({ ok: true, value: [] });
 	});
 
 	test('the seeded calendar is the default and cannot be deleted', async () => {
 		const [seeded] = await repos.calendars.list();
 		expect(seeded).toMatchObject({ isDefault: true });
-		expect(await deleteCalendar(deps(), seeded?.id ?? '')).toMatchObject({ error: { code: 'conflict' }, ok: false });
+		expect(await deleteCalendar(deps(), { id: seeded?.id ?? '', moveEventsTo: null })).toMatchObject({ error: { code: 'conflict' }, ok: false });
 	});
 
 	test('profile and settings persist through their use cases', async () => {

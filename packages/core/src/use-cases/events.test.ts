@@ -167,7 +167,7 @@ describe('restoreEvent', () => {
 		const created = await createEvent(deps, { ...input, calendarId: other.value.id });
 		if (!created.ok) throw new Error('setup failed');
 		expect(calendarId).not.toBe(other.value.id);
-		await deleteCalendar(deps, other.value.id);
+		await deleteCalendar(deps, { id: other.value.id, moveEventsTo: null });
 		expect(await restoreEvent(deps, created.value.id)).toEqual(failure('not_found', 'calendarId'));
 	});
 });

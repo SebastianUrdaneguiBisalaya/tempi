@@ -23,7 +23,8 @@ describe('payloadSchemas', () => {
 
 	test.each([
 		['calendars:create', { color: '#3B82F6', name: 'Work' }],
-		['calendars:delete', 'cal-1'],
+		['calendars:delete', { id: 'cal-1', moveEventsTo: null }],
+		['calendars:delete', { id: 'cal-1', moveEventsTo: 'cal-2' }],
 		['calendars:list', undefined],
 		['calendars:update', { id: 'cal-1', isVisible: false }],
 		['events:create', newEvent],
@@ -46,7 +47,7 @@ describe('payloadSchemas', () => {
 
 	test.each([
 		['calendars:create', { color: 'blue', name: ' ' }, ['color', 'name']],
-		['calendars:delete', '', ['']],
+		['calendars:delete', { id: '', moveEventsTo: '' }, ['id', 'moveEventsTo']],
 		['calendars:list', { unexpected: true }, ['']],
 		['calendars:update', { color: 'blue' }, ['color', 'id']],
 		['events:create', { ...newEvent, endAt: newEvent.startAt, timeZone: 'Mars/Base' }, ['endAt', 'timeZone']],
@@ -67,7 +68,7 @@ describe('payloadSchemas', () => {
 });
 
 describe('resultSchema', () => {
-	const schema = resultSchema(payloadSchemas['calendars:delete']);
+	const schema = resultSchema(payloadSchemas['events:delete']);
 
 	test('accepts success and failure results', () => {
 		expect(schema.safeParse({ ok: true, value: calendar.id }).success).toBe(true);

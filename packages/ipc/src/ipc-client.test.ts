@@ -36,7 +36,7 @@ describe('createIpcClient', () => {
 	test('returns a domain failure from the main process unchanged', async () => {
 		const failure = fail('conflict', 'calendar.defaultNotDeletable', { field: 'id' });
 		const { api } = fakeApi(() => Promise.resolve(failure));
-		expect(await createIpcClient(api).calendars.delete('cal-1')).toEqual(failure);
+		expect(await createIpcClient(api).calendars.delete({ id: 'cal-1', moveEventsTo: null })).toEqual(failure);
 	});
 
 	test('turns a malformed response into an internal failure', async () => {

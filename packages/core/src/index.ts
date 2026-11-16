@@ -1,7 +1,7 @@
 export type { AvatarImage, AvatarType } from './domain/avatar';
 export { AVATAR_TYPES, avatarFileNameSchema, avatarImageSchema, MAX_AVATAR_BYTES } from './domain/avatar';
-export type { Calendar, CalendarFields, CalendarPatch, CalendarSource, NewCalendarInput } from './domain/calendar';
-export { CALENDAR_SOURCES, calendarFieldsSchema, calendarPatchSchema, calendarSchema, newCalendarInputSchema } from './domain/calendar';
+export type { Calendar, CalendarFields, CalendarPatch, CalendarSource, DeleteCalendarInput, NewCalendarInput } from './domain/calendar';
+export { CALENDAR_PALETTE, CALENDAR_SOURCES, calendarFieldsSchema, calendarPatchSchema, calendarSchema, deleteCalendarInputSchema, newCalendarInputSchema, pickCalendarColor } from './domain/calendar';
 export type { CalendarView } from './domain/calendar-view';
 export { CALENDAR_VIEWS, daysToUtcRange, isCalendarView, isWeekend, shiftDate, startOfWeek, visibleDays } from './domain/calendar-view';
 export type { DateRange } from './domain/date-range';

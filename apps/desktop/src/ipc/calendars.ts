@@ -6,5 +6,5 @@ export const registerCalendarHandlers = (context: HandlerContext, deps: CoreDeps
 	handle(context, CHANNELS.calendars.list, async () => ok(await listCalendars(deps)));
 	handle(context, CHANNELS.calendars.create, input => createCalendar(deps, input));
 	handle(context, CHANNELS.calendars.update, ({ id, ...patch }) => updateCalendar(deps, id, patch));
-	handle(context, CHANNELS.calendars.delete, id => deleteCalendar(deps, id));
+	handle(context, CHANNELS.calendars.delete, input => deleteCalendar(deps, input));
 };

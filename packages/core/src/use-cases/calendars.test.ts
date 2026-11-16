@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'bun:test';
+import { CALENDAR_PALETTE, pickCalendarColor } from '../domain/calendar';
 import { createCalendar } from './create-calendar';
 import { createEvent } from './create-event';
 import { deleteCalendar } from './delete-calendar';
 import { listCalendars } from './list-calendars';
+import { updateOccurrence } from './occurrences';
 import { failure, makeDeps, T0 } from './test-fakes';
 import { updateCalendar } from './update-calendar';
 
@@ -75,17 +77,62 @@ describe('deleteCalendar', () => {
 		if (!event.ok) throw new Error('setup failed');
 
 		deps.clock.set('2026-11-18T00:00:00.000Z');
-		expect(await deleteCalendar(deps, work.id)).toEqual({ ok: true, value: null });
+		expect(await deleteCalendar(deps, { id: work.id, moveEventsTo: null })).toEqual({ ok: true, value: null });
 
 		expect((await deps.calendars.findById(work.id))?.deletedAt).toBe('2026-11-18T00:00:00.000Z');
 		expect((await deps.events.findById(event.value.id))?.deletedAt).toBe('2026-11-18T00:00:00.000Z');
 		expect((await listCalendars(deps)).map(calendar => calendar.name)).toEqual(['Personal']);
 	});
 
+	test('moves every event, including recurring series and their edits, to another calendar', async () => {
+		const deps = makeDeps();
+		const personal = await create(deps, 'Personal');
+		const work = await create(deps, 'Work');
+		const single = await createEvent(deps, { calendarId: work.id, endAt: '2026-11-20T10:00:00Z', startAt: '2026-11-20T09:00:00Z', timeZone: 'UTC', title: 'Review' });
+		const series = await createEvent(deps, { calendarId: work.id, endAt: '2026-11-20T12:00:00Z', rrule: 'FREQ=DAILY', startAt: '2026-11-20T11:00:00Z', timeZone: 'UTC', title: 'Standup' });
+		if (!single.ok || !series.ok) throw new Error('setup failed');
+		const edited = await updateOccurrence(deps, { originalStartAt: '2026-11-21T11:00:00Z', scope: 'this', seriesId: series.value.id }, { title: 'Late standup' });
+		if (!edited.ok) throw new Error('setup failed');
+
+		deps.clock.set('2026-11-18T00:00:00.000Z');
+		expect(await deleteCalendar(deps, { id: work.id, moveEventsTo: personal.id })).toEqual({ ok: true, value: null });
+
+		for (const id of [single.value.id, series.value.id, edited.value.id]) {
+			expect(await deps.events.findById(id)).toMatchObject({ calendarId: personal.id, deletedAt: null, updatedAt: '2026-11-18T00:00:00.000Z' });
+		}
+		expect((await deps.calendars.findById(work.id))?.deletedAt).toBe('2026-11-18T00:00:00.000Z');
+	});
+
+	test('refuses to move events to itself or to a missing calendar, changing nothing', async () => {
+		const deps = makeDeps();
+		await create(deps, 'Personal');
+		const work = await create(deps, 'Work');
+		expect(await deleteCalendar(deps, { id: work.id, moveEventsTo: work.id })).toEqual(failure('not_found', 'moveEventsTo'));
+		expect(await deleteCalendar(deps, { id: work.id, moveEventsTo: 'missing' })).toEqual(failure('not_found', 'moveEventsTo'));
+		expect((await deps.calendars.findById(work.id))?.deletedAt).toBeNull();
+	});
+
 	test('refuses to delete the default calendar', async () => {
 		const deps = makeDeps();
 		const calendar = await create(deps, 'Personal');
-		expect(await deleteCalendar(deps, calendar.id)).toEqual(failure('conflict'));
+		expect(await deleteCalendar(deps, { id: calendar.id, moveEventsTo: null })).toEqual(failure('conflict'));
+	});
+});
+
+describe('pickCalendarColor', () => {
+	test('picks a palette color no calendar uses', () => {
+		const used = CALENDAR_PALETTE.slice(0, -1);
+		expect(
+			pickCalendarColor(
+				used.map(color => color.toUpperCase()),
+				() => 0.99
+			)
+		).toBe(CALENDAR_PALETTE[11]);
+		expect(pickCalendarColor([], () => 0)).toBe(CALENDAR_PALETTE[0]);
+	});
+
+	test('falls back to any palette color once all are used', () => {
+		expect(pickCalendarColor([...CALENDAR_PALETTE], () => 0.5)).toBe(CALENDAR_PALETTE[6]);
 	});
 });
 

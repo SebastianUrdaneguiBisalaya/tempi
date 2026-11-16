@@ -90,6 +90,7 @@ export class SqliteEventRepository implements EventRepository {
 	private readonly listInRangeStatement: StatementSync;
 	private readonly listSeriesStatement: StatementSync;
 	private readonly saveStatement: StatementSync;
+	private readonly moveToCalendarStatement: StatementSync;
 	private readonly softDeleteByCalendarStatement: StatementSync;
 
 	constructor(db: DatabaseSync) {
@@ -110,6 +111,7 @@ export class SqliteEventRepository implements EventRepository {
 				reminder_minutes = excluded.reminder_minutes, status = excluded.status,
 				created_at = excluded.created_at, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at`
 		);
+		this.moveToCalendarStatement = db.prepare('UPDATE events SET calendar_id = :to, updated_at = :updated_at WHERE calendar_id = :from AND deleted_at IS NULL');
 		this.softDeleteByCalendarStatement = db.prepare('UPDATE events SET deleted_at = :deleted_at, updated_at = :deleted_at WHERE calendar_id = :calendar_id AND deleted_at IS NULL');
 	}
 
@@ -135,6 +137,12 @@ export class SqliteEventRepository implements EventRepository {
 	save(event: CalendarEvent): Promise<void> {
 		return defer(() => {
 			this.saveStatement.run(toRow(event));
+		});
+	}
+
+	moveToCalendar(fromCalendarId: string, toCalendarId: string, updatedAt: string): Promise<void> {
+		return defer(() => {
+			this.moveToCalendarStatement.run({ from: fromCalendarId, to: toCalendarId, updated_at: toInstantColumn(updatedAt) });
 		});
 	}
 

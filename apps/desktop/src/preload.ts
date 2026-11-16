@@ -7,7 +7,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 const desktop: DesktopApi = {
 	calendars: {
 		create: input => ipcRenderer.invoke(CHANNELS.calendars.create, input),
-		delete: id => ipcRenderer.invoke(CHANNELS.calendars.delete, id),
+		delete: input => ipcRenderer.invoke(CHANNELS.calendars.delete, input),
 		list: () => ipcRenderer.invoke(CHANNELS.calendars.list),
 		update: input => ipcRenderer.invoke(CHANNELS.calendars.update, input),
 	},

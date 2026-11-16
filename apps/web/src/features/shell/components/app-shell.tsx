@@ -8,6 +8,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarInset, SidebarProvider } 
 import { CalendarMain } from '@/features/calendar/components/calendar-main';
 import { CalendarNavigationProvider } from '@/features/calendar/components/calendar-navigation-provider';
 import { MiniCalendar } from '@/features/calendar/components/mini-calendar';
+import { CalendarList } from '@/features/calendars/components/calendar-list';
 import { EventPanel } from '@/features/events/components/event-panel';
 import { EventPanelProvider, useEventPanel } from '@/features/events/components/event-panel-provider';
 import { EventShortcuts } from '@/features/events/components/event-shortcuts';
@@ -54,6 +55,7 @@ function ShellLayout() {
 						<SidebarGroup>
 							<MiniCalendar />
 						</SidebarGroup>
+						<CalendarList />
 					</SidebarContent>
 				</Sidebar>
 			) : (
@@ -66,6 +68,7 @@ function ShellLayout() {
 							<SidebarGroup>
 								<MiniCalendar />
 							</SidebarGroup>
+							<CalendarList />
 						</SidebarContent>
 					</DrawerContent>
 				</Drawer>
