@@ -10,6 +10,9 @@ export const en = {
 			edit: 'Edit',
 			save: 'Save',
 		},
+		toasts: {
+			settingsSaved: 'Settings saved.',
+		},
 	},
 	// Keys mirror core's ERROR_KEYS. Interpolation values come from `DomainIssue.params`.
 	errors: {
