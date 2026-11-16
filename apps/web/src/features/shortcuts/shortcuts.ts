@@ -35,6 +35,7 @@ export const SHORTCUTS = {
 	// The physical key under Esc (`Backquote`), not the character: on layouts such as Spanish, "`" is a dead key
 	// that never reaches the page as a plain keypress.
 	toggleSidebar: { group: 'general', keys: '`', layout: 'physical', scope: HOTKEY_SCOPES.global },
+	togglePanel: { group: 'general', keys: 'p', scope: HOTKEY_SCOPES.grid },
 	close: { group: 'general', keys: 'escape', scope: HOTKEY_SCOPES.grid },
 } as const satisfies Record<string, ShortcutDefinition>;
 

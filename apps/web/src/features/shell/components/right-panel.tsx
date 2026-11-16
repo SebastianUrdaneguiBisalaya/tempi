@@ -9,7 +9,7 @@ export function RightPanel({ children, footer, search }: { children?: ReactNode;
 	const { t } = useTranslation();
 	return (
 		<div className='flex h-full min-h-0 flex-col'>
-			<div aria-label={t('shell.panel.search')} className='flex min-h-12 items-center border-b px-3 py-2' role='search'>
+			<div aria-label={t('shell.panel.search')} className='flex min-h-12 items-center border-b px-3 py-2 *:flex-1 *:p-0' role='search'>
 				{search}
 			</div>
 			<ScrollArea className='min-h-0 flex-1'>

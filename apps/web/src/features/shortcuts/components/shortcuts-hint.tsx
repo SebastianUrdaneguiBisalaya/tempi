@@ -8,7 +8,7 @@ import { ShortcutKeys } from './shortcut-keys';
 export function ShortcutsHint() {
 	const { t } = useTranslation();
 	return (
-		<p className='flex items-center gap-1.5 text-xs text-muted-foreground'>
+		<p className='flex w-full items-center justify-between gap-1.5 text-xs text-muted-foreground'>
 			{t('shortcuts.hint')} <ShortcutKeys keys={[SHORTCUTS.showShortcuts.keys]} />
 		</p>
 	);
