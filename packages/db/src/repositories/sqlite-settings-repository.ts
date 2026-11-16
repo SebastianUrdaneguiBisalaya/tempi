@@ -5,6 +5,7 @@ import { booleanColumn, type DomainFields, defer, parseRow, toBooleanColumn, toI
 
 const settingsRowSchema = z
 	.object({
+		all_day_collapsed: booleanColumn,
 		created_at: z.string(),
 		default_event_duration: z.number(),
 		language: z.string(),
@@ -19,6 +20,7 @@ const settingsRowSchema = z
 	})
 	.transform(
 		(row): DomainFields<typeof settingsSchema> => ({
+			allDayCollapsed: row.all_day_collapsed,
 			createdAt: row.created_at,
 			defaultEventDuration: row.default_event_duration,
 			language: row.language,
@@ -41,17 +43,17 @@ export class SqliteSettingsRepository implements SettingsRepository {
 
 	constructor(db: DatabaseSync) {
 		this.getStatement = db.prepare(
-			`SELECT default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends, show_week_numbers,
+			`SELECT all_day_collapsed, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends, show_week_numbers,
 				theme, time_format, week_start, created_at, updated_at
 			FROM settings WHERE id = 1`
 		);
 		this.saveStatement = db.prepare(
-			`INSERT INTO settings (id, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			`INSERT INTO settings (id, all_day_collapsed, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
 				show_week_numbers, theme, time_format, week_start, created_at, updated_at)
-			VALUES (1, :default_event_duration, :language, :menu_bar_enabled, :onboarding_completed, :show_weekends,
+			VALUES (1, :all_day_collapsed, :default_event_duration, :language, :menu_bar_enabled, :onboarding_completed, :show_weekends,
 				:show_week_numbers, :theme, :time_format, :week_start, :created_at, :updated_at)
 			ON CONFLICT (id) DO UPDATE SET
-				default_event_duration = excluded.default_event_duration, language = excluded.language,
+				all_day_collapsed = excluded.all_day_collapsed, default_event_duration = excluded.default_event_duration, language = excluded.language,
 				menu_bar_enabled = excluded.menu_bar_enabled, onboarding_completed = excluded.onboarding_completed,
 				show_weekends = excluded.show_weekends, show_week_numbers = excluded.show_week_numbers,
 				theme = excluded.theme, time_format = excluded.time_format, week_start = excluded.week_start,
@@ -69,6 +71,7 @@ export class SqliteSettingsRepository implements SettingsRepository {
 	save(settings: Settings): Promise<void> {
 		return defer(() => {
 			this.saveStatement.run({
+				all_day_collapsed: toBooleanColumn(settings.allDayCollapsed),
 				created_at: toInstantColumn(settings.createdAt),
 				default_event_duration: settings.defaultEventDuration,
 				language: settings.language,

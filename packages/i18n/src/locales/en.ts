@@ -11,6 +11,12 @@ export const en = {
 			save: 'Save',
 		},
 		calendar: {
+			allDay: {
+				collapse: 'Show fewer all-day events',
+				expand: 'Show all all-day events',
+				events: 'All-day: {{titles}}',
+				more: '+{{count}} more',
+			},
 			grid: 'Schedule',
 			month: {
 				more: '+{{count}} more',

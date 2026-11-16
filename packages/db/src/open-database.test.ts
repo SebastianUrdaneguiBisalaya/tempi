@@ -89,6 +89,23 @@ describe('openDatabase', () => {
 });
 
 describe('migrate', () => {
+	test('0002 keeps existing settings and starts the all-day lane expanded', () => {
+		const db = new DatabaseSync(':memory:');
+		const [init, ...rest] = loadMigrations();
+		if (init === undefined) throw new Error('missing 0001 migration');
+		migrate(db, [init]);
+		db.exec(`INSERT INTO settings (id, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			show_week_numbers, theme, time_format, week_start, created_at, updated_at)
+			VALUES (1, 30, 'es', 0, 1, 1, 1, 'dark', '24h', 'monday', '2026-11-15T10:00:00.000Z', '2026-11-15T10:00:00.000Z')`);
+		migrate(db, [init, ...rest]);
+		expect(db.prepare('SELECT all_day_collapsed, language, show_week_numbers FROM settings').get()).toEqual({
+			all_day_collapsed: 0,
+			language: 'es',
+			show_week_numbers: 1,
+		});
+		db.close();
+	});
+
 	test('rolls back a failing migration and leaves the version unchanged', () => {
 		const db = new DatabaseSync(':memory:');
 		const migrations = [

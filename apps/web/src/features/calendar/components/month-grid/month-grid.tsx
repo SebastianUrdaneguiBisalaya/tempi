@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { useCalendars } from '../../hooks/use-calendars';
 import { useEvents } from '../../hooks/use-events';
 import { useCalendarNavigation } from '../calendar-navigation-provider';
-import { MonthEvent } from './month-event';
+import { EventChip } from '../event-chip';
 
 // Pixel sizes: the number of event lanes per week is measured from the rendered row height.
 const DAY_LABEL_PX = 28;
@@ -173,7 +173,7 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 													<ul className='flex flex-col gap-0.5'>
 														{daySegments.map(segment => (
 															<li key={segment.item.id} style={{ height: LANE_PX - 2 }}>
-																<MonthEvent
+																<EventChip
 																	color={colorOf(segment.item)}
 																	segment={{ ...segment, continuesAfter: false, continuesBefore: false, span: 1 }}
 																	time={timeOf(segment.item)}
@@ -200,7 +200,7 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 											width: `${(segment.span / week.length) * 100}%`,
 										}}
 									>
-										<MonthEvent color={colorOf(segment.item)} segment={segment} time={timeOf(segment.item)} />
+										<EventChip color={colorOf(segment.item)} segment={segment} time={timeOf(segment.item)} />
 									</div>
 								))}
 							</div>
