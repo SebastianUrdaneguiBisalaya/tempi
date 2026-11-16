@@ -222,6 +222,7 @@ apps/web/src/
 - Fetch and mutate data with TanStack Query (`@tanstack/react-query`) inside feature hooks (`features/<feature>/hooks/use-*.ts`). Components call those hooks, never `useQuery`/`useMutation` with the API directly.
   - Query and mutation functions return `unwrap(await api.<domain>.<action>(…))` from `lib/query.ts`, so failures arrive as a typed `DomainError` in `error`.
   - Take keys only from `queryKeys` in `lib/query.ts`. After a successful mutation, invalidate the domain's root key (`queryKeys.events.all`) or write the returned value with `setQueryData`, so every view updates without repeated code.
+  - Feedback is centralized in `QueryProvider`: every failed query or mutation logs each issue's `detail` and shows one translated error toast. Don't call `toast` for errors or successes in data hooks; declare `meta` instead: `successMessage` (a `common.toasts` key) on every create, update and delete mutation, and `handlesFieldErrors: true` on mutations whose form shows field errors.
   - Keep the `QueryProvider` defaults (`networkMode: 'always'`, `staleTime: Infinity`, no retries or refetch on focus): data is local and only this app writes it.
 - Derive values during render instead of syncing them into state. Use `useEffect` only to synchronize with external systems.
 - Use `useSyncExternalStore` for external stores. Avoid prop drilling beyond two levels: lift state or use context.
@@ -235,7 +236,7 @@ apps/web/src/
 
 - Before building UI, list `apps/web/src/components/ui` and reuse what exists. If a component is missing, never create or install it: ask the user, naming the missing shadcn component or an npm alternative.
 - Use `drawer` for side panels. Never use `sheet`.
-- Show a toast on every create, update and delete. Show an `alert-dialog` to confirm before every delete.
+- Show a toast on every create, update and delete, through the mutation's `meta.successMessage` (see React). Show an `alert-dialog` to confirm before every delete.
 - Build forms with React Hook Form and zod (`zodResolver`), using the `field` and `label` components. Pass the core schema and core's error map to the resolver (`zodResolver(schema, { error: zodErrorKeyMap })`, extending the schema only for form-only fields), and translate field errors from the `errors` namespace.
 - Every screen and component must be responsive.
 - All visible text goes through react-i18next, with English (`en`) and Spanish (`es`) translations. Translations live only in `@tempi/i18n`: add a key to `en.ts` and `es.ts`, never hardcode strings or keep locale files in apps.

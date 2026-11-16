@@ -1,25 +1,11 @@
 'use client';
 
 import { type Language, resolveLanguage } from '@tempi/core';
-import { DEFAULT_NAMESPACE, FALLBACK_LANGUAGE, NAMESPACES, resources } from '@tempi/i18n';
-import i18next from 'i18next';
+import { FALLBACK_LANGUAGE } from '@tempi/i18n';
 import { type ReactNode, useEffect, useSyncExternalStore } from 'react';
-import { I18nextProvider, initReactI18next } from 'react-i18next';
+import { I18nextProvider } from 'react-i18next';
 import { useSettings } from '@/features/settings/hooks/use-settings';
-
-const i18n = i18next.createInstance();
-
-// Resources are bundled, so init synchronously and render translated text on the first paint.
-// It starts in the fallback language so the prerendered HTML and the first client render match; the effect below switches it.
-void i18n.use(initReactI18next).init({
-	defaultNS: DEFAULT_NAMESPACE,
-	fallbackLng: FALLBACK_LANGUAGE,
-	initAsync: false,
-	interpolation: { escapeValue: false }, // React already escapes output.
-	lng: FALLBACK_LANGUAGE,
-	ns: [...NAMESPACES],
-	resources,
-});
+import { i18n } from '@/lib/i18n';
 
 const subscribeToSystemLanguage = (onChange: () => void) => {
 	window.addEventListener('languagechange', onChange);

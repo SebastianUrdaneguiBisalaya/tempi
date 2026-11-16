@@ -12,6 +12,9 @@ export const es = {
 			edit: 'Editar',
 			save: 'Guardar',
 		},
+		toasts: {
+			settingsSaved: 'Configuración guardada.',
+		},
 	},
 	errors: {
 		calendar: {

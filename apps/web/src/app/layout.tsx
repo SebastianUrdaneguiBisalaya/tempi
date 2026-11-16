@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Instrument_Sans, Manrope } from 'next/font/google';
 import './globals.css';
+import { Toaster } from '@/components/ui/toast';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { ApiProvider } from '@/providers/api-provider';
@@ -35,7 +36,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 					<QueryProvider>
 						<I18nProvider>
 							<ThemeProvider>
-								<TooltipProvider>{children}</TooltipProvider>
+								<Toaster>
+									<TooltipProvider>{children}</TooltipProvider>
+								</Toaster>
 							</ThemeProvider>
 						</I18nProvider>
 					</QueryProvider>

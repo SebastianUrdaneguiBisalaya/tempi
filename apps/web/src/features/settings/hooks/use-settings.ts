@@ -27,6 +27,7 @@ export const useSaveSettings = () => {
 			if (api === null) throw STORAGE_UNAVAILABLE;
 			return unwrap(await api.settings.save(patch));
 		},
+		meta: { successMessage: 'toasts.settingsSaved' },
 		onSuccess: settings => queryClient.setQueryData(queryKeys.settings.all, settings),
 	});
 };
