@@ -72,4 +72,5 @@ export { saveSettings } from './use-cases/save-settings';
 export { eventSearchQuerySchema, SEARCH_LIMIT, searchEvents } from './use-cases/search-events';
 export { updateCalendar } from './use-cases/update-calendar';
 export { updateEvent } from './use-cases/update-event';
+export type { ProfileUpdate } from './use-cases/update-profile';
 export { updateProfile } from './use-cases/update-profile';
