@@ -1,6 +1,7 @@
 import { type DeleteCalendarInput, deleteCalendarInputSchema } from '../domain/calendar';
 import { fail, ok, parseWith, type Result } from '../domain/result';
 import { type CoreDeps, nowIso } from './deps';
+import { writableCalendar } from './writable-calendar';
 
 /**
  * Soft-deletes a non-default calendar. Its events move to `moveEventsTo` (every row, so recurring series keep their
@@ -13,14 +14,15 @@ export const deleteCalendar = async (deps: Pick<CoreDeps, 'calendars' | 'clock' 
 
 	const current = await deps.calendars.findById(id);
 	if (current === null || current.deletedAt !== null) return fail('not_found', 'calendar.notFound', { detail: `Calendar ${id} not found`, field: 'id' });
+	if (current.source !== 'local') return fail('conflict', 'calendar.synced', { detail: `Calendar ${id} is synced from ${current.source}`, field: 'id' });
 	if (current.isDefault) return fail('conflict', 'calendar.defaultNotDeletable', { detail: `Calendar ${id} is the default and cannot be deleted`, field: 'id' });
 
 	const now = nowIso(deps.clock);
 	if (moveEventsTo === null) await deps.events.softDeleteByCalendar(id, now);
 	else {
-		const target = moveEventsTo === id ? null : await deps.calendars.findById(moveEventsTo);
-		if (target === null || target.deletedAt !== null)
-			return fail('not_found', 'calendar.notFound', { detail: `Calendar ${moveEventsTo} can't receive the events of ${id}`, field: 'moveEventsTo' });
+		if (moveEventsTo === id) return fail('not_found', 'calendar.notFound', { detail: `Calendar ${id} can't receive its own events`, field: 'moveEventsTo' });
+		const target = await writableCalendar(deps, moveEventsTo, 'moveEventsTo');
+		if (!target.ok) return target;
 		await deps.events.moveToCalendar(id, moveEventsTo, now);
 	}
 	await deps.calendars.save({ ...current, deletedAt: now, updatedAt: now });

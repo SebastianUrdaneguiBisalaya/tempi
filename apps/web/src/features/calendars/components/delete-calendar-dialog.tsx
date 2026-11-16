@@ -23,7 +23,7 @@ export function DeleteCalendarDialog({ calendar, calendars, onClose }: DeleteCal
 	const id = useId();
 	const deleteCalendar = useDeleteCalendar();
 	useDialogShortcutScope(calendar !== null);
-	const targets = calendars.filter(other => other.id !== calendar?.id);
+	const targets = calendars.filter(other => other.id !== calendar?.id && !other.readOnly);
 	const defaultTarget = targets.find(other => other.isDefault) ?? targets[0];
 	// Kept per calendar: a new request starts from moving to the default.
 	const [choice, setChoice] = useState<{ calendarId: string | null; mode: 'delete' | 'move'; target: string | null }>({ calendarId: null, mode: 'move', target: null });

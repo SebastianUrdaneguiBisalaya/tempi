@@ -1,6 +1,18 @@
 import { fail, type GoogleAccount, type GoogleConnectResult, ok, type Result } from '@tempi/core';
 import type { LoopbackOptions, LoopbackRedirect } from './loopback';
-import { authorizationUrl, exchangeCode, type Fetch, type GrantedTokens, type OAuthClient, randomToken, revokeToken } from './oauth';
+import {
+	authorizationUrl,
+	exchangeCode,
+	type Fetch,
+	type GrantedTokens,
+	GrantRevokedError,
+	hasCalendarScopes,
+	type OAuthClient,
+	OAuthNetworkError,
+	randomToken,
+	refreshAccessToken,
+	revokeToken,
+} from './oauth';
 import type { TokenStore } from './token-store';
 
 /** How long the browser sign-in may take before connecting gives up. */
@@ -25,13 +37,29 @@ export type GoogleAccountService = {
 	connect: () => Promise<Result<GoogleConnectResult>>;
 	/** Revokes the grant at Google and deletes the tokens. Offline, the tokens are deleted anyway and the failure logged. */
 	disconnect: () => Promise<Result<null>>;
+	/**
+	 * A valid access token, refreshed when it is about to expire. Fails with `google.reconnectRequired` when there is no
+	 * usable grant (none, revoked, or from before calendar access), and `google.offline` when Google can't be reached.
+	 */
+	accessToken: () => Promise<Result<string>>;
 };
+
+/** Refresh this long before the access token expires, so it never lapses mid-request. */
+const EXPIRY_MARGIN_MS = 60_000;
+
+const reconnectRequired = (detail: string) => fail<string>('conflict', 'google.reconnectRequired', { detail });
 
 const authFailed = (detail: string) => fail<GoogleConnectResult>('internal', 'google.authFailed', { detail });
 
 export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccountService => {
 	// A second connect replaces a sign-in still waiting in the browser, which then ends as canceled.
 	let pending: AbortController | null = null;
+
+	// An account connected without calendar access may connect again, replacing its grant.
+	const isFullyConnected = async () => {
+		const stored = await deps.store.read();
+		return stored !== null && hasCalendarScopes(stored.scope);
+	};
 
 	const signIn = async (client: OAuthClient, controller: AbortController): Promise<Result<GoogleConnectResult>> => {
 		const { signal } = controller;
@@ -60,7 +88,7 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 			return authFailed(error instanceof Error ? error.message : String(error));
 		}
 		// Another connect may have finished first while this one exchanged its code.
-		if (signal.aborted || (await deps.store.read()) !== null) {
+		if (signal.aborted || (await isFullyConnected())) {
 			await revokeToken(deps.fetch, tokens.refreshToken).catch((error: unknown) => console.error('Could not revoke an unused Google grant', error));
 			return signal.aborted ? ok({ status: 'canceled' }) : fail('conflict', 'google.alreadyConnected');
 		}
@@ -69,6 +97,23 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 	};
 
 	return {
+		accessToken: async () => {
+			const stored = await deps.store.read();
+			if (stored === null) return reconnectRequired('No Google account is connected');
+			if (!hasCalendarScopes(stored.scope)) return reconnectRequired(`The grant lacks calendar access: ${stored.scope}`);
+			const now = deps.now();
+			if (Date.parse(stored.expiresAt) - EXPIRY_MARGIN_MS > now.getTime()) return ok(stored.accessToken);
+			if (deps.client === null) return fail('internal', 'google.notConfigured');
+			try {
+				const refreshed = await refreshAccessToken(deps.fetch, deps.client, { now, refreshToken: stored.refreshToken });
+				await deps.store.write({ ...stored, accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt, scope: refreshed.scope ?? stored.scope });
+				return ok(refreshed.accessToken);
+			} catch (error) {
+				const detail = error instanceof Error ? error.message : String(error);
+				if (error instanceof GrantRevokedError) return reconnectRequired(detail);
+				return fail('internal', error instanceof OAuthNetworkError ? 'google.offline' : 'google.syncFailed', { detail });
+			}
+		},
 		account: async () => {
 			const stored = await deps.store.read();
 			return stored === null ? null : { email: stored.email };
@@ -76,7 +121,7 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 		connect: async () => {
 			if (deps.client === null) return fail('internal', 'google.notConfigured');
 			if (!deps.store.isAvailable()) return fail('internal', 'google.encryptionUnavailable');
-			if ((await deps.store.read()) !== null) return fail('conflict', 'google.alreadyConnected');
+			if (await isFullyConnected()) return fail('conflict', 'google.alreadyConnected');
 
 			pending?.abort();
 			const controller = new AbortController();

@@ -34,10 +34,18 @@ export const CHANNELS = {
 	google: {
 		/** The connected Google account, or null. */
 		account: 'google:account',
+		/** The connected account's calendars, as the last sync listed them, to pick which ones sync. */
+		calendars: 'google:calendars',
 		/** Signs in with Google in the system browser and keeps the tokens, encrypted, in the main process. */
 		connect: 'google:connect',
 		/** Revokes the tokens at Google and deletes them. */
 		disconnect: 'google:disconnect',
+		/** Chooses which Google calendars sync; unselected ones leave Tempi. */
+		selectCalendars: 'google:selectCalendars',
+		/** Syncs now and answers with the outcome. */
+		sync: 'google:sync',
+		/** Where sync stands. */
+		syncStatus: 'google:syncStatus',
 	},
 	onboarding: {
 		complete: 'onboarding:complete',
@@ -57,6 +65,10 @@ export const CHANNELS = {
  * payload the renderer validates with its schema in `pushSchemas`.
  */
 export const PUSH_CHANNELS = {
+	google: {
+		/** Sync started or ended: the new status. Data may have changed, so views refresh. */
+		syncStatus: 'google:syncStatusChanged',
+	},
 	events: {
 		/** Show an occurrence in the main window: a clicked reminder, or an event picked in the menu bar calendar. */
 		show: 'events:show',

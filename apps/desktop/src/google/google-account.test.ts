@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import { createGoogleAccountService, type GoogleAccountDeps } from './google-account';
 import type { LoopbackOptions, RedirectOutcome } from './loopback';
-import type { Fetch } from './oauth';
+import { CALENDAR_SCOPES, type Fetch } from './oauth';
 import type { StoredAccount, TokenStore } from './token-store';
 
 const client = { id: 'client-id', secret: 'client-secret' };
@@ -11,6 +11,8 @@ let stored: StoredAccount | null;
 let encryptionAvailable: boolean;
 let requests: string[];
 let revokeStatus: number | 'offline';
+/** How Google answers a refresh: a status, or no connection at all. */
+let refreshAnswer: number | 'offline';
 let opened: string[];
 /** How the browser step ends, given the `state` the listener expects (null: the user never comes back). */
 let browser: (state: string) => RedirectOutcome | null;
@@ -34,7 +36,12 @@ const fetch: Fetch = (url, init) => {
 		if (revokeStatus === 'offline') return Promise.reject(new Error('offline'));
 		return Promise.resolve({ json: () => Promise.resolve({}), ok: revokeStatus === 200, status: revokeStatus });
 	}
-	const body = { access_token: 'access', expires_in: 3600, id_token: jwt({ aud: client.id, email: 'ada@example.com', sub: '42' }), refresh_token: 'refresh', scope: 'openid email' };
+	if (init.body.get('grant_type') === 'refresh_token') {
+		if (refreshAnswer === 'offline') return Promise.reject(new Error('net::ERR_INTERNET_DISCONNECTED'));
+		const answer = refreshAnswer === 200 ? { access_token: 'access-2', expires_in: 3600 } : { error: 'invalid_grant' };
+		return Promise.resolve({ json: () => Promise.resolve(answer), ok: refreshAnswer === 200, status: refreshAnswer });
+	}
+	const body = { access_token: 'access', expires_in: 3600, id_token: jwt({ aud: client.id, email: 'ada@example.com', sub: '42' }), refresh_token: 'refresh', scope: FULL_SCOPE };
 	return Promise.resolve({ json: () => Promise.resolve(body), ok: true, status: 200 });
 };
 
@@ -62,6 +69,8 @@ const service = (overrides: Partial<GoogleAccountDeps> = {}) =>
 		...overrides,
 	});
 
+const FULL_SCOPE = ['openid', 'email', ...CALENDAR_SCOPES].join(' ');
+
 const redirect = (params: Record<string, string>): RedirectOutcome => ({ kind: 'redirect', params: new URLSearchParams(params) });
 
 beforeEach(() => {
@@ -69,6 +78,7 @@ beforeEach(() => {
 	encryptionAvailable = true;
 	requests = [];
 	revokeStatus = 200;
+	refreshAnswer = 200;
 	opened = [];
 	browser = state => redirect({ code: 'auth-code', state });
 });
@@ -138,5 +148,37 @@ describe('disconnect', () => {
 		revokeStatus = 'offline';
 		expect(await service().disconnect()).toEqual({ ok: true, value: null });
 		expect(stored).toBeNull();
+	});
+});
+
+describe('access token', () => {
+	beforeEach(() => service().connect());
+
+	test('is reused until it is about to expire, then refreshed and kept', async () => {
+		expect(await service().accessToken()).toEqual({ ok: true, value: 'access' });
+		const later = service({ now: () => new Date('2026-11-16T10:59:30.000Z') });
+		expect(await later.accessToken()).toEqual({ ok: true, value: 'access-2' });
+		expect(stored).toMatchObject({ accessToken: 'access-2', expiresAt: '2026-11-16T11:59:30.000Z', refreshToken: 'refresh' });
+	});
+
+	test('a revoked grant asks to connect again; no connection is offline', async () => {
+		const later = service({ now: () => new Date('2026-11-16T12:00:00.000Z') });
+		refreshAnswer = 'offline';
+		expect(await later.accessToken()).toMatchObject({ error: { issues: [{ key: 'google.offline' }] }, ok: false });
+		refreshAnswer = 400;
+		expect(await later.accessToken()).toMatchObject({ error: { issues: [{ key: 'google.reconnectRequired' }] }, ok: false });
+	});
+
+	test('an account connected before calendar access must connect again, which replaces its grant', async () => {
+		if (stored === null) throw new Error('not connected');
+		stored = { ...stored, scope: 'openid email' };
+		expect(await service().accessToken()).toMatchObject({ error: { issues: [{ key: 'google.reconnectRequired' }] }, ok: false });
+		expect(await service().connect()).toMatchObject({ ok: true, value: { status: 'connected' } });
+		expect(stored?.scope).toBe(FULL_SCOPE);
+	});
+
+	test('no account means connecting first', async () => {
+		stored = null;
+		expect(await service().accessToken()).toMatchObject({ error: { issues: [{ key: 'google.reconnectRequired' }] }, ok: false });
 	});
 });

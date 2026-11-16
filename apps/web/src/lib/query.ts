@@ -22,7 +22,7 @@ export const STORAGE_UNAVAILABLE: DomainError = {
 export const queryKeys = {
 	calendars: { all: ['calendars'] },
 	events: { all: ['events'], range: (range: DateRange) => ['events', range.start, range.end], search: (query: string) => ['events', 'search', query] },
-	google: { account: ['google', 'account'] },
+	google: { account: ['google', 'account'], calendars: ['google', 'calendars'], syncStatus: ['google', 'syncStatus'] },
 	profile: { all: ['profile'] },
 	settings: { all: ['settings'] },
 } as const;

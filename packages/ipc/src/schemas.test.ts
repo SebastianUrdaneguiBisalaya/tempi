@@ -5,7 +5,7 @@ import { payloadSchemas, responseValueSchemas, resultSchema } from './schemas';
 
 const T0 = '2026-11-15T10:00:00.000Z';
 
-const calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1', isDefault: true, isVisible: true, name: 'Personal', source: 'local', updatedAt: T0 };
+const calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1', isDefault: true, isVisible: true, name: 'Personal', readOnly: false, source: 'local', updatedAt: T0 };
 
 const newEvent = { calendarId: 'cal-1', endAt: '2026-11-20T10:00:00-05:00', startAt: '2026-11-20T09:00:00-05:00', timeZone: 'America/Lima', title: 'Standup' };
 
@@ -34,6 +34,10 @@ describe('payloadSchemas', () => {
 		['google:account', undefined],
 		['google:connect', undefined],
 		['google:disconnect', undefined],
+		['google:calendars', undefined],
+		['google:selectCalendars', { googleIds: ['ada@example.com'] }],
+		['google:sync', undefined],
+		['google:syncStatus', undefined],
 		['calendars:update', { id: 'cal-1', isVisible: false }],
 		['events:create', newEvent],
 		['events:delete', 'evt-1'],

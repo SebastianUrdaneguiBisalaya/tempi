@@ -4,7 +4,7 @@ import type { DesktopApi } from './desktop-api';
 import { createIpcClient } from './ipc-client';
 
 const T0 = '2026-11-15T10:00:00.000Z';
-const calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1', isDefault: true, isVisible: true, name: 'Personal', source: 'local' as const, updatedAt: T0 };
+const calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1', isDefault: true, isVisible: true, name: 'Personal', readOnly: false, source: 'local' as const, updatedAt: T0 };
 
 /** A `window.desktop` stand-in: every call answers `response`, and records what it was sent. */
 const fakeApi = (response: () => Promise<unknown>) => {
@@ -25,7 +25,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 		calendars: { create: answer, delete: answer, export: answer, import: answer, list: answer, update: answer },
 		data: { backup: answer, restore: answer },
 		events: { create: answer, delete: answer, deleteOccurrence: answer, duplicate: answer, list: answer, restore: answer, search: answer, update: answer, updateOccurrence: answer },
-		google: { account: answer, connect: answer, disconnect: answer },
+		google: { account: answer, calendars: answer, connect: answer, disconnect: answer, onSyncStatus: () => () => undefined, selectCalendars: answer, sync: answer, syncStatus: answer },
 		onboarding: { complete: answer },
 		profile: { get: answer, update: answer },
 		settings: { get: answer, save: answer },

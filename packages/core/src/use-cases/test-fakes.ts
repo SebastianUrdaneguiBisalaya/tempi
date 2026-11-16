@@ -3,6 +3,7 @@ import type { AvatarImage } from '../domain/avatar';
 import type { Calendar } from '../domain/calendar';
 import { overlapsRange } from '../domain/date-range';
 import type { CalendarEvent } from '../domain/event';
+import type { GoogleCalendarLink, GoogleEventLink } from '../domain/google-sync';
 import type { DomainErrorCode } from '../domain/result';
 import type { Settings } from '../domain/settings';
 import type { UserProfile } from '../domain/user-profile';
@@ -10,6 +11,7 @@ import type { AvatarStore } from '../ports/avatar-store';
 import type { CalendarRepository } from '../ports/calendar-repository';
 import type { Clock } from '../ports/clock';
 import type { EventRepository } from '../ports/event-repository';
+import type { GoogleSyncRepository } from '../ports/google-sync-repository';
 import type { IdGenerator } from '../ports/id-generator';
 import type { ProfileRepository } from '../ports/profile-repository';
 import type { SettingsRepository } from '../ports/settings-repository';
@@ -99,6 +101,59 @@ export class InMemoryCalendarRepository implements CalendarRepository {
 	}
 }
 
+export class InMemoryGoogleSyncRepository implements GoogleSyncRepository {
+	readonly calendarLinks = new Map<string, GoogleCalendarLink>();
+	readonly eventLinks = new Map<string, GoogleEventLink>();
+	private readonly events: InMemoryEventRepository;
+	constructor(events: InMemoryEventRepository) {
+		this.events = events;
+	}
+	listCalendars() {
+		return Promise.resolve([...this.calendarLinks.values()]);
+	}
+	saveCalendar(link: GoogleCalendarLink) {
+		this.calendarLinks.set(link.googleId, link);
+		return Promise.resolve();
+	}
+	async deleteCalendar(googleId: string) {
+		this.calendarLinks.delete(googleId);
+		await this.deleteEventLinks(googleId);
+	}
+	deleteEventLinks(googleCalendarId: string) {
+		for (const link of [...this.eventLinks.values()]) if (link.googleCalendarId === googleCalendarId) this.eventLinks.delete(link.eventId);
+		return Promise.resolve();
+	}
+	findEventLink(eventId: string) {
+		return Promise.resolve(this.eventLinks.get(eventId) ?? null);
+	}
+	findEventLinkByGoogleId(googleCalendarId: string, googleEventId: string) {
+		return Promise.resolve([...this.eventLinks.values()].find(link => link.googleCalendarId === googleCalendarId && link.googleEventId === googleEventId) ?? null);
+	}
+	listEventLinks(googleCalendarId: string) {
+		return Promise.resolve([...this.eventLinks.values()].filter(link => link.googleCalendarId === googleCalendarId));
+	}
+	saveEventLink(link: GoogleEventLink) {
+		this.eventLinks.set(link.eventId, link);
+		return Promise.resolve();
+	}
+	deleteEventLink(eventId: string) {
+		this.eventLinks.delete(eventId);
+		return Promise.resolve();
+	}
+	listPendingEvents(calendarIds: string[]) {
+		const pending = [...this.events.rows.values()].filter(event => {
+			const link = this.eventLinks.get(event.id);
+			return link === undefined ? event.deletedAt === null && calendarIds.includes(event.calendarId) : event.updatedAt > link.syncedUpdatedAt;
+		});
+		return Promise.resolve(pending.sort((a, b) => Number(a.recurringEventId !== null) - Number(b.recurringEventId !== null)));
+	}
+	clear() {
+		this.calendarLinks.clear();
+		this.eventLinks.clear();
+		return Promise.resolve();
+	}
+}
+
 export class InMemoryAvatarStore implements AvatarStore {
 	readonly files = new Map<string, AvatarImage>();
 	save(fileName: string, image: AvatarImage) {
@@ -125,11 +180,13 @@ export class InMemorySingleton<T> {
 export const T0 = '2026-11-15T10:00:00.000Z';
 
 export const makeDeps = () => {
+	const events = new InMemoryEventRepository();
 	const deps = {
 		avatars: new InMemoryAvatarStore(),
 		calendars: new InMemoryCalendarRepository(),
 		clock: new FakeClock(new Date(T0)),
-		events: new InMemoryEventRepository(),
+		events,
+		googleSync: new InMemoryGoogleSyncRepository(events),
 		ids: sequentialIds(),
 		profile: new InMemorySingleton<UserProfile>() satisfies ProfileRepository,
 		settings: new InMemorySingleton<Settings>() satisfies SettingsRepository,

@@ -1,5 +1,5 @@
-import { fail, type Result } from '@tempi/core';
-import { CHANNELS, type Channel } from './channels';
+import { fail, googleSyncStatusSchema, type Result } from '@tempi/core';
+import { CHANNELS, type Channel, PUSH_CHANNELS } from './channels';
 import type { DesktopApi, TempiApi } from './desktop-api';
 import { type ChannelValue, occurrenceRefSchema, responseValueSchemas, resultSchema } from './schemas';
 
@@ -56,8 +56,18 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 	},
 	google: {
 		account: () => call(CHANNELS.google.account, () => api.google.account()),
+		calendars: () => call(CHANNELS.google.calendars, () => api.google.calendars()),
 		connect: () => call(CHANNELS.google.connect, () => api.google.connect()),
 		disconnect: () => call(CHANNELS.google.disconnect, () => api.google.disconnect()),
+		onSyncStatus: listener =>
+			api.google.onSyncStatus(payload => {
+				const parsed = googleSyncStatusSchema.safeParse(payload);
+				if (parsed.success) listener(parsed.data);
+				else console.error(`${PUSH_CHANNELS.google.syncStatus} sent a malformed payload`);
+			}),
+		selectCalendars: input => call(CHANNELS.google.selectCalendars, () => api.google.selectCalendars(input)),
+		sync: () => call(CHANNELS.google.sync, () => api.google.sync()),
+		syncStatus: () => call(CHANNELS.google.syncStatus, () => api.google.syncStatus()),
 	},
 	onboarding: {
 		complete: input => call(CHANNELS.onboarding.complete, () => api.onboarding.complete(input)),

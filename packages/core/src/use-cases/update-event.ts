@@ -1,10 +1,14 @@
 import { type CalendarEvent, type EventPatch, eventFieldsSchema, eventPatchSchema } from '../domain/event';
 import { fail, ok, parseWith, type Result } from '../domain/result';
 import { type CoreDeps, nowIso } from './deps';
+import { writableCalendar } from './writable-calendar';
 
 export const updateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | 'events'>, id: string, patch: EventPatch): Promise<Result<CalendarEvent>> => {
 	const current = await deps.events.findById(id);
 	if (current === null || current.deletedAt !== null) return fail('not_found', 'event.notFound', { detail: `Event ${id} not found`, field: 'id' });
+
+	const source = await writableCalendar(deps, current.calendarId);
+	if (!source.ok) return source;
 
 	const changes = parseWith(eventPatchSchema, patch);
 	if (!changes.ok) return changes;
@@ -15,8 +19,8 @@ export const updateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | '
 	if (!fields.ok) return fields;
 
 	if (fields.value.calendarId !== current.calendarId) {
-		const calendar = await deps.calendars.findById(fields.value.calendarId);
-		if (calendar === null || calendar.deletedAt !== null) return fail('not_found', 'calendar.notFound', { detail: `Calendar ${fields.value.calendarId} not found`, field: 'calendarId' });
+		const target = await writableCalendar(deps, fields.value.calendarId);
+		if (!target.ok) return target;
 	}
 
 	const event: CalendarEvent = { ...fields.value, createdAt, deletedAt, id, updatedAt: nowIso(deps.clock) };

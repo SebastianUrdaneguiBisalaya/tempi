@@ -25,6 +25,7 @@ const makeCalendar = (overrides: Partial<Calendar> = {}): Calendar => ({
 	isDefault: false,
 	isVisible: true,
 	name: 'Work',
+	readOnly: false,
 	source: 'local',
 	updatedAt: T0,
 	...overrides,
@@ -264,6 +265,69 @@ describe('SqliteEventRepository.search', () => {
 
 		expect(before.prepare("SELECT rowid FROM events_search WHERE events_search MATCH 'planificacion'").all()).toHaveLength(1);
 		before.close();
+	});
+});
+
+describe('SqliteGoogleSyncRepository', () => {
+	const T1 = '2026-11-16T10:00:00.000Z';
+	const calendarLink = {
+		accessRole: 'owner',
+		calendarId: 'cal-1',
+		color: '#0b8043',
+		googleId: 'ada@example.com',
+		name: 'Ada',
+		primary: true,
+		selected: true,
+		syncToken: 'tok',
+		timeZone: 'America/Lima',
+	} as const;
+	const eventLink = (eventId: string, googleEventId: string) => ({ etag: '"1"', eventId, googleCalendarId: 'ada@example.com', googleEventId, syncedUpdatedAt: T0 });
+
+	beforeEach(() => repos.calendars.save(makeCalendar({ readOnly: true, source: 'google' })));
+
+	test('round-trips calendar links and the read-only flag', async () => {
+		await repos.googleSync.saveCalendar(calendarLink);
+		await repos.googleSync.saveCalendar({ ...calendarLink, syncToken: 'tok-2' });
+		expect(await repos.googleSync.listCalendars()).toEqual([{ ...calendarLink, syncToken: 'tok-2' }]);
+		expect((await repos.calendars.findById('cal-1'))?.readOnly).toBe(true);
+	});
+
+	test('finds event links by event and by Google id', async () => {
+		await repos.events.save(makeEvent());
+		await repos.googleSync.saveEventLink(eventLink('evt-1', 'g1'));
+		expect(await repos.googleSync.findEventLink('evt-1')).toEqual(eventLink('evt-1', 'g1'));
+		expect(await repos.googleSync.findEventLinkByGoogleId('ada@example.com', 'g1')).toEqual(eventLink('evt-1', 'g1'));
+		expect(await repos.googleSync.listEventLinks('ada@example.com')).toHaveLength(1);
+		await repos.googleSync.deleteEventLink('evt-1');
+		expect(await repos.googleSync.findEventLink('evt-1')).toBeNull();
+	});
+
+	test('lists changes to push: changed links, deletions, new events in synced calendars, series before exceptions', async () => {
+		await repos.calendars.save(makeCalendar({ id: 'local' }));
+		await repos.events.save(makeEvent({ id: 'synced' }));
+		await repos.events.save(makeEvent({ id: 'edited', updatedAt: T1 }));
+		await repos.events.save(makeEvent({ deletedAt: T1, id: 'deleted', updatedAt: T1 }));
+		await repos.events.save(makeEvent({ id: 'series', rrule: 'FREQ=WEEKLY', updatedAt: T1 }));
+		// Older than the series, yet listed after it: exceptions follow their series.
+		await repos.events.save(makeEvent({ id: 'override', originalStartAt: '2026-11-27T09:00:00.000Z', recurringEventId: 'series' }));
+		await repos.events.save(makeEvent({ deletedAt: T1, id: 'never-synced', updatedAt: T1 }));
+		await repos.events.save(makeEvent({ calendarId: 'local', id: 'local-only' }));
+		for (const id of ['synced', 'edited', 'deleted']) await repos.googleSync.saveEventLink(eventLink(id, `g-${id}`));
+		expect((await repos.googleSync.listPendingEvents(['cal-1'])).map(event => event.id)).toEqual(['deleted', 'edited', 'series', 'override']);
+	});
+
+	test('deleting a calendar or clearing forgets its event links', async () => {
+		await repos.events.save(makeEvent());
+		await repos.googleSync.saveCalendar(calendarLink);
+		await repos.googleSync.saveEventLink(eventLink('evt-1', 'g1'));
+		await repos.googleSync.deleteCalendar('ada@example.com');
+		expect(await repos.googleSync.listCalendars()).toEqual([]);
+		expect(await repos.googleSync.findEventLink('evt-1')).toBeNull();
+		await repos.googleSync.saveCalendar(calendarLink);
+		await repos.googleSync.saveEventLink(eventLink('evt-1', 'g1'));
+		await repos.googleSync.clear();
+		expect(await repos.googleSync.listCalendars()).toEqual([]);
+		expect(await repos.googleSync.findEventLink('evt-1')).toBeNull();
 	});
 });
 

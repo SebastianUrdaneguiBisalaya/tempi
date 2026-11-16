@@ -1,9 +1,10 @@
 import type { CalendarEvent } from '../domain/event';
 import { newEventInputSchema } from '../domain/event';
 import { type ImportEventsInput, type ImportSummary, importEventsInputSchema } from '../domain/ical-transfer';
-import { fail, ok, parseWith, type Result } from '../domain/result';
+import { ok, parseWith, type Result } from '../domain/result';
 import { toUtcInstant } from '../domain/values';
 import { type CoreDeps, nowIso } from './deps';
+import { writableCalendar } from './writable-calendar';
 
 /**
  * Adds the events of an iCalendar file to a calendar, all in the caller's one transaction. An event whose UID is
@@ -16,8 +17,8 @@ export const importEvents = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | 
 	if (!parsed.ok) return parsed;
 	const { calendarId, events } = parsed.value;
 
-	const calendar = await deps.calendars.findById(calendarId);
-	if (calendar === null || calendar.deletedAt !== null) return fail('not_found', 'calendar.notFound', { detail: `Calendar ${calendarId} not found`, field: 'calendarId' });
+	const calendar = await writableCalendar(deps, calendarId);
+	if (!calendar.ok) return calendar;
 
 	const now = nowIso(deps.clock);
 	const stamps = { createdAt: now, deletedAt: null, updatedAt: now };

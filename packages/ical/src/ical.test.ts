@@ -6,7 +6,7 @@ import { serializeIcs } from './serialize';
 const T0 = '2026-11-15T10:00:00.000Z';
 const OPTIONS = { defaultDurationMinutes: 45, timeZone: 'America/Lima' };
 
-const calendar: Calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1', isDefault: true, isVisible: true, name: 'Work', source: 'local', updatedAt: T0 };
+const calendar: Calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1', isDefault: true, isVisible: true, name: 'Work', readOnly: false, source: 'local', updatedAt: T0 };
 
 const event = (overrides: Partial<CalendarEvent>): CalendarEvent => ({
 	allDay: false,

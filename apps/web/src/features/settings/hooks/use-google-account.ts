@@ -50,6 +50,12 @@ export const useDisconnectGoogle = () => {
 			return unwrap(await api.google.disconnect());
 		},
 		meta: { successMessage: 'toasts.googleDisconnected' },
-		onSuccess: () => queryClient.setQueryData(queryKeys.google.account, null),
+		onSuccess: () => {
+			queryClient.setQueryData(queryKeys.google.account, null);
+			// Google calendars and their events left Tempi with the account.
+			void queryClient.invalidateQueries({ queryKey: queryKeys.calendars.all });
+			void queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
+			void queryClient.invalidateQueries({ queryKey: ['google'] });
+		},
 	});
 };

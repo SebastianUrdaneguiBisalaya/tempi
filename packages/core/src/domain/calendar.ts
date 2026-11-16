@@ -29,6 +29,8 @@ const calendarShape = {
 	isDefault: z.boolean(),
 	isVisible: z.boolean(),
 	name: requiredTextSchema,
+	/** A synced calendar the account may only read (e.g. holidays, a shared calendar): its events can't change in Tempi. */
+	readOnly: z.boolean(),
 	source: z.enum(CALENDAR_SOURCES),
 };
 
@@ -43,8 +45,8 @@ export const newCalendarInputSchema = z.object({
 	source: calendarShape.source.default('local'),
 });
 
-/** Fields the user may change. The source is fixed at creation. */
-export const calendarPatchSchema = z.object(calendarShape).omit({ source: true }).partial();
+/** Fields the user may change. The source is fixed at creation, and only sync decides what is read-only. */
+export const calendarPatchSchema = z.object(calendarShape).omit({ readOnly: true, source: true }).partial();
 
 export type CalendarFields = z.output<typeof calendarFieldsSchema>;
 export type NewCalendarInput = z.input<typeof newCalendarInputSchema>;

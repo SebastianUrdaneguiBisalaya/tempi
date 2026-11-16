@@ -14,6 +14,12 @@ ipcRenderer.on(PUSH_CHANNELS.events.show, (_event, ref: unknown) => {
 	for (const listener of showEventListeners) listener(ref);
 });
 
+type SyncStatusListener = (status: unknown) => void;
+const syncStatusListeners = new Set<SyncStatusListener>();
+ipcRenderer.on(PUSH_CHANNELS.google.syncStatus, (_event, status: unknown) => {
+	for (const listener of syncStatusListeners) listener(status);
+});
+
 const desktop: DesktopApi = {
 	app: {
 		onShowEvent: listener => {
@@ -53,8 +59,18 @@ const desktop: DesktopApi = {
 	},
 	google: {
 		account: () => ipcRenderer.invoke(CHANNELS.google.account),
+		calendars: () => ipcRenderer.invoke(CHANNELS.google.calendars),
 		connect: () => ipcRenderer.invoke(CHANNELS.google.connect),
 		disconnect: () => ipcRenderer.invoke(CHANNELS.google.disconnect),
+		onSyncStatus: listener => {
+			syncStatusListeners.add(listener);
+			return () => {
+				syncStatusListeners.delete(listener);
+			};
+		},
+		selectCalendars: input => ipcRenderer.invoke(CHANNELS.google.selectCalendars, input),
+		sync: () => ipcRenderer.invoke(CHANNELS.google.sync),
+		syncStatus: () => ipcRenderer.invoke(CHANNELS.google.syncStatus),
 	},
 	onboarding: {
 		complete: input => ipcRenderer.invoke(CHANNELS.onboarding.complete, input),
