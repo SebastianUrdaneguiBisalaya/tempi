@@ -1,0 +1,86 @@
+# Builds the desktop installers on every platform when a `v*` tag is pushed, checks their Electron Fuses, and
+# collects them in a draft GitHub Release to review and publish by hand.
+name: Release
+
+on:
+  push:
+    tags: [ "v*" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: windows-latest
+            platform: win
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      # Inlined into the main process at build time; without them the build ships with Google sync disabled.
+      TEMPI_GOOGLE_CLIENT_ID: ${{ secrets.TEMPI_GOOGLE_CLIENT_ID }}
+      TEMPI_GOOGLE_CLIENT_SECRET: ${{ secrets.TEMPI_GOOGLE_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - name: Check the tag matches the app version
+        run: |
+          version="v$(bun -e "console.log(require('./apps/desktop/package.json').version)")"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match apps/desktop version $version" >&2
+            exit 1
+          fi
+
+      - run: bun install --frozen-lockfile
+
+      - name: Export the web app
+        run: bun run --filter @tempi/web build
+
+      - name: Package
+        run: bun run --filter @tempi/desktop dist:${{ matrix.platform }}
+
+      - name: Verify Electron Fuses
+        run: bun run --filter @tempi/desktop verify:fuses
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tempi-${{ matrix.platform }}
+          if-no-files-found: error
+          path: |
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.AppImage
+            apps/desktop/release/*.deb
+            apps/desktop/release/*.blockmap
+            apps/desktop/release/latest*.yml
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      # One draft for every platform, so nothing is public until it's reviewed.
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: artifacts/*

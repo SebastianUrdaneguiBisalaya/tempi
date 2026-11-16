@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Tempi desktop app (Electron shell around the static export of @tempi/web).",
+  "homepage": "https://github.com/SebastianUrdaneguiBisalaya/tempi",
   "license": "ISC",
   "author": {
     "name": "Sebastian Marat Urdanegui Bisalaya",
@@ -16,13 +17,15 @@
     "build:main": "bun build src/main.ts --target=node --format=esm --external electron --env='TEMPI_GOOGLE_*' --outfile dist/main.js",
     "build:preload": "bun build src/preload.ts --target=node --format=cjs --external electron --outfile dist/preload.cjs",
     "dev": "bun run build && (bun run build:main --watch & bun run build:preload --watch & bun run build:ical-worker --watch & electron .)",
-    "dist:linux": "bun run build && electron-builder --linux",
-    "dist:mac": "bun run build && electron-builder --mac",
-    "dist:win": "bun run build && electron-builder --win",
+    "dist:linux": "bun run build && electron-builder --linux --publish never",
+    "dist:mac": "bun run build && electron-builder --mac --publish never",
+    "dist:win": "bun run build && electron-builder --win --publish never",
     "test": "bun test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:fuses": "bun scripts/verify-fuses.ts"
   },
   "devDependencies": {
+    "@electron/fuses": "1.8.0",
     "@tempi/core": "workspace:*",
     "@tempi/db": "workspace:*",
     "@tempi/i18n": "workspace:*",
@@ -38,6 +41,7 @@
   "build": {
     "appId": "com.sebastianurdanegui.tempi",
     "productName": "Tempi",
+    "artifactName": "Tempi-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "release"
     },
@@ -48,14 +52,58 @@
         "to": "web"
       }
     ],
+    "asar": true,
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "onlyLoadAppFromAsar": true
+    },
     "mac": {
-      "icon": "public/tempi-icon-mac.icns"
+      "category": "public.app-category.productivity",
+      "icon": "public/tempi-icon-mac.icns",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64", "x64"]
+        }
+      ]
     },
     "win": {
-      "icon": "public/tempi-icon.ico"
+      "icon": "public/tempi-icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     },
     "linux": {
-      "icon": "public/tempi-icon.png"
+      "category": "Office",
+      "executableName": "tempi",
+      "icon": "public/tempi-icon.png",
+      "maintainer": "Sebastian Marat Urdanegui Bisalaya <sebasurdanegui@gmail.com>",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "SebastianUrdaneguiBisalaya",
+      "repo": "tempi",
+      "releaseType": "draft"
     }
   }
 }
