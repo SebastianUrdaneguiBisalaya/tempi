@@ -1,15 +1,19 @@
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { type CoreDeps, initializeSettings, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
+import { type CoreDeps, getProfile, getSettings, initializeSettings, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, type TransactionQueue } from '@tempi/db';
-import { app, BrowserWindow, ipcMain, nativeImage, nativeTheme, protocol, shell } from 'electron';
+import { PUSH_CHANNELS } from '@tempi/ipc';
+import { app, BrowserWindow, ipcMain, nativeImage, nativeTheme, powerMonitor, protocol, shell } from 'electron';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
 import { createFileAvatarStore } from './avatar-store.js';
 import { openAppDatabase } from './database.js';
 import { openExternalUrl } from './external-links.js';
 import { registerIpc } from './ipc/register-ipc.js';
+import { fileReminderCheckpoint } from './reminder-checkpoint.js';
+import { createReminderNotifier } from './reminder-notifier.js';
+import { createReminderScheduler, type ReminderScheduler } from './reminder-scheduler.js';
 import { loadWindowState, trackWindowState, windowOptions } from './window-state.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,6 +32,9 @@ const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const ICON_PNG = path.join(PUBLIC_DIR, 'tempi-icon.png');
 const ICON_MAC_PNG = path.join(PUBLIC_DIR, 'tempi-icon-mac.png');
 
+// Must match `build.appId` in package.json: Windows shows notifications only for the app's registered AppUserModelID.
+const APP_ID = 'com.sebastianurdanegui.tempi';
+
 // Matches the web app's --background in each theme, so the window never flashes the wrong color before the first paint.
 const BACKGROUND = { dark: '#0a0a0a', light: '#ffffff' } as const;
 
@@ -36,6 +43,7 @@ protocol.registerSchemesAsPrivileged([appScheme, avatarScheme]);
 
 let mainWindow: BrowserWindow | null = null;
 let database: DatabaseSync | null = null;
+let reminders: ReminderScheduler | null = null;
 
 function isTrustedUrl(url: string) {
 	return url === WEB_URL || url.startsWith(`${WEB_URL}/`);
@@ -125,6 +133,51 @@ function createWindow() {
 	});
 }
 
+// Brings the window forward (reopening it if it was closed) and shows the reminder's event once the page can take it.
+function openReminder({ occurrence }: Reminder) {
+	if (mainWindow === null) createWindow();
+	const window = mainWindow;
+	if (window === null) return;
+	if (window.isMinimized()) window.restore();
+	window.show();
+	window.focus();
+	if (process.platform === 'darwin') app.focus({ steal: true });
+	const target = { key: occurrence.key, startAt: occurrence.startAt };
+	const send = () => window.webContents.send(PUSH_CHANNELS.reminders.open, target);
+	if (window.webContents.isLoading()) window.webContents.once('did-finish-load', send);
+	else send();
+}
+
+function startReminders(deps: CoreDeps, transaction: TransactionQueue) {
+	const notify = createReminderNotifier({
+		display: async () => {
+			const read = await transaction(async () => ok({ profile: await getProfile(deps), settings: await getSettings(deps) }));
+			if (!read.ok) throw new Error(`Failed to read settings for a reminder: ${read.error.issues.map(issue => issue.detail).join('; ')}`);
+			const { profile, settings } = read.value;
+			// Like the calendar: the profile's zone, or the system's before onboarding.
+			return { language: settings.language, timeFormat: settings.timeFormat, timeZone: profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone };
+		},
+		icon: process.platform === 'darwin' ? undefined : ICON_PNG,
+		onClick: openReminder,
+	});
+	const scheduler = createReminderScheduler({
+		checkpoint: fileReminderCheckpoint(path.join(app.getPath('userData'), 'reminders.json')),
+		listReminders: range => transaction(() => listReminders(deps, range)),
+		notify,
+		now: () => new Date(),
+		setTimer: (callback, ms) => {
+			const timer = setTimeout(callback, ms);
+			return () => clearTimeout(timer);
+		},
+	});
+	// Timers stall while the computer sleeps: check on wake, firing what came due meanwhile.
+	powerMonitor.on('resume', () => void scheduler.reschedule());
+	void scheduler.reschedule();
+	return scheduler;
+}
+
+if (process.platform === 'win32') app.setAppUserModelId(APP_ID);
+
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
@@ -150,12 +203,15 @@ if (!gotLock) {
 		database = openAppDatabase();
 		const transaction = createTransactionQueue(database);
 		const deps: CoreDeps = { ...createRepositories(database), avatars: createFileAvatarStore(avatarsDir), clock: systemClock, ids: uuidv7Ids };
-		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction }, deps, { settingsSaved: applySettings });
+		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction }, deps, { eventsChanged: () => void reminders?.reschedule(), settingsSaved: applySettings });
 		await loadSettings(deps, transaction);
 		createWindow();
+		reminders = startReminders(deps, transaction);
 	});
 
 	app.on('before-quit', () => {
+		reminders?.stop();
+		reminders = null;
 		database?.close();
 		database = null;
 	});

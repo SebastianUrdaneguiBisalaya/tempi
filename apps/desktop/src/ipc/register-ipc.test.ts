@@ -273,3 +273,34 @@ describe('settingsSaved listener', () => {
 		expect(saved).toEqual([]);
 	});
 });
+
+describe('eventsChanged listener', () => {
+	let changes: number;
+	const listeners: IpcListeners = { eventsChanged: () => changes++ };
+
+	beforeEach(() => {
+		changes = 0;
+		setup(undefined, listeners);
+	});
+
+	test('runs after each committed event write, not after reads or failures', async () => {
+		const created = await invoke(CHANNELS.events.create, newEvent(seededCalendarId()));
+		expect(changes).toBe(1);
+
+		await invoke(CHANNELS.events.list, { end: '2026-11-21T00:00:00Z', start: '2026-11-20T00:00:00Z' });
+		await invoke(CHANNELS.events.search, 'stand');
+		await invoke(CHANNELS.events.create, { ...newEvent(seededCalendarId()), title: '' });
+		expect(changes).toBe(1);
+
+		const id =
+			typeof created === 'object' && created !== null && 'value' in created && typeof created.value === 'object' && created.value !== null && 'id' in created.value ? created.value.id : '';
+		await invoke(CHANNELS.events.update, { id, reminderMinutes: 30 });
+		await invoke(CHANNELS.events.delete, id);
+		expect(changes).toBe(3);
+	});
+
+	test('runs after a calendar is hidden', async () => {
+		await invoke(CHANNELS.calendars.update, { id: seededCalendarId(), isVisible: false });
+		expect(changes).toBe(1);
+	});
+});
