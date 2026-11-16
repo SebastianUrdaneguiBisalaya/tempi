@@ -51,6 +51,12 @@ export class InMemoryEventRepository implements EventRepository {
 		this.rows.set(event.id, event);
 		return Promise.resolve();
 	}
+	moveToCalendar(fromCalendarId: string, toCalendarId: string, updatedAt: string) {
+		for (const event of this.rows.values()) {
+			if (event.calendarId === fromCalendarId && event.deletedAt === null) this.rows.set(event.id, { ...event, calendarId: toCalendarId, updatedAt });
+		}
+		return Promise.resolve();
+	}
 	softDeleteByCalendar(calendarId: string, deletedAt: string) {
 		for (const event of this.rows.values()) {
 			if (event.calendarId === calendarId && event.deletedAt === null) this.rows.set(event.id, { ...event, deletedAt, updatedAt: deletedAt });

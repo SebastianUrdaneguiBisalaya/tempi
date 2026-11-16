@@ -14,4 +14,6 @@ export type EventRepository = {
 	save(event: CalendarEvent): Promise<void>;
 	/** Soft-deletes every non-deleted event of a calendar, stamping `deletedAt` and `updatedAt`. */
 	softDeleteByCalendar(calendarId: string, deletedAt: string): Promise<void>;
+	/** Moves every non-deleted event of a calendar to another one, stamping `updatedAt`. */
+	moveToCalendar(fromCalendarId: string, toCalendarId: string, updatedAt: string): Promise<void>;
 };
