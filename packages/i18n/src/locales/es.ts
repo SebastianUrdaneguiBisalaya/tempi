@@ -12,6 +12,9 @@ export const es = {
 			edit: 'Editar',
 			save: 'Guardar',
 		},
+		calendar: {
+			grid: 'Agenda',
+		},
 		onboarding: {
 			actions: {
 				back: 'Atrás',
