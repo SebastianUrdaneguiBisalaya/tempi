@@ -13,6 +13,7 @@ export const CHANNELS = {
 		duplicate: 'events:duplicate',
 		list: 'events:list',
 		restore: 'events:restore',
+		search: 'events:search',
 		update: 'events:update',
 		updateOccurrence: 'events:updateOccurrence',
 	},

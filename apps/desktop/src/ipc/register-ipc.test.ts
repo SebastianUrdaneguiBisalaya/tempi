@@ -65,6 +65,7 @@ describe('registerIpc', () => {
 	test('runs use cases end to end', async () => {
 		expect(await invoke(CHANNELS.events.create, newEvent(seededCalendarId()))).toMatchObject({ ok: true, value: { startAt: '2026-11-20T14:00:00.000Z', title: 'Standup' } });
 		expect(await invoke(CHANNELS.events.list, { end: '2026-11-21T00:00:00Z', start: '2026-11-20T00:00:00Z' })).toMatchObject({ ok: true, value: [{ title: 'Standup' }] });
+		expect(await invoke(CHANNELS.events.search, 'STAND')).toMatchObject({ ok: true, value: [{ title: 'Standup' }] });
 		expect(await invoke(CHANNELS.settings.save, { theme: 'dark' })).toMatchObject({ ok: true, value: { theme: 'dark', weekStart: 'monday' } });
 	});
 

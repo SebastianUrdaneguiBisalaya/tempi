@@ -18,6 +18,7 @@ const desktop: DesktopApi = {
 		duplicate: id => ipcRenderer.invoke(CHANNELS.events.duplicate, id),
 		list: range => ipcRenderer.invoke(CHANNELS.events.list, range),
 		restore: id => ipcRenderer.invoke(CHANNELS.events.restore, id),
+		search: query => ipcRenderer.invoke(CHANNELS.events.search, query),
 		update: input => ipcRenderer.invoke(CHANNELS.events.update, input),
 		updateOccurrence: input => ipcRenderer.invoke(CHANNELS.events.updateOccurrence, input),
 	},
