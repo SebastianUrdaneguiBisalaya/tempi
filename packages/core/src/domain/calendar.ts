@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Timestamps } from './timestamps';
+import { storedEntitySchema } from './timestamps';
 import { requiredTextSchema } from './values';
 
 export const CALENDAR_SOURCES = ['local', 'google'] as const;
@@ -36,4 +36,7 @@ export type CalendarFields = z.output<typeof calendarFieldsSchema>;
 export type NewCalendarInput = z.input<typeof newCalendarInputSchema>;
 export type CalendarPatch = z.input<typeof calendarPatchSchema>;
 
-export type Calendar = CalendarFields & Timestamps & { id: string };
+/** A stored calendar, as repositories save and return it. */
+export const calendarSchema = calendarFieldsSchema.and(storedEntitySchema);
+
+export type Calendar = z.output<typeof calendarSchema>;

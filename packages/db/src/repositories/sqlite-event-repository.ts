@@ -1,10 +1,7 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite';
-import { type CalendarEvent, type DateRange, type EventRepository, eventFieldsSchema } from '@tempi/core';
+import { type CalendarEvent, calendarEventSchema, type DateRange, type EventRepository } from '@tempi/core';
 import { z } from 'zod';
-import { booleanColumn, type DomainFields, defer, parseRow, storedEntitySchema, toBooleanColumn, toInstantColumn } from '../columns';
-
-// Re-validate reads with the domain schema so a corrupt row never reaches use cases.
-const storedEventSchema = eventFieldsSchema.and(storedEntitySchema);
+import { booleanColumn, type DomainFields, defer, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
 
 const eventRowSchema = z
 	.object({
@@ -26,7 +23,7 @@ const eventRowSchema = z
 		video_url: z.string().nullable(),
 	})
 	.transform(
-		(row): DomainFields<typeof storedEventSchema> => ({
+		(row): DomainFields<typeof calendarEventSchema> => ({
 			allDay: row.all_day,
 			calendarId: row.calendar_id,
 			createdAt: row.created_at,
@@ -45,7 +42,8 @@ const eventRowSchema = z
 			videoUrl: row.video_url,
 		})
 	)
-	.pipe(storedEventSchema);
+	// Re-validate reads with the domain schema so a corrupt row never reaches use cases.
+	.pipe(calendarEventSchema);
 
 const toRow = (event: CalendarEvent) => ({
 	all_day: toBooleanColumn(event.allDay),

@@ -1,10 +1,7 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite';
-import { type Calendar, type CalendarRepository, calendarFieldsSchema } from '@tempi/core';
+import { type Calendar, type CalendarRepository, calendarSchema } from '@tempi/core';
 import { z } from 'zod';
-import { booleanColumn, type DomainFields, defer, parseRow, storedEntitySchema, toBooleanColumn, toInstantColumn } from '../columns';
-
-// Re-validate reads with the domain schema so a corrupt row never reaches use cases.
-const storedCalendarSchema = calendarFieldsSchema.and(storedEntitySchema);
+import { booleanColumn, type DomainFields, defer, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
 
 const calendarRowSchema = z
 	.object({
@@ -19,7 +16,7 @@ const calendarRowSchema = z
 		updated_at: z.string(),
 	})
 	.transform(
-		(row): DomainFields<typeof storedCalendarSchema> => ({
+		(row): DomainFields<typeof calendarSchema> => ({
 			color: row.color,
 			createdAt: row.created_at,
 			deletedAt: row.deleted_at,
@@ -31,7 +28,8 @@ const calendarRowSchema = z
 			updatedAt: row.updated_at,
 		})
 	)
-	.pipe(storedCalendarSchema);
+	// Re-validate reads with the domain schema so a corrupt row never reaches use cases.
+	.pipe(calendarSchema);
 
 const toRow = (calendar: Calendar) => ({
 	color: calendar.color,

@@ -1,10 +1,7 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite';
-import { type Settings, type SettingsRepository, settingsValuesSchema } from '@tempi/core';
+import { type Settings, type SettingsRepository, settingsSchema } from '@tempi/core';
 import { z } from 'zod';
-import { booleanColumn, type DomainFields, defer, instantColumn, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
-
-// Re-validate reads with the domain schema so a corrupt row never reaches use cases.
-const storedSettingsSchema = settingsValuesSchema.extend({ createdAt: instantColumn, updatedAt: instantColumn });
+import { booleanColumn, type DomainFields, defer, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
 
 const settingsRowSchema = z
 	.object({
@@ -21,7 +18,7 @@ const settingsRowSchema = z
 		week_start: z.string(),
 	})
 	.transform(
-		(row): DomainFields<typeof storedSettingsSchema> => ({
+		(row): DomainFields<typeof settingsSchema> => ({
 			createdAt: row.created_at,
 			defaultEventDuration: row.default_event_duration,
 			language: row.language,
@@ -35,7 +32,8 @@ const settingsRowSchema = z
 			weekStart: row.week_start,
 		})
 	)
-	.pipe(storedSettingsSchema);
+	// Re-validate reads with the domain schema so a corrupt row never reaches use cases.
+	.pipe(settingsSchema);
 
 export class SqliteSettingsRepository implements SettingsRepository {
 	private readonly getStatement: StatementSync;

@@ -1,11 +1,9 @@
-import { readdirSync, readFileSync } from 'node:fs';
 import type { DatabaseSync } from 'node:sqlite';
 import { z } from 'zod';
+import { MIGRATION_FILES } from './migrations/index';
 import { transaction } from './transaction';
 
 export type Migration = { sql: string; version: number };
-
-const MIGRATIONS_DIR = new URL('./migrations/', import.meta.url);
 
 /** `0001_init.sql` → version 1. */
 const migrationFileSchema = z
@@ -13,11 +11,10 @@ const migrationFileSchema = z
 	.regex(/^\d{4}_[a-z0-9_]+\.sql$/)
 	.transform(name => Number.parseInt(name.slice(0, 4), 10));
 
-/** Reads the bundled SQL migrations, ordered and checked to be consecutive from 1. */
-export const loadMigrations = (dir: URL = MIGRATIONS_DIR): Migration[] => {
-	const migrations = readdirSync(dir)
-		.filter(name => name.endsWith('.sql'))
-		.map(name => ({ sql: readFileSync(new URL(name, dir), 'utf8'), version: migrationFileSchema.parse(name) }))
+/** Orders the SQL migrations by file name, checked to be consecutive from 1. */
+export const loadMigrations = (files: Record<string, string> = MIGRATION_FILES): Migration[] => {
+	const migrations = Object.entries(files)
+		.map(([name, sql]) => ({ sql, version: migrationFileSchema.parse(name) }))
 		.sort((a, b) => a.version - b.version);
 	migrations.forEach((migration, index) => {
 		if (migration.version !== index + 1) throw new Error(`Migrations must be consecutive from 1; found version ${migration.version} at position ${index + 1}`);

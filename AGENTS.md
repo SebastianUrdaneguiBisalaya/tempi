@@ -142,7 +142,7 @@ apps/desktop/src/
   window-state.ts
   database.ts                opens @tempi/db in userData
   ipc/                       one file per domain (events.ts), register-ipc.ts
-  preload.cts                exposes DesktopApi; no logic
+  preload.ts                 exposes DesktopApi; no logic (bundled to dist/preload.cjs)
 
 apps/web/src/
   app/                       routes only (layout.tsx, page.tsx); thin, compose features

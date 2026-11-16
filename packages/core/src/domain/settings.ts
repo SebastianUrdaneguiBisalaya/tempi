@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { singletonTimestampsSchema } from './timestamps';
 
 export const THEMES = ['system', 'light', 'dark'] as const;
 export const LANGUAGES = ['en', 'es'] as const;
@@ -29,10 +30,9 @@ export type SettingsValues = z.output<typeof settingsValuesSchema>;
 export type SettingsPatch = z.input<typeof settingsPatchSchema>;
 
 /** App-wide preferences. There is one settings record per installation. */
-export type Settings = SettingsValues & {
-	createdAt: string;
-	updatedAt: string;
-};
+export const settingsSchema = settingsValuesSchema.extend(singletonTimestampsSchema.shape);
+
+export type Settings = z.output<typeof settingsSchema>;
 
 export const DEFAULT_SETTINGS = {
 	defaultEventDuration: 60,

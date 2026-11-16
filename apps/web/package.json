@@ -19,6 +19,7 @@
     "@shadcn/react": "^0.3.1",
     "@tempi/core": "workspace:*",
     "@tempi/i18n": "workspace:*",
+    "@tempi/ipc": "workspace:*",
     "@usehotkeys/core": "0.1.0",
     "@usehotkeys/react": "0.1.0",
     "class-variance-authority": "0.7.1",
