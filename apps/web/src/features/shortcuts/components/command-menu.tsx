@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@/components/ui/command';
 import { useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
 import { useGoToDate } from '@/features/calendar/components/go-to-date-provider';
+import { useCalendars } from '@/features/calendar/hooks/use-calendars';
+import { useExportCalendars, useImportCalendar } from '@/features/calendars/hooks/use-calendar-transfer';
 import { EventSearchItems } from '@/features/events/components/event-search';
 import { useNewEvent } from '@/features/events/hooks/use-new-event';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
@@ -15,8 +17,8 @@ import { useDialogShortcutScope, useShortcut } from '../hooks/use-shortcut';
 import { SHORTCUTS, type ShortcutAction } from '../shortcuts';
 import { ShortcutKeys } from './shortcut-keys';
 
-/** Root lists every command; the others are the choices behind "Set theme to ›", "Set language to ›" and the event search. */
-type Page = 'language' | 'root' | 'search' | 'theme';
+/** Root lists every command; the others are the choices behind "Set theme to ›", "Set language to ›", "Import .ics into ›" and the event search. */
+type Page = 'import' | 'language' | 'root' | 'search' | 'theme';
 
 const VIEW_ACTIONS = { day: 'dayView', month: 'monthView', week: 'weekView' } as const satisfies Record<CalendarView, ShortcutAction>;
 
@@ -42,6 +44,9 @@ export function CommandMenu() {
 	const newEvent = useNewEvent();
 	const { data: settings } = useSettings();
 	const saveSettings = useSaveSettings();
+	const { data: calendars } = useCalendars();
+	const importCalendar = useImportCalendar();
+	const exportCalendars = useExportCalendars();
 
 	useShortcut('openCommandMenu', () => setOpen(true));
 	useDialogShortcutScope(open);
@@ -102,6 +107,12 @@ export function CommandMenu() {
 								{actionItem('goToDate', openGoToDate)}
 								{(Object.entries(VIEW_ACTIONS) as [CalendarView, ShortcutAction][]).map(([view, action]) => actionItem(action, () => setView(view)))}
 								{actionItem('openSettings', openSettings)}
+								<CommandItem onSelect={() => showPage('import')} value={t('commandMenu.importIcs')}>
+									{t('commandMenu.importIcs')} ›
+								</CommandItem>
+								<CommandItem onSelect={run(() => exportCalendars.mutate(null))} value={t('commandMenu.exportAll')}>
+									{t('commandMenu.exportAll')}
+								</CommandItem>
 							</CommandGroup>
 							<CommandGroup heading={t('commandMenu.groups.appearance')}>
 								<CommandItem onSelect={() => showPage('theme')} value={t('commandMenu.setTheme')}>
@@ -125,6 +136,16 @@ export function CommandMenu() {
 							{THEMES.map(theme => (
 								<CommandItem data-checked={settings?.theme === theme} key={theme} onSelect={run(() => setTheme(theme))} value={t(`onboarding.theme.options.${theme}`)}>
 									{t(`onboarding.theme.options.${theme}`)}
+								</CommandItem>
+							))}
+						</CommandGroup>
+					)}
+					{page === 'import' && (
+						<CommandGroup heading={t('commandMenu.importIcs')}>
+							{calendars?.map(calendar => (
+								<CommandItem key={calendar.id} onSelect={run(() => importCalendar.mutate(calendar.id))} value={`${calendar.name} ${calendar.id}`}>
+									<span aria-hidden className='size-3 shrink-0 rounded-sm' style={{ backgroundColor: calendar.color }} />
+									{calendar.name}
 								</CommandItem>
 							))}
 						</CommandGroup>

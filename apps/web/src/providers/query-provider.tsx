@@ -8,8 +8,10 @@ import { toast } from '@/components/ui/toast';
 import { i18n } from '@/lib/i18n';
 import { offerUndo, runUndo, withdrawUndo } from '@/lib/undo';
 
-/** A translation key in `common.toasts`. */
-export type ToastMessageKey = `toasts.${LeafPaths<Translations['common']['toasts']>}`;
+type ToastMessages = Translations['common']['toasts'];
+
+/** A translation key in `common.toasts` without placeholders; toasts with values come from `successToast`. */
+export type ToastMessageKey = `toasts.${{ [K in LeafPaths<ToastMessages>]: ToastMessages[K] extends `${string}{{${string}` ? never : K }[LeafPaths<ToastMessages>]}`;
 
 type ErrorFeedbackMeta = {
 	/** The caller (a form) shows issues that have a `field`; the error toast shows only the rest. */
@@ -21,8 +23,12 @@ declare module '@tanstack/react-query' {
 		// Query and mutation functions only throw use-case failures (see `unwrap`).
 		defaultError: DomainError;
 		mutationMeta: ErrorFeedbackMeta & {
+			/** Shown as a loading toast while the mutation runs (e.g. a long import), replaced by the outcome's toast. */
+			progressMessage?: ToastMessageKey;
 			/** Shown as a success toast after the mutation succeeds. */
 			successMessage?: ToastMessageKey;
+			/** A success toast that depends on the result, already translated by the hook; null shows none (e.g. a canceled dialog). */
+			successToast?: (data: unknown) => string | null;
 			/** Reverts a successful mutation from its variables. Adds Undo to the success toast and makes it the ⌘Z action. */
 			undo?: (variables: unknown) => void;
 		};
@@ -47,6 +53,9 @@ const showError = (error: DomainError, meta: ErrorFeedbackMeta | undefined): voi
 	toast.add({ description: rest.length > 0 ? rest.join(' ') : undefined, title, type: 'error' });
 };
 
+// Loading toasts of running mutations, closed once each settles.
+const progressToasts = new WeakMap<object, string>();
+
 const createQueryClient = () =>
 	new QueryClient({
 		defaultOptions: {
@@ -68,7 +77,21 @@ const createQueryClient = () =>
 		// Feedback lives here, once, so data hooks only declare `meta` and never call `toast` themselves.
 		mutationCache: new MutationCache({
 			onError: (error, _variables, _context, mutation) => showError(error, mutation.meta),
-			onSuccess: (_data, variables, _context, mutation) => {
+			onMutate: (_variables, mutation) => {
+				const progress = mutation.meta?.progressMessage;
+				if (progress !== undefined) progressToasts.set(mutation, toast.add({ timeout: 0, title: i18n.t(progress), type: 'loading' }));
+			},
+			onSettled: (_data, _error, _variables, _context, mutation) => {
+				const id = progressToasts.get(mutation);
+				if (id !== undefined) toast.close(id);
+				progressToasts.delete(mutation);
+			},
+			onSuccess: (data, variables, _context, mutation) => {
+				const custom = mutation.meta?.successToast?.(data);
+				if (custom != null) {
+					toast.add({ title: custom, type: 'success' });
+					return;
+				}
 				const message = mutation.meta?.successMessage;
 				if (message === undefined) return;
 				const undo = mutation.meta?.undo;
