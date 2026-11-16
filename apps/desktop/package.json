@@ -52,7 +52,7 @@
       "icon": "public/tempi-icon-mac.icns"
     },
     "win": {
-      "icon": "public/tempi-icon.png"
+      "icon": "public/tempi-icon.ico"
     },
     "linux": {
       "icon": "public/tempi-icon.png"
