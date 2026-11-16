@@ -59,6 +59,38 @@ export const es = {
 			},
 			title: 'Te damos la bienvenida a Tempi',
 		},
+		shell: {
+			header: {
+				label: 'Navegación del calendario',
+				next: {
+					day: 'Día siguiente',
+					month: 'Mes siguiente',
+					week: 'Semana siguiente',
+				},
+				previous: {
+					day: 'Día anterior',
+					month: 'Mes anterior',
+					week: 'Semana anterior',
+				},
+				today: 'Hoy',
+			},
+			panel: {
+				label: 'Detalles',
+				open: 'Abrir detalles',
+				search: 'Buscar',
+			},
+			sidebar: {
+				close: 'Cerrar barra lateral',
+				label: 'Barra lateral',
+				toggle: 'Mostrar u ocultar barra lateral',
+			},
+			views: {
+				day: 'Día',
+				label: 'Vista',
+				month: 'Mes',
+				week: 'Semana',
+			},
+		},
 		toasts: {
 			onboardingCompleted: 'Todo listo.',
 			settingsSaved: 'Configuración guardada.',

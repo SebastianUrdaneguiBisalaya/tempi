@@ -57,6 +57,38 @@ export const en = {
 			},
 			title: 'Welcome to Tempi',
 		},
+		shell: {
+			header: {
+				label: 'Calendar navigation',
+				next: {
+					day: 'Next day',
+					month: 'Next month',
+					week: 'Next week',
+				},
+				previous: {
+					day: 'Previous day',
+					month: 'Previous month',
+					week: 'Previous week',
+				},
+				today: 'Today',
+			},
+			panel: {
+				label: 'Details',
+				open: 'Open details',
+				search: 'Search',
+			},
+			sidebar: {
+				close: 'Close sidebar',
+				label: 'Sidebar',
+				toggle: 'Toggle sidebar',
+			},
+			views: {
+				day: 'Day',
+				label: 'View',
+				month: 'Month',
+				week: 'Week',
+			},
+		},
 		toasts: {
 			onboardingCompleted: 'You’re all set.',
 			settingsSaved: 'Settings saved.',
