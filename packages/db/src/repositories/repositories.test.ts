@@ -38,6 +38,7 @@ const makeEvent = (overrides: Partial<CalendarEvent> = {}): CalendarEvent => ({
 	description: null,
 	endAt: '2026-11-20T10:00:00.000Z',
 	exDates: [],
+	icalUid: null,
 	id: 'evt-1',
 	location: null,
 	originalStartAt: null,
@@ -170,6 +171,42 @@ describe('SqliteEventRepository', () => {
 			"INSERT INTO events (id, calendar_id, title, start_at, end_at, all_day, time_zone, status, created_at, updated_at) VALUES ('bad', 'cal-1', 'x', '2026-11-20T09:00:00.000Z', '2026-11-20T10:00:00.000Z', 0, 'UTC', 'cancelled', ?, ?)"
 		).run(T0, T0);
 		await expect(repos.events.findById('bad')).rejects.toThrow('Invalid row');
+	});
+});
+
+describe('SqliteEventRepository by UID and calendar', () => {
+	beforeEach(async () => {
+		await repos.calendars.save(makeCalendar());
+		await repos.calendars.save(makeCalendar({ id: 'cal-2', name: 'Home' }));
+	});
+
+	test('finds an imported event by its UID, and a Tempi event by its id, within one calendar', async () => {
+		await repos.events.save(makeEvent({ icalUid: 'abc@google.com', id: 'imported' }));
+		await repos.events.save(makeEvent({ id: 'native' }));
+		await repos.events.save(makeEvent({ calendarId: 'cal-2', icalUid: 'other@example.com', id: 'elsewhere' }));
+
+		expect((await repos.events.findByUid('cal-1', 'abc@google.com'))?.id).toBe('imported');
+		expect((await repos.events.findByUid('cal-1', 'native'))?.id).toBe('native');
+		expect(await repos.events.findByUid('cal-1', 'other@example.com')).toBeNull();
+		expect(await repos.events.findByUid('cal-1', 'imported')).toBeNull();
+	});
+
+	test('skips deleted events and edited occurrences', async () => {
+		await repos.events.save(makeEvent({ deletedAt: T0, icalUid: 'gone', id: 'gone' }));
+		await repos.events.save(makeEvent({ icalUid: 'series', id: 'series', rrule: 'FREQ=DAILY' }));
+		await repos.events.save(makeEvent({ icalUid: 'series', id: 'edited', originalStartAt: '2026-11-21T09:00:00.000Z', recurringEventId: 'series' }));
+
+		expect(await repos.events.findByUid('cal-1', 'gone')).toBeNull();
+		expect((await repos.events.findByUid('cal-1', 'series'))?.id).toBe('series');
+	});
+
+	test('lists every live event of a calendar by start', async () => {
+		await repos.events.save(makeEvent({ id: 'late', startAt: '2026-11-20T09:30:00.000Z' }));
+		await repos.events.save(makeEvent({ id: 'early', rrule: 'FREQ=WEEKLY' }));
+		await repos.events.save(makeEvent({ deletedAt: T0, id: 'gone' }));
+		await repos.events.save(makeEvent({ calendarId: 'cal-2', id: 'home' }));
+
+		expect((await repos.events.listByCalendar('cal-1')).map(event => event.id)).toEqual(['early', 'late']);
 	});
 });
 
