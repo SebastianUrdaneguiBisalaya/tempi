@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS, daysToUtcRange, type EventOccurrence, fitWeek, isWeek
 import { type KeyboardEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } from '@/components/ui/popover';
+import { EventContextMenu } from '@/features/events/components/event-context-menu';
 import { useEventPanel } from '@/features/events/components/event-panel-provider';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { useElementHeight } from '@/hooks/use-element-height';
@@ -175,13 +176,15 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 													<ul className='flex flex-col gap-0.5'>
 														{daySegments.map(segment => (
 															<li key={segment.item.key} style={{ height: LANE_PX - 2 }}>
-																<button className='block size-full rounded-sm text-left hover:bg-accent' onClick={() => openEvent(segment.item)} type='button'>
-																	<EventChip
-																		color={colorOf(segment.item)}
-																		segment={{ ...segment, continuesAfter: false, continuesBefore: false, span: 1 }}
-																		time={timeOf(segment.item)}
-																	/>
-																</button>
+																<EventContextMenu event={segment.item}>
+																	<button className='block size-full rounded-sm text-left hover:bg-accent' onClick={() => openEvent(segment.item)} type='button'>
+																		<EventChip
+																			color={colorOf(segment.item)}
+																			segment={{ ...segment, continuesAfter: false, continuesBefore: false, span: 1 }}
+																			time={timeOf(segment.item)}
+																		/>
+																	</button>
+																</EventContextMenu>
 															</li>
 														))}
 													</ul>
@@ -194,25 +197,26 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 							{/* Event bars sit over the day cells so multi-day events can span them; a bar opens its event, the gaps open the day. */}
 							<div aria-hidden className='pointer-events-none absolute inset-y-0 right-0' style={{ left: eventsLeft }}>
 								{fitted.map((segment: WeekSegment<EventOccurrence>) => (
-									<button
-										className='pointer-events-auto absolute px-0.5 text-left'
-										key={segment.item.key}
-										onClick={event => {
-											event.stopPropagation();
-											openEvent(segment.item);
-										}}
-										style={{
-											height: LANE_PX - 2,
-											left: `${(segment.firstColumn / week.length) * 100}%`,
-											top: DAY_LABEL_PX + segment.lane * LANE_PX,
-											width: `${(segment.span / week.length) * 100}%`,
-										}}
-										// Keyboard users reach events through the day: Enter opens the day view.
-										tabIndex={-1}
-										type='button'
-									>
-										<EventChip color={colorOf(segment.item)} segment={segment} time={timeOf(segment.item)} />
-									</button>
+									<EventContextMenu event={segment.item} key={segment.item.key}>
+										<button
+											className='pointer-events-auto absolute px-0.5 text-left'
+											onClick={event => {
+												event.stopPropagation();
+												openEvent(segment.item);
+											}}
+											style={{
+												height: LANE_PX - 2,
+												left: `${(segment.firstColumn / week.length) * 100}%`,
+												top: DAY_LABEL_PX + segment.lane * LANE_PX,
+												width: `${(segment.span / week.length) * 100}%`,
+											}}
+											// Keyboard users reach events through the day: Enter opens the day view.
+											tabIndex={-1}
+											type='button'
+										>
+											<EventChip color={colorOf(segment.item)} segment={segment} time={timeOf(segment.item)} />
+										</button>
+									</EventContextMenu>
 								))}
 							</div>
 						</div>

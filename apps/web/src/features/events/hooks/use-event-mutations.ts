@@ -91,6 +91,35 @@ export const useDeleteOccurrence = () => {
 	});
 };
 
+/** Copies an event (a recurring one as a whole series) and returns the copy as it lists. */
+export const useDuplicateEvent = () => {
+	const api = useApi();
+	const invalidate = useInvalidateEvents();
+	return useMutation({
+		mutationFn: async (id: string) => {
+			if (api === null) throw STORAGE_UNAVAILABLE;
+			return asOccurrence(unwrap(await api.events.duplicate(id)));
+		},
+		meta: { successMessage: 'toasts.eventDuplicated' },
+		onSuccess: invalidate,
+	});
+};
+
+/** Moves an event to another calendar from its menu. `scope` is required for an occurrence of a recurring event. */
+export const useChangeEventCalendar = () => {
+	const api = useApi();
+	const invalidate = useInvalidateEvents();
+	return useMutation({
+		mutationFn: async ({ calendarId, occurrence, scope }: { calendarId: string; occurrence: EventOccurrence; scope?: OccurrenceScope }): Promise<EventOccurrence> => {
+			if (api === null) throw STORAGE_UNAVAILABLE;
+			if (occurrence.series === null || scope === undefined) return asOccurrence(unwrap(await api.events.update({ calendarId, id: occurrence.id })));
+			return unwrap(await api.events.updateOccurrence({ calendarId, originalStartAt: occurrence.series.originalStartAt, scope, seriesId: occurrence.series.id }));
+		},
+		meta: { successMessage: 'toasts.eventUpdated' },
+		onSuccess: invalidate,
+	});
+};
+
 export const useRestoreEvent = () => {
 	const api = useApi();
 	const invalidate = useInvalidateEvents();
