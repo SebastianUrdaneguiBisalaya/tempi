@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { EventPatch, NewEventInput } from '@tempi/core';
+import type { CalendarEvent, EventPatch, NewEventInput, TimeRange } from '@tempi/core';
 import { queryKeys, STORAGE_UNAVAILABLE, unwrap } from '@/lib/query';
 import { useApi } from '@/providers/api-provider';
 
@@ -34,6 +34,28 @@ export const useUpdateEvent = () => {
 		},
 		meta: { handlesFieldErrors: true, successMessage: 'toasts.eventUpdated' },
 		onSuccess: invalidate,
+	});
+};
+
+/**
+ * Moves or resizes an event from the grid (drag or keyboard). The grids show the new times right away, so repeated
+ * key presses build on each other; any failure refetches the stored times. Errors go to a toast: there is no form.
+ */
+export const useRescheduleEvent = () => {
+	const api = useApi();
+	const queryClient = useQueryClient();
+	const invalidate = useInvalidateEvents();
+	return useMutation({
+		mutationFn: async ({ id, range }: { id: string; range: TimeRange }) => {
+			if (api === null) throw STORAGE_UNAVAILABLE;
+			return unwrap(await api.events.update({ endAt: range.endAt, id, startAt: range.startAt }));
+		},
+		meta: { successMessage: 'toasts.eventUpdated' },
+		onMutate: async ({ id, range }) => {
+			await queryClient.cancelQueries({ queryKey: queryKeys.events.all });
+			queryClient.setQueriesData<CalendarEvent[]>({ queryKey: queryKeys.events.all }, events => events?.map(event => (event.id === id ? { ...event, ...range } : event)));
+		},
+		onSettled: invalidate,
 	});
 };
 
