@@ -1,9 +1,9 @@
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { systemClock, uuidv7Ids } from '@tempi/core';
-import { createRepositories, createTransactionQueue } from '@tempi/db';
-import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron';
+import { type CoreDeps, initializeSettings, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
+import { createRepositories, createTransactionQueue, type TransactionQueue } from '@tempi/db';
+import { app, BrowserWindow, ipcMain, nativeImage, nativeTheme, shell } from 'electron';
 import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol.js';
 import { openAppDatabase } from './database.js';
 import { registerIpc } from './ipc/register-ipc.js';
@@ -25,6 +25,9 @@ const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const ICON_PNG = path.join(PUBLIC_DIR, 'tempi-icon.png');
 const ICON_MAC_PNG = path.join(PUBLIC_DIR, 'tempi-icon-mac.png');
 
+// Matches the web app's --background in each theme, so the window never flashes the wrong color before the first paint.
+const BACKGROUND = { dark: '#0a0a0a', light: '#ffffff' } as const;
+
 registerAppScheme();
 
 let mainWindow: BrowserWindow | null = null;
@@ -42,6 +45,18 @@ function loadWebApp() {
 	});
 }
 
+// The renderer's `prefers-color-scheme`, native menus and dialogs all follow `themeSource`.
+function applySettings(settings: Pick<Settings, 'theme'>) {
+	nativeTheme.themeSource = settings.theme;
+}
+
+// Seeds the language from the OS on first run, then applies the stored theme before the window exists.
+async function loadSettings(deps: CoreDeps, transaction: TransactionQueue) {
+	const result = await transaction(() => initializeSettings(deps, app.getPreferredSystemLanguages()));
+	if (result.ok) applySettings(result.value);
+	else console.error('Failed to initialize settings', result.error);
+}
+
 function createWindow() {
 	const windowState = loadWindowState();
 
@@ -49,6 +64,7 @@ function createWindow() {
 		...windowOptions(windowState),
 		// macOS takes the icon from the app bundle (.icns); Windows and Linux use the window icon.
 		...(process.platform === 'darwin' ? {} : { icon: ICON_PNG }),
+		backgroundColor: nativeTheme.shouldUseDarkColors ? BACKGROUND.dark : BACKGROUND.light,
 		show: false,
 		webPreferences: {
 			allowRunningInsecureContent: false,
@@ -117,7 +133,7 @@ if (!gotLock) {
 		mainWindow.focus();
 	});
 
-	app.whenReady().then(() => {
+	app.whenReady().then(async () => {
 		// In dev the app runs inside the stock Electron bundle, so set the dock icon explicitly.
 		// A PNG through nativeImage is more reliable than an .icns path here.
 		if (process.platform === 'darwin' && !app.isPackaged) {
@@ -126,7 +142,10 @@ if (!gotLock) {
 		}
 		if (app.isPackaged) handleAppProtocol(WEB_DIR);
 		database = openAppDatabase();
-		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction: createTransactionQueue(database) }, { ...createRepositories(database), clock: systemClock, ids: uuidv7Ids });
+		const transaction = createTransactionQueue(database);
+		const deps: CoreDeps = { ...createRepositories(database), clock: systemClock, ids: uuidv7Ids };
+		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction }, deps, { settingsSaved: applySettings });
+		await loadSettings(deps, transaction);
 		createWindow();
 	});
 

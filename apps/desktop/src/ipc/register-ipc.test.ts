@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import type { DatabaseSync } from 'node:sqlite';
-import { type Calendar, type CalendarRepository, type CoreDeps, uuidv7Ids } from '@tempi/core';
+import { type Calendar, type CalendarRepository, type CoreDeps, type Settings, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, openDatabase } from '@tempi/db';
 import { CHANNELS, type Channel } from '@tempi/ipc';
 import type { IpcSender } from './handle';
-import { registerIpc } from './register-ipc';
+import { type IpcListeners, registerIpc } from './register-ipc';
 
 const TRUSTED = 'app://tempi';
 const T0 = '2026-11-15T10:00:00.000Z';
@@ -16,13 +16,14 @@ let db: DatabaseSync;
 let handlers: Map<string, Listener>;
 
 /** Registers the handlers over a fresh in-memory database; `override` swaps ports to inject failures. */
-const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({})) => {
+const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), listeners: IpcListeners = {}) => {
 	db = openDatabase(':memory:', { clock });
 	handlers = new Map();
 	const deps: CoreDeps = { ...createRepositories(db), clock, ids: uuidv7Ids };
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
-		{ ...deps, ...override(deps) }
+		{ ...deps, ...override(deps) },
+		listeners
 	);
 };
 
@@ -116,5 +117,28 @@ describe('a use case that fails halfway', () => {
 		expect(await invoke(CHANNELS.calendars.delete, calendarId)).toMatchObject({ ok: false });
 		expect(rows('SELECT deleted_at FROM events')).toEqual([expect.objectContaining({ deleted_at: null })]);
 		expect(rows(`SELECT deleted_at FROM calendars WHERE name = 'Work'`)).toEqual([expect.objectContaining({ deleted_at: null })]);
+	});
+});
+
+describe('settingsSaved listener', () => {
+	let saved: Settings[];
+	const listeners: IpcListeners = { settingsSaved: settings => saved.push(settings) };
+
+	beforeEach(() => {
+		saved = [];
+	});
+
+	test('receives the committed settings after a save', async () => {
+		setup(undefined, listeners);
+		await invoke(CHANNELS.settings.save, { theme: 'dark' });
+		expect(saved).toHaveLength(1);
+		expect(saved[0]).toMatchObject({ theme: 'dark' });
+	});
+
+	test('is not called when the save is invalid or rolled back', async () => {
+		setup(deps => ({ settings: { get: () => deps.settings.get(), save: () => Promise.reject(new Error('disk I/O error')) } }), listeners);
+		expect(await invoke(CHANNELS.settings.save, { theme: 'neon' })).toMatchObject({ ok: false });
+		expect(await invoke(CHANNELS.settings.save, { theme: 'dark' })).toMatchObject({ ok: false });
+		expect(saved).toEqual([]);
 	});
 });
