@@ -2,7 +2,7 @@
 
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
-import { type EventFormValues, eventToFormValues, toFormTime } from '@/lib/event-form-values';
+import { type EventFormValues, eventToFormValues, recurrenceFormValues, toFormTime } from '@/lib/event-form-values';
 import { EventForm } from './event-form';
 import { useEventPanel } from './event-panel-provider';
 
@@ -18,12 +18,13 @@ export function EventPanel() {
 	if (selection.kind === 'event') {
 		const { event } = selection;
 		// Remount on another event or a saved change, so the form starts from the stored values.
-		return <EventForm calendars={calendars} defaultValues={eventToFormValues(event)} event={event} key={`${event.id}:${event.updatedAt}`} />;
+		return <EventForm calendars={calendars} defaultValues={eventToFormValues(event)} event={event} key={`${event.key}:${event.updatedAt}`} />;
 	}
 
 	const { draft } = selection;
 	const defaultCalendar = calendars.find(calendar => calendar.isDefault && calendar.isVisible) ?? calendars.find(calendar => calendar.isDefault) ?? calendars[0];
 	const defaultValues: EventFormValues = {
+		...recurrenceFormValues(null, draft.startAt, timeZone),
 		allDay: draft.allDay,
 		calendarId: defaultCalendar?.id ?? '',
 		description: '',

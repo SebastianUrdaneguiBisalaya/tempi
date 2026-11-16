@@ -1,6 +1,6 @@
 'use client';
 
-import { type CalendarEvent, MINUTES_PER_DAY, moveRange, resizeRange, sweepRange, type TimeRange, wallTime } from '@tempi/core';
+import { type EventOccurrence, MINUTES_PER_DAY, moveRange, resizeRange, sweepRange, type TimeRange, wallTime } from '@tempi/core';
 import { useHotkeys } from '@usehotkeys/react';
 import { type PointerEvent, useRef, useState } from 'react';
 import { focusKey } from '../components/time-grid/grid-focus';
@@ -9,7 +9,7 @@ import { SLOT_MINUTES } from '../components/time-grid/grid-geometry';
 /** A spot on the grid: day column index and minutes from midnight, unsnapped. */
 type GridPoint = { day: number; minute: number };
 
-type Drag = { at: GridPoint; from: GridPoint; kind: 'create' } | { at: GridPoint; event: CalendarEvent; grab: GridPoint; kind: 'move' } | { at: GridPoint; event: CalendarEvent; kind: 'resize' };
+type Drag = { at: GridPoint; from: GridPoint; kind: 'create' } | { at: GridPoint; event: EventOccurrence; grab: GridPoint; kind: 'move' } | { at: GridPoint; event: EventOccurrence; kind: 'resize' };
 
 /** The pointer that went down, and its drag once it has moved far enough to be one. */
 type Pending = { drag: Drag; pointerId: number; started: boolean; x: number; y: number };
@@ -22,7 +22,7 @@ type TimeGridDragOptions = {
 	/** A range was swept over empty slots. */
 	onCreate: (range: TimeRange) => void;
 	/** An event was dropped at new times. */
-	onReschedule: (event: CalendarEvent, range: TimeRange) => void;
+	onReschedule: (event: EventOccurrence, range: TimeRange) => void;
 	timeZone: string;
 };
 
@@ -81,7 +81,7 @@ export const useTimeGridDrag = ({ days, onCreate, onReschedule, timeZone }: Time
 
 	return {
 		/** The event being moved or resized, drawn faded at its stored times. */
-		draggedId: drag !== null && drag.kind !== 'create' ? drag.event.id : null,
+		draggedKey: drag !== null && drag.kind !== 'create' ? drag.event.key : null,
 		dragKind: drag?.kind ?? null,
 		/** Spread on the grid element: it follows the pointer once a drag starts. */
 		gridHandlers: {
@@ -126,13 +126,13 @@ export const useTimeGridDrag = ({ days, onCreate, onReschedule, timeZone }: Time
 		/** Pointer down on an empty slot. */
 		startCreate: (pointer: PointerEvent<HTMLElement>) => begin(pointer, at => ({ at, from: at, kind: 'create' })),
 		/** Pointer down on an event. */
-		startMove: (pointer: PointerEvent<HTMLElement>, event: CalendarEvent) => {
+		startMove: (pointer: PointerEvent<HTMLElement>, event: EventOccurrence) => {
 			// The slot underneath would start a new event instead.
 			pointer.stopPropagation();
 			begin(pointer, at => ({ at, event, grab: at, kind: 'move' }));
 		},
 		/** Pointer down on an event's bottom edge. */
-		startResize: (pointer: PointerEvent<HTMLElement>, event: CalendarEvent) => {
+		startResize: (pointer: PointerEvent<HTMLElement>, event: EventOccurrence) => {
 			pointer.stopPropagation();
 			begin(pointer, at => ({ at, event, kind: 'resize' }));
 		},

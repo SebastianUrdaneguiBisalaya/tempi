@@ -80,6 +80,19 @@ describe('registerIpc', () => {
 		expect(await invoke(CHANNELS.events.list, range)).toMatchObject({ ok: true, value: [{ id }] });
 	});
 
+	test('edits and deletes occurrences of a recurring event', async () => {
+		const range = { end: '2026-11-23T00:00:00Z', start: '2026-11-20T00:00:00Z' };
+		const created = await invoke(CHANNELS.events.create, { ...newEvent(seededCalendarId()), rrule: 'FREQ=DAILY' });
+		if (typeof created !== 'object' || created === null || !('value' in created) || typeof created.value !== 'object' || created.value === null || !('id' in created.value))
+			throw new Error('create failed');
+		const seriesId = String(created.value.id);
+		const target = { originalStartAt: '2026-11-21T14:00:00Z', seriesId };
+
+		expect(await invoke(CHANNELS.events.updateOccurrence, { ...target, scope: 'this', title: 'Moved' })).toMatchObject({ ok: true, value: { recurringEventId: seriesId, title: 'Moved' } });
+		expect(await invoke(CHANNELS.events.deleteOccurrence, { ...target, originalStartAt: '2026-11-22T14:00:00Z', scope: 'this' })).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.events.list, range)).toMatchObject({ ok: true, value: [{ key: `${seriesId}:2026-11-20T14:00:00.000Z`, title: 'Standup' }, { title: 'Moved' }] });
+	});
+
 	test('updates take the id next to the patch fields', async () => {
 		const id = seededCalendarId();
 		expect(await invoke(CHANNELS.calendars.update, { id, name: 'Home' })).toMatchObject({ ok: true, value: { id, name: 'Home' } });

@@ -10,12 +10,27 @@ export type { DaySegment } from './domain/day-layout';
 export { layoutDay, MINUTES_PER_DAY } from './domain/day-layout';
 export type { ErrorKey } from './domain/error-keys';
 export { ERROR_KEYS, isErrorKey } from './domain/error-keys';
-export type { CalendarEvent, EventFields, EventPatch, EventStatus, NewEventInput } from './domain/event';
-export { calendarEventSchema, EVENT_STATUSES, eventFieldsSchema, eventPatchSchema, newEventInputSchema } from './domain/event';
+export type { CalendarEvent, EventFields, EventOccurrence, EventPatch, EventStatus, NewEventInput, OccurrenceScope, OccurrenceTarget } from './domain/event';
+export { calendarEventSchema, EVENT_STATUSES, eventFieldsSchema, eventOccurrenceSchema, eventPatchSchema, newEventInputSchema, OCCURRENCE_SCOPES, occurrenceTargetSchema } from './domain/event';
 export type { WeekSegment } from './domain/month-layout';
 export { belongsInAllDayLane, fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './domain/month-layout';
 export type { OnboardingInput } from './domain/onboarding';
 export { onboardingInputSchema } from './domain/onboarding';
+export type { Recurrence, RecurrenceFrequency, RecurrencePreset, Weekday } from './domain/recurrence';
+export {
+	fromRrule,
+	MONTHLY_MODES,
+	monthWeekday,
+	presetOf,
+	presetRecurrence,
+	RECURRENCE_ENDS,
+	RECURRENCE_FREQUENCIES,
+	RECURRENCE_PRESETS,
+	recurrenceSchema,
+	recurrenceSchemaFor,
+	toRrule,
+	WEEKDAYS,
+} from './domain/recurrence';
 export type { TimeRange } from './domain/reschedule';
 export { moveRange, resizeRange, SNAP_MINUTES, sweepRange, wallTime } from './domain/reschedule';
 export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';
@@ -49,6 +64,7 @@ export { getSettings } from './use-cases/get-settings';
 export { initializeSettings } from './use-cases/initialize-settings';
 export { listCalendars } from './use-cases/list-calendars';
 export { listEvents } from './use-cases/list-events';
+export { asOccurrence, deleteOccurrence, updateOccurrence } from './use-cases/occurrences';
 export { restoreEvent } from './use-cases/restore-event';
 export { saveProfile } from './use-cases/save-profile';
 export { saveSettings } from './use-cases/save-settings';

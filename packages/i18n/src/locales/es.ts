@@ -51,6 +51,48 @@ export const es = {
 				titlePlaceholder: 'Añade un título',
 			},
 			newEvent: 'Nuevo evento',
+			repeat: {
+				count: 'Después de',
+				custom: 'Personalizado…',
+				daily: 'Cada día',
+				end: 'Termina',
+				every: 'Repetir cada',
+				label: 'Repetir',
+				monthly: 'Cada mes el día {{day}}',
+				monthlyMode: {
+					dayOfMonth: 'El día {{day}}',
+					weekdayOfMonth: 'El {{nth}} {{weekday}}',
+				},
+				never: 'Nunca',
+				none: 'No se repite',
+				nth: {
+					first: 'primer',
+					fourth: 'cuarto',
+					last: 'último',
+					second: 'segundo',
+					third: 'tercer',
+				},
+				on: 'Repetir el',
+				times: 'veces',
+				units: {
+					day: 'días',
+					month: 'meses',
+					week: 'semanas',
+					year: 'años',
+				},
+				until: 'El',
+				weekly: 'Cada semana el {{weekday}}',
+				yearly: 'Cada año el {{date}}',
+			},
+			scope: {
+				all: 'Todos los eventos',
+				deleteDescription: 'Elige qué eventos de “{{title}}” eliminar.',
+				deleteTitle: 'Eliminar evento periódico',
+				editDescription: 'Elige qué eventos de “{{title}}” cambiar.',
+				editTitle: 'Editar evento periódico',
+				following: 'Este evento y los siguientes',
+				this: 'Este evento',
+			},
 			reminders: {
 				atStart: 'A la hora de inicio',
 				day: '1 día antes',
@@ -166,6 +208,9 @@ export const es = {
 		},
 		profile: {
 			country: 'Elige un país válido.',
+		},
+		recurrence: {
+			untilBeforeStart: 'La repetición debe terminar el primer día del evento o después.',
 		},
 		range: {
 			endBeforeStart: 'El fin del rango debe ser posterior a su inicio.',

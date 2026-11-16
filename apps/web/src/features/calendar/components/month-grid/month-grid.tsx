@@ -1,6 +1,6 @@
 'use client';
 
-import { type CalendarEvent, DEFAULT_SETTINGS, daysToUtcRange, fitWeek, isWeekend, layoutWeek, monthWeeks, resolveLanguage, type WeekSegment, weekNumber } from '@tempi/core';
+import { DEFAULT_SETTINGS, daysToUtcRange, type EventOccurrence, fitWeek, isWeekend, layoutWeek, monthWeeks, resolveLanguage, type WeekSegment, weekNumber } from '@tempi/core';
 import { type KeyboardEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } from '@/components/ui/popover';
@@ -52,8 +52,8 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 
 	const calendarById = new Map((calendars ?? []).map(calendar => [calendar.id, calendar]));
 	const shown = (events ?? []).filter(event => calendarById.get(event.calendarId)?.isVisible !== false);
-	const colorOf = (event: CalendarEvent) => calendarById.get(event.calendarId)?.color ?? FALLBACK_COLOR;
-	const timeOf = (event: CalendarEvent) => formatTime(event.startAt, { language, timeFormat, timeZone });
+	const colorOf = (event: EventOccurrence) => calendarById.get(event.calendarId)?.color ?? FALLBACK_COLOR;
+	const timeOf = (event: EventOccurrence) => formatTime(event.startAt, { language, timeFormat, timeZone });
 
 	const columnCount = weeks[0]?.length ?? 7;
 	const rowHeight = Math.max(MIN_ROW_PX, height / weeks.length);
@@ -174,7 +174,7 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 													</PopoverHeader>
 													<ul className='flex flex-col gap-0.5'>
 														{daySegments.map(segment => (
-															<li key={segment.item.id} style={{ height: LANE_PX - 2 }}>
+															<li key={segment.item.key} style={{ height: LANE_PX - 2 }}>
 																<button className='block size-full rounded-sm text-left hover:bg-accent' onClick={() => openEvent(segment.item)} type='button'>
 																	<EventChip
 																		color={colorOf(segment.item)}
@@ -193,10 +193,10 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 							})}
 							{/* Event bars sit over the day cells so multi-day events can span them; a bar opens its event, the gaps open the day. */}
 							<div aria-hidden className='pointer-events-none absolute inset-y-0 right-0' style={{ left: eventsLeft }}>
-								{fitted.map((segment: WeekSegment<CalendarEvent>) => (
+								{fitted.map((segment: WeekSegment<EventOccurrence>) => (
 									<button
 										className='pointer-events-auto absolute px-0.5 text-left'
-										key={segment.item.id}
+										key={segment.item.key}
 										onClick={event => {
 											event.stopPropagation();
 											openEvent(segment.item);

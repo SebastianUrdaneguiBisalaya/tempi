@@ -1,6 +1,6 @@
 'use client';
 
-import type { CalendarEvent, WeekSegment } from '@tempi/core';
+import type { EventOccurrence, WeekSegment } from '@tempi/core';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -8,14 +8,14 @@ import { EventChip } from '../event-chip';
 import { ALL_DAY_LANE_REM, DAY_HEADER_REM } from './grid-geometry';
 
 type AllDayLaneProps = {
-	colorOf: (event: CalendarEvent) => string;
+	colorOf: (event: EventOccurrence) => string;
 	days: readonly Temporal.PlainDate[];
 	hiddenByColumn: readonly number[];
 	/** Rows drawn: every lane when expanded, at most two when collapsed. */
 	lanes: number;
 	onExpand: () => void;
-	onOpen: (event: CalendarEvent) => void;
-	segments: readonly WeekSegment<CalendarEvent>[];
+	onOpen: (event: EventOccurrence) => void;
+	segments: readonly WeekSegment<EventOccurrence>[];
 };
 
 /**
@@ -33,7 +33,7 @@ export function AllDayLane({ colorOf, days, hiddenByColumn, lanes, onExpand, onO
 			{segments.map(segment => (
 				<button
 					className='pointer-events-auto absolute px-0.5 text-left'
-					key={segment.item.id}
+					key={segment.item.key}
 					onClick={() => onOpen(segment.item)}
 					style={{ height, left: percent(segment.firstColumn), top: top(segment.lane), width: percent(segment.span) }}
 					// Screen readers get these events from the day headers.

@@ -91,7 +91,7 @@ Anything else is forbidden unless the user asks for that exact command, in parti
 
 ## Architecture
 
-- Domain logic and ports (interfaces such as `EventRepository`) live in `packages/core`. Core imports no Electron, Next, React or Node APIs. Its only runtime dependency is zod.
+- Domain logic and ports (interfaces such as `EventRepository`) live in `packages/core`. Core imports no Electron, Next, React or Node APIs. Its only runtime dependencies are zod and `rrule-temporal` (RRULE expansion).
 - Validation has a single source of truth: the zod schemas in `packages/core` (`newEventInputSchema`, `eventPatchSchema`, `profileInputSchema`, …). Use cases, IPC handlers and web forms all reuse them. Never rewrite a rule by hand or duplicate a schema elsewhere; if a rule changes, change the core schema.
 - Use zod for all runtime validation in every package. Don't hand-write validation with plain JS checks.
 - Errors cross every boundary (use cases, IPC) as plain data: `DomainError = { code, issues[] }`, and each issue is `{ key, params?, field?, detail }`.
@@ -104,13 +104,13 @@ Anything else is forbidden unless the user asks for that exact command, in parti
 - Adding an `ErrorKey` requires its `en` and `es` translations in `@tempi/i18n`. The typecheck fails otherwise.
 - Adapters implement ports: SQLite in desktop today, a sync or HTTP adapter later. To swap storage, write a new adapter; never change the domain.
 - Prepare for sync now: UUIDv7 text IDs, `created_at`/`updated_at` timestamps, `deleted_at` soft deletes, and no autoincrement IDs.
-- Dependency direction: `apps/*` → `packages/ipc` / `packages/db` / `packages/i18n` → `packages/core`. Core depends only on zod. Packages never import from apps.
+- Dependency direction: `apps/*` → `packages/ipc` / `packages/db` / `packages/i18n` → `packages/core`. Core depends only on zod and `rrule-temporal`. Packages never import from apps.
 
 ## Structure
 
 ```
 packages/
-  core/                      @tempi/core: domain + ports + zod schemas; zod is its only runtime dep
+  core/                      @tempi/core: domain + ports + zod schemas; runtime deps: zod, rrule-temporal
     src/
       domain/                entities, value objects and their zod schemas (event.ts, recurrence.ts)
       ports/                 interfaces (event-repository.ts, clock.ts, id-generator.ts)

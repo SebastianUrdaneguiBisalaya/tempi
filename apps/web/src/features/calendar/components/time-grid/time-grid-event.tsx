@@ -1,6 +1,6 @@
 'use client';
 
-import type { CalendarEvent, DaySegment } from '@tempi/core';
+import type { DaySegment, EventOccurrence } from '@tempi/core';
 import type { PointerEvent, Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,7 @@ type TimeGridEventProps = {
 	onOpen: () => void;
 	onResizePointerDown: (pointer: PointerEvent<HTMLElement>) => void;
 	ref?: Ref<HTMLButtonElement>;
-	segment: DaySegment<CalendarEvent>;
+	segment: DaySegment<EventOccurrence>;
 	timeLabel: string;
 };
 
@@ -47,7 +47,7 @@ export function TimeGridEvent({ color, dayCount, dayIndex, focusKey, isActive, i
 				isSelected && 'z-[6] ring-2 ring-primary',
 				isDragged && 'opacity-40'
 			)}
-			data-event-id={event.id}
+			data-event-key={event.key}
 			data-focus-key={focusKey}
 			onClick={clickEvent => {
 				// The slot under the event would start a new one.

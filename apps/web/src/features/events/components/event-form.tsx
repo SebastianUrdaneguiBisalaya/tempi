@@ -1,12 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type Calendar, type CalendarEvent, zodErrorKeyMap } from '@tempi/core';
+import { asOccurrence, type Calendar, type EventOccurrence, type EventPatch, zodErrorKeyMap } from '@tempi/core';
 import { Trash2Icon, XIcon } from 'lucide-react';
 import { useId } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import type { z } from 'zod';
 import { FormFieldError } from '@/components/form-field-error';
 import { Button } from '@/components/ui/button';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
@@ -14,12 +13,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { convertFormTimes, type EventFormValues, eventFormSchema } from '@/lib/event-form-values';
-import { useCreateEvent, useUpdateEvent } from '../hooks/use-event-mutations';
+import { convertFormTimes, type EventFormOutput, type EventFormValues, eventFormSchema } from '@/lib/event-form-values';
+import { useCreateEvent, useUpdateEvent, useUpdateOccurrence } from '../hooks/use-event-mutations';
 import { useEventPanel } from './event-panel-provider';
+import { RecurrenceFields } from './recurrence-fields';
 import { TimeZoneCombobox } from './time-zone-combobox';
-
-type EventFormOutput = z.output<typeof eventFormSchema>;
 
 const isFormField = (values: EventFormValues, field: string): field is keyof EventFormValues => Object.hasOwn(values, field);
 
@@ -29,8 +27,8 @@ const REMINDERS = [null, 0, 5, 10, 15, 30, 60, 1440] as const;
 type EventFormProps = {
 	calendars: readonly Calendar[];
 	defaultValues: EventFormValues;
-	/** The stored event being edited, or null for a new one. */
-	event: CalendarEvent | null;
+	/** The event or occurrence being edited, or null for a new one. */
+	event: EventOccurrence | null;
 };
 
 /**
@@ -40,13 +38,14 @@ type EventFormProps = {
 export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 	const { t } = useTranslation();
 	const id = useId();
-	const { close, openEvent, requestDelete } = useEventPanel();
+	const { chooseScope, close, openEvent, requestDelete } = useEventPanel();
 	const createEvent = useCreateEvent();
 	const updateEvent = useUpdateEvent();
+	const updateOccurrence = useUpdateOccurrence();
 	const form = useForm<EventFormValues, unknown, EventFormOutput>({ defaultValues, resolver: zodResolver(eventFormSchema, { error: zodErrorKeyMap }) });
 	const { control, formState, getValues, handleSubmit, reset, setError, setValue, watch } = form;
 	const allDay = watch('allDay');
-	const pending = createEvent.isPending || updateEvent.isPending;
+	const pending = createEvent.isPending || updateEvent.isPending || updateOccurrence.isPending;
 
 	// Issues the backend ties to a field show under it; the rest go to the error toast (`handlesFieldErrors`).
 	const showFieldErrors = (error: { issues: readonly { field?: string; key: string }[] }) => {
@@ -55,14 +54,30 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 		}
 	};
 
-	const submit = handleSubmit(values => {
+	const submit = handleSubmit(async values => {
+		const onSuccess = (saved: Parameters<typeof asOccurrence>[0]) => openEvent(asOccurrence(saved));
 		if (event === null) {
-			createEvent.mutate(values, { onError: showFieldErrors, onSuccess: openEvent });
+			createEvent.mutate(values, { onError: showFieldErrors, onSuccess });
 			return;
 		}
-		// The form doesn't edit recurrence, status or the video link, so the update leaves them as they are.
-		const { rrule: _rrule, status: _status, videoUrl: _videoUrl, ...patch } = values;
-		updateEvent.mutate({ id: event.id, patch }, { onError: showFieldErrors, onSuccess: openEvent });
+		// The form doesn't edit status or the video link, so the update leaves them as they are.
+		const { status: _status, videoUrl: _videoUrl, ...fields } = values;
+		const { dirtyFields } = formState;
+		const repeatChanged = dirtyFields.repeat === true || dirtyFields.recurrence !== undefined;
+		const timesChanged = dirtyFields.allDay || dirtyFields.startAt || dirtyFields.endAt || dirtyFields.timeZone;
+		// Only what the user changed, so an occurrence's edit doesn't copy every field onto the rest of its series.
+		const patch: EventPatch = {
+			...Object.fromEntries((['calendarId', 'description', 'location', 'reminderMinutes', 'title'] as const).filter(key => dirtyFields[key]).map(key => [key, fields[key]])),
+			...(timesChanged && { allDay: fields.allDay, endAt: fields.endAt, startAt: fields.startAt, timeZone: fields.timeZone }),
+			...(repeatChanged && { rrule: fields.rrule }),
+		};
+		if (event.series === null) {
+			updateEvent.mutate({ id: event.id, patch }, { onError: showFieldErrors, onSuccess });
+			return;
+		}
+		// A changed recurrence can't apply to one occurrence alone.
+		const scope = await chooseScope({ action: 'edit', allowThis: !repeatChanged, title: event.title });
+		if (scope !== null) updateOccurrence.mutate({ occurrence: { ...event, series: event.series }, patch, scope }, { onError: showFieldErrors, onSuccess: openEvent });
 	});
 
 	const toggleAllDay = (checked: boolean) => {
@@ -136,6 +151,7 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 						/>
 					))}
 				</div>
+				<RecurrenceFields control={control} id={id} />
 				<Controller
 					control={control}
 					name='timeZone'

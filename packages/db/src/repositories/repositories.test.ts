@@ -37,8 +37,11 @@ const makeEvent = (overrides: Partial<CalendarEvent> = {}): CalendarEvent => ({
 	deletedAt: null,
 	description: null,
 	endAt: '2026-11-20T10:00:00.000Z',
+	exDates: [],
 	id: 'evt-1',
 	location: null,
+	originalStartAt: null,
+	recurringEventId: null,
 	reminderMinutes: null,
 	rrule: null,
 	startAt: '2026-11-20T09:00:00.000Z',
@@ -106,6 +109,25 @@ describe('SqliteEventRepository', () => {
 
 		const listed = await repos.events.listInRange({ end: '2026-11-20T12:00:00.000Z', start: '2026-11-20T08:00:00.000Z' });
 		expect(listed.map(event => event.id)).toEqual(['straddles-start', 'inside']);
+	});
+
+	test('round-trips a series and an edited occurrence linked to it', async () => {
+		const series = makeEvent({ exDates: ['2026-11-21T09:00:00.000Z'], id: 'series', rrule: 'FREQ=DAILY' });
+		const edited = makeEvent({ endAt: '2026-11-21T11:00:00.000Z', id: 'edited', originalStartAt: '2026-11-21T09:00:00.000Z', recurringEventId: 'series', startAt: '2026-11-21T10:00:00.000Z' });
+		await repos.events.save(series);
+		await repos.events.save(edited);
+		expect(await repos.events.findById('series')).toEqual(series);
+		expect(await repos.events.listBySeries('series')).toEqual([edited]);
+	});
+
+	test('lists series by start and leaves them out of range reads', async () => {
+		await repos.events.save(makeEvent({ id: 'series', rrule: 'FREQ=DAILY' }));
+		await repos.events.save(makeEvent({ id: 'later-series', rrule: 'FREQ=DAILY', startAt: '2026-12-01T09:00:00.000Z', endAt: '2026-12-01T10:00:00.000Z' }));
+		await repos.events.save(makeEvent({ deletedAt: T0, id: 'deleted-series', rrule: 'FREQ=DAILY' }));
+		await repos.events.save(makeEvent({ id: 'single' }));
+
+		expect((await repos.events.listSeries('2026-11-25T00:00:00.000Z')).map(event => event.id)).toEqual(['series']);
+		expect((await repos.events.listInRange({ end: '2026-11-21T00:00:00.000Z', start: '2026-11-20T00:00:00.000Z' })).map(event => event.id)).toEqual(['single']);
 	});
 
 	test('excludes soft-deleted events from range reads', async () => {

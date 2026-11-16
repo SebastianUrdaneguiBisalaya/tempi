@@ -10,6 +10,9 @@ export const toUtcInstant = (value: string): string | null => {
 	return Number.isNaN(ms) ? null : new Date(ms).toISOString();
 };
 
+/** A Temporal instant in the same normalized UTC text the schemas output, so stored instants compare as strings. */
+export const instantToUtc = (instant: Temporal.Instant): string => new Date(instant.epochMilliseconds).toISOString();
+
 export const isValidTimeZone = (value: string): boolean => {
 	if (value.trim() === '') return false;
 	try {
