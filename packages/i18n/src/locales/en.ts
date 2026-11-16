@@ -19,6 +19,9 @@ export const en = {
 				events: 'All-day: {{titles}}',
 				more: '+{{count}} more',
 			},
+			event: {
+				keyboard: 'Alt plus arrows move it, Alt plus Shift plus up or down arrow changes its end.',
+			},
 			grid: 'Schedule',
 			month: {
 				more: '+{{count}} more',
