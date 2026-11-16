@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './month-layout';
+import { belongsInAllDayLane, fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './month-layout';
 
 const date = (value: string) => Temporal.PlainDate.from(value);
 const LIMA = 'America/Lima'; // UTC-5, no DST.
@@ -121,5 +121,18 @@ describe('fitWeek', () => {
 		const result = fitWeek([segment('a', 0, 1, 0), segment('b', 1, 1, 0), segment('span', 0, 2, 1), segment('c', 1, 1, 2)], 7, 2);
 		expect(result.shown.map(shown => shown.item)).toEqual(['a', 'b']);
 		expect(result.hiddenByColumn.slice(0, 2)).toEqual([1, 2]);
+	});
+});
+
+describe('belongsInAllDayLane', () => {
+	test('all-day items and timed items of a day or more go in the lane', () => {
+		expect(belongsInAllDayLane(allDay('a', '2026-11-15', '2026-11-15'))).toBe(true);
+		expect(belongsInAllDayLane(timed('day', '2026-11-15T10:00', '2026-11-16T10:00'))).toBe(true);
+		expect(belongsInAllDayLane(timed('trip', '2026-11-15T10:00', '2026-11-17T18:00'))).toBe(true);
+	});
+
+	test('shorter timed items stay in the time grid, even across midnight', () => {
+		expect(belongsInAllDayLane(timed('night', '2026-11-15T22:00', '2026-11-16T02:00'))).toBe(false);
+		expect(belongsInAllDayLane(timed('almost', '2026-11-15T10:00', '2026-11-16T09:59'))).toBe(false);
 	});
 });

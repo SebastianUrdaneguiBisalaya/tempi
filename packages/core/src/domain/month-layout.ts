@@ -38,6 +38,11 @@ export const itemDays = (item: DatedItem, timeZone: string): { first: Temporal.P
 	return { first, last: Temporal.PlainDate.compare(last, first) < 0 ? first : last };
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** All-day items and timed items lasting a day or more go in the all-day lane above the time grid, not in it. */
+export const belongsInAllDayLane = (item: Pick<DatedItem, 'allDay' | 'endAt' | 'startAt'>): boolean => item.allDay || Date.parse(item.endAt) - Date.parse(item.startAt) >= DAY_MS;
+
 /** An item placed in one week row: the columns it covers and the lane (row inside the week) it sits in. */
 export type WeekSegment<T> = {
 	/** The item started before this row's first shown day. */
