@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { convertFormTimes, type EventFormOutput, type EventFormValues, eventFormSchema } from '@/lib/event-form-values';
 import { useCreateEvent, useUpdateEvent, useUpdateOccurrence } from '../hooks/use-event-mutations';
+import { DateTimeField } from './date-time-field';
 import { useEventPanel } from './event-panel-provider';
 import { RecurrenceFields } from './recurrence-fields';
 import { TimeZoneCombobox } from './time-zone-combobox';
@@ -101,7 +102,6 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 	};
 	const statusItems = EVENT_STATUSES.map(status => ({ label: t(`events.status.${status}`), value: status }));
 	const reminderItems = REMINDERS.map(minutes => ({ label: reminderLabel(minutes), value: minutes === null ? 'none' : String(minutes) }));
-	const timeType = allDay ? 'date' : 'datetime-local';
 
 	return (
 		<form className='flex h-full min-h-0 flex-col' noValidate onSubmit={submit}>
@@ -141,7 +141,7 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 							</Field>
 						)}
 					/>
-					<div className='grid gap-3 sm:grid-cols-2'>
+					<div className='grid gap-3'>
 						{(['startAt', 'endAt'] as const).map(name => (
 							<Controller
 								control={control}
@@ -150,7 +150,17 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 								render={({ field, fieldState }) => (
 									<Field data-invalid={fieldState.invalid || undefined}>
 										<FieldLabel htmlFor={`${id}-${name}`}>{t(name === 'startAt' ? 'events.form.start' : 'events.form.end')}</FieldLabel>
-										<Input aria-invalid={fieldState.invalid || undefined} id={`${id}-${name}`} type={timeType} {...field} />
+										<DateTimeField
+											allDay={allDay}
+											dateLabel={t(name === 'startAt' ? 'events.form.startDate' : 'events.form.endDate')}
+											id={`${id}-${name}`}
+											invalid={fieldState.invalid}
+											onBlur={field.onBlur}
+											onChange={field.onChange}
+											ref={field.ref}
+											timeLabel={t(name === 'startAt' ? 'events.form.startTime' : 'events.form.endTime')}
+											value={field.value}
+										/>
 										<FormFieldError error={fieldState.error} />
 									</Field>
 								)}
@@ -182,7 +192,7 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 									<SelectContent>
 										{calendarItems.map(item => (
 											<SelectItem key={item.value} value={item.value}>
-												<span aria-hidden className='size-2.5 rounded-full' style={{ backgroundColor: item.color }} />
+												<span aria-hidden className='size-2.5 shrink-0 self-center rounded-full' style={{ backgroundColor: item.color }} />
 												{item.label}
 											</SelectItem>
 										))}

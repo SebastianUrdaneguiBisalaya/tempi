@@ -73,7 +73,11 @@ export function CalendarList() {
 									<span className={cn('truncate', !calendar.isVisible && 'text-muted-foreground')}>{calendar.name}</span>
 									{calendar.isDefault && <span className='shrink-0 text-[0.65rem] text-muted-foreground'>{t('calendars.default')}</span>}
 									{calendar.readOnly && <span className='shrink-0 text-[0.65rem] text-muted-foreground'>{t('calendars.readOnly')}</span>}
-									<VisibilityIcon aria-hidden className='ml-auto text-muted-foreground' />
+									{/* The row itself toggles visibility, so the icon only appears on hover or keyboard focus (not the focus the actions menu hands back on close); touch screens (below md) always show it. */}
+									<VisibilityIcon
+										aria-hidden
+										className='ml-auto text-muted-foreground transition-opacity group-hover/menu-item:opacity-100 group-has-[:focus-visible]/menu-item:opacity-100 md:opacity-0'
+									/>
 								</ContextMenuTrigger>
 								<ContextMenuContent>
 									{actions.map(action => (
@@ -85,7 +89,7 @@ export function CalendarList() {
 								</ContextMenuContent>
 							</ContextMenu>
 							<DropdownMenu>
-								<DropdownMenuTrigger render={<SidebarMenuAction aria-label={t('calendars.actions', { name: calendar.name })} showOnHover />}>
+								<DropdownMenuTrigger render={<SidebarMenuAction aria-label={t('calendars.actions', { name: calendar.name })} />}>
 									<MoreHorizontalIcon />
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align='start' side='right'>

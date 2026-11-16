@@ -15,13 +15,13 @@ import { toUtcDate } from '@/lib/plain-date';
 import { UserAvatarButton } from './user-avatar';
 
 type AppHeaderProps = {
-	/** Shown only when the right panel is collapsed into a drawer. */
-	onOpenPanel?: () => void;
+	onTogglePanel: () => void;
 	onToggleSidebar: () => void;
+	panelOpen: boolean;
 	sidebarOpen: boolean;
 };
 
-export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHeaderProps) {
+export function AppHeader({ onTogglePanel, onToggleSidebar, panelOpen, sidebarOpen }: AppHeaderProps) {
 	const { i18n, t } = useTranslation();
 	const { date, goToNext, goToPrevious, goToToday, setView, view } = useCalendarNavigation();
 	const { openSettings } = useSettingsDialog();
@@ -77,11 +77,14 @@ export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHead
 						{t('settings.open')} <ShortcutKeys keys={[SHORTCUTS.openSettings.keys]} />
 					</TooltipContent>
 				</Tooltip>
-				{onOpenPanel && (
-					<Button aria-label={t('shell.panel.open')} onClick={onOpenPanel} size='icon' variant='ghost'>
+				<Tooltip>
+					<TooltipTrigger render={<Button aria-expanded={panelOpen} aria-label={t('shell.panel.toggle')} onClick={onTogglePanel} size='icon' variant='ghost' />}>
 						<PanelRightIcon />
-					</Button>
-				)}
+					</TooltipTrigger>
+					<TooltipContent>
+						{t('shell.panel.toggle')} <ShortcutKeys keys={[SHORTCUTS.togglePanel.keys]} />
+					</TooltipContent>
+				</Tooltip>
 			</div>
 		</header>
 	);

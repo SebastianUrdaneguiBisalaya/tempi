@@ -60,9 +60,20 @@ function ShellLayout() {
 	const [sidebarExpanded, setSidebarExpanded] = useState(true);
 	const [sidebarDrawerOpen, setSidebarDrawerOpen] = useState(false);
 	const [panelDrawerOpen, setPanelDrawerOpen] = useState(false);
+	const [panelExpanded, setPanelExpanded] = useState(true);
+	// An open or new event always shows the panel, like the drawer does on narrow windows.
+	const panelOpen = panelInline ? panelExpanded || selection !== null : panelDrawerOpen || selection !== null;
 
 	const toggleSidebar = () => (sidebarInline ? setSidebarExpanded(open => !open) : setSidebarDrawerOpen(open => !open));
 	useShortcut('toggleSidebar', toggleSidebar);
+	const togglePanel = () => {
+		if (!panelOpen) return panelInline ? setPanelExpanded(true) : setPanelDrawerOpen(true);
+		// Hiding the panel also closes the event shown in it, or the selection would bring it straight back.
+		close();
+		if (panelInline) setPanelExpanded(false);
+		else setPanelDrawerOpen(false);
+	};
+	useShortcut('togglePanel', togglePanel);
 	const panelContent =
 		selection === null ? (
 			<SearchablePanel footer={<ShortcutsHint />}>
@@ -99,15 +110,17 @@ function ShellLayout() {
 				</Drawer>
 			)}
 			<SidebarInset className='min-h-0 min-w-0'>
-				<AppHeader onOpenPanel={panelInline ? undefined : () => setPanelDrawerOpen(true)} onToggleSidebar={toggleSidebar} sidebarOpen={sidebarInline ? sidebarExpanded : sidebarDrawerOpen} />
+				<AppHeader onTogglePanel={togglePanel} onToggleSidebar={toggleSidebar} panelOpen={panelOpen} sidebarOpen={sidebarInline ? sidebarExpanded : sidebarDrawerOpen} />
 				<div className='flex min-h-0 flex-1'>
 					<div className='min-w-0 flex-1'>
 						<CalendarMain />
 					</div>
 					{panelInline ? (
-						<aside aria-label={t('shell.panel.label')} className='w-72 shrink-0 border-l'>
-							{panelContent}
-						</aside>
+						panelOpen && (
+							<aside aria-label={t('shell.panel.label')} className='w-72 shrink-0 border-l'>
+								{panelContent}
+							</aside>
+						)
 					) : (
 						<Drawer
 							onOpenChange={open => {
@@ -116,7 +129,7 @@ function ShellLayout() {
 								close();
 							}}
 							// Opening or creating an event brings the panel into view on narrow windows.
-							open={panelDrawerOpen || selection !== null}
+							open={panelOpen}
 							swipeDirection='right'
 						>
 							<DrawerContent>
