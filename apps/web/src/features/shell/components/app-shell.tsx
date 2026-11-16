@@ -7,7 +7,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarInset, SidebarProvider } 
 import { CalendarMain } from '@/features/calendar/components/calendar-main';
 import { CalendarNavigationProvider } from '@/features/calendar/components/calendar-navigation-provider';
 import { CalendarShortcuts } from '@/features/calendar/components/calendar-shortcuts';
-import { GoToDateDialog } from '@/features/calendar/components/go-to-date-dialog';
+import { GoToDateProvider } from '@/features/calendar/components/go-to-date-provider';
 import { MiniCalendar } from '@/features/calendar/components/mini-calendar';
 import { CalendarList } from '@/features/calendars/components/calendar-list';
 import { EventPanel } from '@/features/events/components/event-panel';
@@ -15,6 +15,7 @@ import { EventPanelProvider, useEventPanel } from '@/features/events/components/
 import { SearchablePanel } from '@/features/events/components/event-search';
 import { EventShortcuts } from '@/features/events/components/event-shortcuts';
 import { SettingsDialogProvider } from '@/features/settings/components/settings-dialog-provider';
+import { CommandMenu } from '@/features/shortcuts/components/command-menu';
 import { ShortcutsDialog } from '@/features/shortcuts/components/shortcuts-dialog';
 import { UsefulShortcuts } from '@/features/shortcuts/components/useful-shortcuts';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
@@ -31,11 +32,13 @@ export function AppShell() {
 		<CalendarNavigationProvider>
 			<EventPanelProvider>
 				<SettingsDialogProvider>
-					<CalendarShortcuts />
-					<EventShortcuts />
-					<ShellLayout />
-					<GoToDateDialog />
-					<ShortcutsDialog />
+					<GoToDateProvider>
+						<CalendarShortcuts />
+						<EventShortcuts />
+						<ShellLayout />
+						<ShortcutsDialog />
+						<CommandMenu />
+					</GoToDateProvider>
 				</SettingsDialogProvider>
 			</EventPanelProvider>
 		</CalendarNavigationProvider>

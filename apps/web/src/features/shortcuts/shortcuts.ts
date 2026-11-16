@@ -29,6 +29,7 @@ export const SHORTCUTS = {
 	newEvent: { group: 'events', keys: 'c', scope: HOTKEY_SCOPES.grid },
 	deleteEvent: { group: 'events', keys: ['backspace', 'delete'], scope: HOTKEY_SCOPES.grid },
 	undo: { group: 'events', keys: 'mod+z', scope: HOTKEY_SCOPES.global },
+	openCommandMenu: { group: 'general', keys: 'mod+k', scope: HOTKEY_SCOPES.global },
 	showShortcuts: { group: 'general', keys: '?', scope: HOTKEY_SCOPES.global },
 	openSettings: { group: 'general', keys: 'mod+,', scope: HOTKEY_SCOPES.global },
 	// The physical key under Esc (`Backquote`), not the character: on layouts such as Spanish, "`" is a dead key
