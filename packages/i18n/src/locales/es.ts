@@ -80,6 +80,7 @@ export const es = {
 				search: 'Buscar',
 			},
 			sidebar: {
+				datePicker: 'Ir a una fecha',
 				close: 'Cerrar barra lateral',
 				label: 'Barra lateral',
 				toggle: 'Mostrar u ocultar barra lateral',

@@ -78,6 +78,7 @@ export const en = {
 				search: 'Search',
 			},
 			sidebar: {
+				datePicker: 'Go to date',
 				close: 'Close sidebar',
 				label: 'Sidebar',
 				toggle: 'Toggle sidebar',
