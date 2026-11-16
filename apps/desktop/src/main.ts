@@ -3,8 +3,10 @@ import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { type CoreDeps, initializeSettings, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, type TransactionQueue } from '@tempi/db';
-import { app, BrowserWindow, ipcMain, nativeImage, nativeTheme, shell } from 'electron';
-import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol.js';
+import { app, BrowserWindow, ipcMain, nativeImage, nativeTheme, protocol, shell } from 'electron';
+import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
+import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
+import { createFileAvatarStore } from './avatar-store.js';
 import { openAppDatabase } from './database.js';
 import { registerIpc } from './ipc/register-ipc.js';
 import { loadWindowState, trackWindowState, windowOptions } from './window-state.js';
@@ -28,7 +30,8 @@ const ICON_MAC_PNG = path.join(PUBLIC_DIR, 'tempi-icon-mac.png');
 // Matches the web app's --background in each theme, so the window never flashes the wrong color before the first paint.
 const BACKGROUND = { dark: '#0a0a0a', light: '#ffffff' } as const;
 
-registerAppScheme();
+// Electron keeps only the last registration, so every privileged scheme goes in this single call.
+protocol.registerSchemesAsPrivileged([appScheme, avatarScheme]);
 
 let mainWindow: BrowserWindow | null = null;
 let database: DatabaseSync | null = null;
@@ -141,9 +144,11 @@ if (!gotLock) {
 			if (!dockIcon.isEmpty()) app.dock?.setIcon(dockIcon);
 		}
 		if (app.isPackaged) handleAppProtocol(WEB_DIR);
+		const avatarsDir = path.join(app.getPath('userData'), 'avatars');
+		handleAvatarProtocol(avatarsDir);
 		database = openAppDatabase();
 		const transaction = createTransactionQueue(database);
-		const deps: CoreDeps = { ...createRepositories(database), clock: systemClock, ids: uuidv7Ids };
+		const deps: CoreDeps = { ...createRepositories(database), avatars: createFileAvatarStore(avatarsDir), clock: systemClock, ids: uuidv7Ids };
 		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction }, deps, { settingsSaved: applySettings });
 		await loadSettings(deps, transaction);
 		createWindow();

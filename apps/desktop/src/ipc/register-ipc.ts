@@ -2,6 +2,7 @@ import type { CoreDeps, Settings } from '@tempi/core';
 import { registerCalendarHandlers } from './calendars';
 import { registerEventHandlers } from './events';
 import type { HandlerContext } from './handle';
+import { registerOnboardingHandlers } from './onboarding';
 import { registerProfileHandlers } from './profile';
 import { registerSettingsHandlers } from './settings';
 
@@ -17,6 +18,7 @@ export type IpcListeners = {
 export const registerIpc = (context: HandlerContext, deps: CoreDeps, listeners: IpcListeners = {}): void => {
 	registerCalendarHandlers(context, deps);
 	registerEventHandlers(context, deps);
+	registerOnboardingHandlers(context, deps, listeners.settingsSaved);
 	registerProfileHandlers(context, deps);
 	registerSettingsHandlers(context, deps, listeners.settingsSaved);
 };
