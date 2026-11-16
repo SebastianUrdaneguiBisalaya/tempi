@@ -4,6 +4,7 @@ import { type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps
 import { createRepositories, createTransactionQueue, openDatabase } from '@tempi/db';
 import { parseIcs, serializeIcs } from '@tempi/ical';
 import { CHANNELS, type Channel } from '@tempi/ipc';
+import type { GoogleAccountService } from '../google/google-account';
 import type { IpcSender } from './handle';
 import { type DataIo, type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
 
@@ -40,6 +41,22 @@ const dataIo: DataIo = {
 	},
 };
 
+/** The fake Google service: one account at most, like the real one. */
+let googleEmail: string | null;
+
+const google: GoogleAccountService = {
+	account: () => Promise.resolve(googleEmail === null ? null : { email: googleEmail }),
+	connect: () => {
+		if (googleEmail !== null) return Promise.resolve(fail('conflict', 'google.alreadyConnected'));
+		googleEmail = 'ada@example.com';
+		return Promise.resolve(ok({ account: { email: googleEmail }, status: 'connected' as const }));
+	},
+	disconnect: () => {
+		googleEmail = null;
+		return Promise.resolve(ok(null));
+	},
+};
+
 const icalIo: IcalIo = {
 	chooseExportPath: name => Promise.resolve(exportPath === null ? null : `${exportPath}/${name}`),
 	chooseImportFile: () => Promise.resolve(importText),
@@ -61,6 +78,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	backupPath = '/backups';
 	restoreSource = null;
 	dataCalls = [];
+	googleEmail = null;
 	exportPath = '/exports';
 	written = [];
 	const avatarStore = {
@@ -71,7 +89,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
-		{ data: dataIo, ical: icalIo },
+		{ data: dataIo, google, ical: icalIo },
 		listeners
 	);
 };
@@ -502,5 +520,23 @@ describe('backup and restore', () => {
 		expect(await invoke(CHANNELS.data.backup)).toEqual({ ok: true, value: { status: 'canceled' } });
 		expect(await invoke(CHANNELS.data.restore)).toEqual({ ok: true, value: { status: 'canceled' } });
 		expect(dataCalls).toEqual([]);
+	});
+});
+
+describe('Google account', () => {
+	beforeEach(() => setup());
+
+	test('connects one account, refuses a second and disconnects', async () => {
+		expect(await invoke(CHANNELS.google.account)).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.google.connect)).toEqual({ ok: true, value: { account: { email: 'ada@example.com' }, status: 'connected' } });
+		expect(await invoke(CHANNELS.google.connect)).toMatchObject({ error: { issues: [{ key: 'google.alreadyConnected' }] }, ok: false });
+		expect(await invoke(CHANNELS.google.account)).toEqual({ ok: true, value: { email: 'ada@example.com' } });
+		expect(await invoke(CHANNELS.google.disconnect)).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.google.account)).toEqual({ ok: true, value: null });
+	});
+
+	test('refuses untrusted senders', async () => {
+		expect(await invoke(CHANNELS.google.connect, undefined, 'https://evil.example/')).toMatchObject({ ok: false });
+		expect(googleEmail).toBeNull();
 	});
 });

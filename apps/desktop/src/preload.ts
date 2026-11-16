@@ -51,6 +51,11 @@ const desktop: DesktopApi = {
 		update: input => ipcRenderer.invoke(CHANNELS.events.update, input),
 		updateOccurrence: input => ipcRenderer.invoke(CHANNELS.events.updateOccurrence, input),
 	},
+	google: {
+		account: () => ipcRenderer.invoke(CHANNELS.google.account),
+		connect: () => ipcRenderer.invoke(CHANNELS.google.connect),
+		disconnect: () => ipcRenderer.invoke(CHANNELS.google.disconnect),
+	},
 	onboarding: {
 		complete: input => ipcRenderer.invoke(CHANNELS.onboarding.complete, input),
 	},
