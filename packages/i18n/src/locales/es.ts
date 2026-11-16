@@ -249,11 +249,23 @@ export const es = {
 					sunday: 'Domingo',
 				},
 			},
+			data: {
+				backup: 'Crear copia…',
+				backupDescription: 'Guarda una copia de tus calendarios, eventos, ajustes y foto de perfil en un archivo.',
+				backupTitle: 'Copia de seguridad',
+				confirm: 'Elegir copia…',
+				confirmDescription: 'Todo lo que hay en Tempi se reemplazará por la copia que elijas a continuación. Luego Tempi se reinicia.',
+				confirmTitle: '¿Reemplazar todos los datos por una copia?',
+				restore: 'Restaurar copia…',
+				restoreDescription: 'Reemplaza todo lo que hay en Tempi por una copia de seguridad. Después Tempi se reinicia.',
+				restoreTitle: 'Restaurar',
+			},
 			description: 'Cambia tu perfil y tus preferencias.',
 			open: 'Ajustes',
 			tabs: {
 				appearance: 'Apariencia',
 				calendar: 'Calendario',
+				data: 'Datos',
 				profile: 'Perfil',
 			},
 			title: 'Ajustes',
@@ -319,9 +331,11 @@ export const es = {
 			useful: 'Atajos útiles',
 		},
 		toasts: {
+			backupCreated: 'Copia de seguridad creada.',
 			calendarCreated: 'Calendario creado.',
 			calendarDeleted: 'Calendario eliminado.',
 			calendarUpdated: 'Calendario actualizado.',
+			creatingBackup: 'Creando copia de seguridad…',
 			eventCreated: 'Evento creado.',
 			eventDeleted: 'Evento eliminado.',
 			eventDuplicated: 'Evento duplicado.',
@@ -333,6 +347,7 @@ export const es = {
 			importing: 'Importando eventos…',
 			onboardingCompleted: 'Todo listo.',
 			profileUpdated: 'Perfil guardado.',
+			restoring: 'Restaurando copia de seguridad…',
 			settingsSaved: 'Configuración guardada.',
 		},
 		tray: {
@@ -356,6 +371,10 @@ export const es = {
 		avatar: {
 			fileName: 'No se encuentra esta foto.',
 			tooLarge: 'Esta foto es demasiado grande.',
+		},
+		backup: {
+			invalidFile: 'Este archivo no es una copia de seguridad de Tempi.',
+			newerVersion: 'Esta copia viene de una versión más nueva de Tempi. Actualiza Tempi para restaurarla.',
 		},
 		calendar: {
 			color: 'Elige un color válido.',

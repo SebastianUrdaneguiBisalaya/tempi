@@ -5,6 +5,8 @@
 export const ERROR_KEYS = {
 	'avatar.fileName': 'Avatar must be a stored file name (id plus jpg, png or webp extension)',
 	'avatar.tooLarge': 'Avatar image exceeds the maximum size',
+	'backup.invalidFile': 'The file is not a Tempi database backup',
+	'backup.newerVersion': 'The backup was made by a newer Tempi with a newer database schema',
 	'calendar.color': 'Color must be a #rrggbb hex value',
 	'calendar.defaultNotDeletable': 'The default calendar cannot be deleted',
 	'calendar.defaultRequired': 'A calendar must stay the default; promote another one instead',

@@ -15,7 +15,13 @@ export const transaction = <T>(db: DatabaseSync, fn: () => T): T => {
 };
 
 /** Runs async work as one transaction, after every unit queued before it. */
-export type TransactionQueue = <T>(work: () => Promise<Result<T>>) => Promise<Result<T>>;
+export type TransactionQueue = (<T>(work: () => Promise<Result<T>>) => Promise<Result<T>>) & {
+	/**
+	 * Runs work in turn with the transactions but outside any of them, for what SQLite refuses inside one
+	 * (`VACUUM INTO` for a backup) or what must wait for them to finish (closing the database for a restore).
+	 */
+	exclusive: <T>(work: () => Promise<T> | T) => Promise<T>;
+};
 
 /**
  * Serializes async units of work (core use cases) and wraps each in one transaction.
@@ -25,8 +31,15 @@ export type TransactionQueue = <T>(work: () => Promise<Result<T>>) => Promise<Re
 export const createTransactionQueue = (db: DatabaseSync): TransactionQueue => {
 	let tail: Promise<unknown> = Promise.resolve();
 
-	return <T>(work: () => Promise<Result<T>>): Promise<Result<T>> => {
-		const run = async (): Promise<Result<T>> => {
+	const enqueue = <T>(run: () => Promise<T>): Promise<T> => {
+		const next = tail.then(run);
+		// The queue keeps going after a failure; the caller still sees the rejection through `next`.
+		tail = next.catch(() => undefined);
+		return next;
+	};
+
+	const queue = <T>(work: () => Promise<Result<T>>): Promise<Result<T>> =>
+		enqueue(async () => {
 			db.exec('BEGIN IMMEDIATE');
 			try {
 				const result = await work();
@@ -36,10 +49,7 @@ export const createTransactionQueue = (db: DatabaseSync): TransactionQueue => {
 				db.exec('ROLLBACK');
 				throw error;
 			}
-		};
-		const next = tail.then(run);
-		// The queue keeps going after a failure; the caller still sees the rejection through `next`.
-		tail = next.catch(() => undefined);
-		return next;
-	};
+		});
+
+	return Object.assign(queue, { exclusive: <T>(work: () => Promise<T> | T) => enqueue(async () => work()) });
 };

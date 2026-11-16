@@ -61,3 +61,26 @@ describe('createTransactionQueue', () => {
 		expect(entries()).toEqual(['a:start', 'a:end', 'b:start', 'b:end']);
 	});
 });
+
+describe('createTransactionQueue.exclusive', () => {
+	test('waits for queued transactions and runs outside any of them', async () => {
+		const order: string[] = [];
+		const first = queue(async () => {
+			insert('first');
+			await tick();
+			order.push('transaction');
+			return ok(null);
+		});
+		// VACUUM fails inside a transaction, so this only works between them.
+		const exclusive = queue.exclusive(() => {
+			db.exec('VACUUM');
+			order.push('exclusive');
+			return 'done';
+		});
+
+		expect(await exclusive).toBe('done');
+		await first;
+		expect(order).toEqual(['transaction', 'exclusive']);
+		expect(entries()).toEqual(['first']);
+	});
+});

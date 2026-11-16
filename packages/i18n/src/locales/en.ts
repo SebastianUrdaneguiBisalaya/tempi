@@ -247,11 +247,23 @@ export const en = {
 					sunday: 'Sunday',
 				},
 			},
+			data: {
+				backup: 'Create backup…',
+				backupDescription: 'Save a copy of your calendars, events, settings and profile photo to a file.',
+				backupTitle: 'Backup',
+				confirm: 'Choose backup…',
+				confirmDescription: 'Everything in Tempi will be replaced by the backup you choose next. Tempi then restarts.',
+				confirmTitle: 'Replace all data with a backup?',
+				restore: 'Restore backup…',
+				restoreDescription: 'Replace everything in Tempi with a backup. Tempi restarts afterwards.',
+				restoreTitle: 'Restore',
+			},
 			description: 'Change your profile and preferences.',
 			open: 'Settings',
 			tabs: {
 				appearance: 'Appearance',
 				calendar: 'Calendar',
+				data: 'Data',
 				profile: 'Profile',
 			},
 			title: 'Settings',
@@ -317,9 +329,11 @@ export const en = {
 			useful: 'Useful shortcuts',
 		},
 		toasts: {
+			backupCreated: 'Backup created.',
 			calendarCreated: 'Calendar created.',
 			calendarDeleted: 'Calendar deleted.',
 			calendarUpdated: 'Calendar updated.',
+			creatingBackup: 'Creating backup…',
 			eventCreated: 'Event created.',
 			eventDeleted: 'Event deleted.',
 			eventDuplicated: 'Event duplicated.',
@@ -331,6 +345,7 @@ export const en = {
 			importing: 'Importing events…',
 			onboardingCompleted: 'You’re all set.',
 			profileUpdated: 'Profile saved.',
+			restoring: 'Restoring backup…',
 			settingsSaved: 'Settings saved.',
 		},
 		tray: {
@@ -355,6 +370,10 @@ export const en = {
 		avatar: {
 			fileName: 'This photo can’t be found.',
 			tooLarge: 'This photo is too large.',
+		},
+		backup: {
+			invalidFile: 'This file isn’t a Tempi backup.',
+			newerVersion: 'This backup comes from a newer version of Tempi. Update Tempi to restore it.',
 		},
 		calendar: {
 			color: 'Pick a valid color.',
