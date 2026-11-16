@@ -192,6 +192,13 @@ export const en = {
 			},
 			title: 'Welcome to Tempi',
 		},
+		search: {
+			allDay: '{{day}} · All day',
+			empty: 'No events found.',
+			label: 'Search events',
+			placeholder: 'Search events',
+			results: 'Search results',
+		},
 		shell: {
 			header: {
 				label: 'Calendar navigation',
