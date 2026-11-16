@@ -4,6 +4,7 @@ import { isOccurrenceStart, splitRrule } from '../domain/recurrence';
 import { fail, ok, parseWith, type Result } from '../domain/result';
 import { instantToUtc } from '../domain/values';
 import { type CoreDeps, nowIso } from './deps';
+import { writableCalendar } from './writable-calendar';
 
 type Series = CalendarEvent & { rrule: string };
 type Changes = z.output<typeof eventPatchSchema>;
@@ -46,11 +47,13 @@ const loadSeries = async (deps: Pick<CoreDeps, 'events'>, target: { originalStar
 	return ok({ overrides: await deps.events.listBySeries(series.id), series });
 };
 
-const calendarExists = async (deps: Pick<CoreDeps, 'calendars'>, calendarId: string | undefined, current: string): Promise<Result<null>> => {
+/** The series' calendar and, when the edit moves it, the target must both allow changes. */
+const calendarsWritable = async (deps: Pick<CoreDeps, 'calendars'>, calendarId: string | undefined, current: string): Promise<Result<null>> => {
+	const source = await writableCalendar(deps, current);
+	if (!source.ok) return source;
 	if (calendarId === undefined || calendarId === current) return ok(null);
-	const calendar = await deps.calendars.findById(calendarId);
-	if (calendar === null || calendar.deletedAt !== null) return fail('not_found', 'calendar.notFound', { detail: `Calendar ${calendarId} not found`, field: 'calendarId' });
-	return ok(null);
+	const target = await writableCalendar(deps, calendarId);
+	return target.ok ? ok(null) : target;
 };
 
 /** Fields that don't move an occurrence in time; changing only these keeps the edited occurrences. */
@@ -113,7 +116,7 @@ export const updateOccurrence = async (deps: Pick<CoreDeps, 'calendars' | 'clock
 
 	const { overrides, series } = loaded.value;
 	const { originalStartAt, scope } = parsedTarget.value;
-	const calendar = await calendarExists(deps, changes.value.calendarId, series.calendarId);
+	const calendar = await calendarsWritable(deps, changes.value.calendarId, series.calendarId);
 	if (!calendar.ok) return calendar;
 
 	const now = nowIso(deps.clock);
@@ -163,7 +166,7 @@ export const updateOccurrence = async (deps: Pick<CoreDeps, 'calendars' | 'clock
 };
 
 /** Deletes one occurrence of a recurring event, it and the ones after it, or the whole series. */
-export const deleteOccurrence = async (deps: Pick<CoreDeps, 'clock' | 'events'>, target: OccurrenceTarget): Promise<Result<null>> => {
+export const deleteOccurrence = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | 'events'>, target: OccurrenceTarget): Promise<Result<null>> => {
 	const parsedTarget = parseWith(occurrenceTargetSchema, target);
 	if (!parsedTarget.ok) return parsedTarget;
 	const loaded = await loadSeries(deps, parsedTarget.value);
@@ -171,6 +174,8 @@ export const deleteOccurrence = async (deps: Pick<CoreDeps, 'clock' | 'events'>,
 
 	const { overrides, series } = loaded.value;
 	const { originalStartAt, scope } = parsedTarget.value;
+	const calendar = await writableCalendar(deps, series.calendarId);
+	if (!calendar.ok) return calendar;
 	const now = nowIso(deps.clock);
 	const remove = (event: CalendarEvent) => deps.events.save({ ...event, deletedAt: now, updatedAt: now });
 

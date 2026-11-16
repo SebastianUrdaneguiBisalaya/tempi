@@ -3,7 +3,7 @@ import { type CalendarEvent, calendarEventSchema, type DateRange, type EventRepo
 import { z } from 'zod';
 import { booleanColumn, type DomainFields, defer, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
 
-const eventRowSchema = z
+export const eventRowSchema = z
 	.object({
 		all_day: booleanColumn,
 		calendar_id: z.string(),
@@ -96,7 +96,7 @@ export const toSearchQuery = (text: string): string | null => {
 	return terms.length === 0 ? null : terms.join(' ');
 };
 
-const COLUMNS =
+export const EVENT_COLUMNS =
 	'id, calendar_id, title, description, location, video_url, start_at, end_at, all_day, time_zone, rrule, ex_dates, recurring_event_id, original_start_at, reminder_minutes, status, ical_uid, created_at, updated_at, deleted_at';
 
 export class SqliteEventRepository implements EventRepository {
@@ -112,21 +112,21 @@ export class SqliteEventRepository implements EventRepository {
 	private readonly softDeleteByCalendarStatement: StatementSync;
 
 	constructor(db: DatabaseSync) {
-		this.findByIdStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE id = :id`);
+		this.findByIdStatement = db.prepare(`SELECT ${EVENT_COLUMNS} FROM events WHERE id = :id`);
 		this.findByUidStatement = db.prepare(
-			`SELECT ${COLUMNS} FROM events WHERE calendar_id = :calendar_id AND deleted_at IS NULL AND recurring_event_id IS NULL AND (ical_uid = :uid OR (ical_uid IS NULL AND id = :uid)) ORDER BY created_at, id LIMIT 1`
+			`SELECT ${EVENT_COLUMNS} FROM events WHERE calendar_id = :calendar_id AND deleted_at IS NULL AND recurring_event_id IS NULL AND (ical_uid = :uid OR (ical_uid IS NULL AND id = :uid)) ORDER BY created_at, id LIMIT 1`
 		);
-		this.listByCalendarStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE calendar_id = :calendar_id AND deleted_at IS NULL ORDER BY start_at, id`);
+		this.listByCalendarStatement = db.prepare(`SELECT ${EVENT_COLUMNS} FROM events WHERE calendar_id = :calendar_id AND deleted_at IS NULL ORDER BY start_at, id`);
 		// Half-open overlap: [start_at, end_at) intersects [start, end). Text comparison works because instants are normalized UTC.
 		// Series are expanded by core, so only events without a recurrence are listed by their own times.
-		this.listInRangeStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NULL AND start_at < :end AND end_at > :start ORDER BY start_at, id`);
-		this.listSeriesStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NOT NULL AND start_at < :before ORDER BY start_at, id`);
-		this.listBySeriesStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND recurring_event_id = :series_id ORDER BY original_start_at, id`);
+		this.listInRangeStatement = db.prepare(`SELECT ${EVENT_COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NULL AND start_at < :end AND end_at > :start ORDER BY start_at, id`);
+		this.listSeriesStatement = db.prepare(`SELECT ${EVENT_COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NOT NULL AND start_at < :before ORDER BY start_at, id`);
+		this.listBySeriesStatement = db.prepare(`SELECT ${EVENT_COLUMNS} FROM events WHERE deleted_at IS NULL AND recurring_event_id = :series_id ORDER BY original_start_at, id`);
 		this.searchStatement = db.prepare(
-			`SELECT ${COLUMNS} FROM events WHERE rowid IN (SELECT rowid FROM events_search WHERE events_search MATCH :query) AND deleted_at IS NULL ORDER BY start_at DESC, id LIMIT :limit`
+			`SELECT ${EVENT_COLUMNS} FROM events WHERE rowid IN (SELECT rowid FROM events_search WHERE events_search MATCH :query) AND deleted_at IS NULL ORDER BY start_at DESC, id LIMIT :limit`
 		);
 		this.saveStatement = db.prepare(
-			`INSERT INTO events (${COLUMNS})
+			`INSERT INTO events (${EVENT_COLUMNS})
 			VALUES (:id, :calendar_id, :title, :description, :location, :video_url, :start_at, :end_at, :all_day, :time_zone, :rrule, :ex_dates, :recurring_event_id, :original_start_at, :reminder_minutes, :status, :ical_uid, :created_at, :updated_at, :deleted_at)
 			ON CONFLICT (id) DO UPDATE SET
 				calendar_id = excluded.calendar_id, title = excluded.title, description = excluded.description,

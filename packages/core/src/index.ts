@@ -18,12 +18,24 @@ export {
 	eventOccurrenceSchema,
 	eventPatchSchema,
 	MAX_REMINDER_MINUTES,
+	NO_SERIES,
 	newEventInputSchema,
 	OCCURRENCE_SCOPES,
 	occurrenceTargetSchema,
 } from './domain/event';
 export type { GoogleAccount, GoogleConnectResult } from './domain/google-account';
 export { googleAccountSchema, googleConnectResultSchema } from './domain/google-account';
+export type { GoogleAccessRole, GoogleCalendarChoice, GoogleCalendarLink, GoogleEventLink, GoogleSyncState, GoogleSyncStatus, SelectGoogleCalendarsInput } from './domain/google-sync';
+export {
+	GOOGLE_ACCESS_ROLES,
+	GOOGLE_SYNC_STATES,
+	googleCalendarChoiceSchema,
+	googleCalendarLinkSchema,
+	googleEventLinkSchema,
+	googleSyncStatusSchema,
+	isWritableRole,
+	selectGoogleCalendarsInputSchema,
+} from './domain/google-sync';
 export type { ExportEventsInput, ImportEventsInput, ImportedEvent, ImportSummary } from './domain/ical-transfer';
 export { exportEventsInputSchema, importEventsInputSchema, importedEventSchema } from './domain/ical-transfer';
 export type { WeekSegment } from './domain/month-layout';
@@ -63,6 +75,7 @@ export type { CalendarRepository } from './ports/calendar-repository';
 export type { Clock } from './ports/clock';
 export { systemClock } from './ports/clock';
 export type { EventRepository } from './ports/event-repository';
+export type { GoogleSyncRepository } from './ports/google-sync-repository';
 export type { IdGenerator } from './ports/id-generator';
 export { uuidv7Ids } from './ports/id-generator';
 export type { ProfileRepository } from './ports/profile-repository';
@@ -79,6 +92,7 @@ export type { ExportedCalendars } from './use-cases/export-events';
 export { exportEvents } from './use-cases/export-events';
 export { getProfile } from './use-cases/get-profile';
 export { getSettings } from './use-cases/get-settings';
+export { detachGoogleCalendar, disconnectGoogleCalendars, listGoogleCalendars, selectGoogleCalendars } from './use-cases/google-calendars';
 export { importEvents } from './use-cases/import-events';
 export { initializeSettings } from './use-cases/initialize-settings';
 export { listCalendars } from './use-cases/list-calendars';
@@ -94,3 +108,4 @@ export { updateCalendar } from './use-cases/update-calendar';
 export { updateEvent } from './use-cases/update-event';
 export type { ProfileUpdate } from './use-cases/update-profile';
 export { updateProfile } from './use-cases/update-profile';
+export { writableCalendar } from './use-cases/writable-calendar';

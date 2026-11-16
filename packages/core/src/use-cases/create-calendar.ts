@@ -16,6 +16,7 @@ export const createCalendar = async (deps: Pick<CoreDeps, 'calendars' | 'clock' 
 		deletedAt: null,
 		id: deps.ids.next(),
 		isDefault: existing.length === 0 || (fields.value.isDefault ?? false),
+		readOnly: false,
 		updatedAt: now,
 	};
 	await deps.calendars.save(calendar);

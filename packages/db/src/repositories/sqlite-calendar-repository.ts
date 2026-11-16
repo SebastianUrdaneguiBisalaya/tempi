@@ -12,6 +12,7 @@ const calendarRowSchema = z
 		is_default: booleanColumn,
 		is_visible: booleanColumn,
 		name: z.string(),
+		read_only: booleanColumn,
 		source: z.string(),
 		updated_at: z.string(),
 	})
@@ -24,6 +25,7 @@ const calendarRowSchema = z
 			isDefault: row.is_default,
 			isVisible: row.is_visible,
 			name: row.name,
+			readOnly: row.read_only,
 			source: row.source,
 			updatedAt: row.updated_at,
 		})
@@ -39,11 +41,12 @@ const toRow = (calendar: Calendar) => ({
 	is_default: toBooleanColumn(calendar.isDefault),
 	is_visible: toBooleanColumn(calendar.isVisible),
 	name: calendar.name,
+	read_only: toBooleanColumn(calendar.readOnly),
 	source: calendar.source,
 	updated_at: toInstantColumn(calendar.updatedAt),
 });
 
-const COLUMNS = 'id, name, color, source, is_default, is_visible, created_at, updated_at, deleted_at';
+const COLUMNS = 'id, name, color, source, is_default, is_visible, read_only, created_at, updated_at, deleted_at';
 
 export class SqliteCalendarRepository implements CalendarRepository {
 	private readonly findByIdStatement: StatementSync;
@@ -55,10 +58,10 @@ export class SqliteCalendarRepository implements CalendarRepository {
 		this.listStatement = db.prepare(`SELECT ${COLUMNS} FROM calendars WHERE deleted_at IS NULL ORDER BY is_default DESC, name`);
 		this.saveStatement = db.prepare(
 			`INSERT INTO calendars (${COLUMNS})
-			VALUES (:id, :name, :color, :source, :is_default, :is_visible, :created_at, :updated_at, :deleted_at)
+			VALUES (:id, :name, :color, :source, :is_default, :is_visible, :read_only, :created_at, :updated_at, :deleted_at)
 			ON CONFLICT (id) DO UPDATE SET
 				name = excluded.name, color = excluded.color, source = excluded.source,
-				is_default = excluded.is_default, is_visible = excluded.is_visible,
+				is_default = excluded.is_default, is_visible = excluded.is_visible, read_only = excluded.read_only,
 				created_at = excluded.created_at, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at`
 		);
 	}

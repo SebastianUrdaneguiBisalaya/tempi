@@ -35,7 +35,7 @@ describe('openDatabase', () => {
 		expect(readUserVersion(db)).toBe(loadMigrations().length);
 		// FTS5 keeps its index in shadow tables (`events_search_data`, …) next to the virtual table.
 		const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'events_search_%' ORDER BY name").all();
-		expect(tables.map(table => table.name)).toEqual(['calendars', 'events', 'events_search', 'profile', 'settings']);
+		expect(tables.map(table => table.name)).toEqual(['calendars', 'events', 'events_search', 'google_calendars', 'google_events', 'profile', 'settings']);
 		db.close();
 	});
 

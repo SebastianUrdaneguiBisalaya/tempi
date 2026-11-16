@@ -4,7 +4,7 @@ import type { DesktopApi } from './desktop-api';
 import { createIpcClient } from './ipc-client';
 
 const T0 = '2026-11-15T10:00:00.000Z';
-const calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1', isDefault: true, isVisible: true, name: 'Personal', source: 'local' as const, updatedAt: T0 };
+const calendar = { color: '#3b82f6', createdAt: T0, deletedAt: null, id: 'cal-1', isDefault: true, isVisible: true, name: 'Personal', readOnly: false, source: 'local' as const, updatedAt: T0 };
 
 /** A `window.desktop` stand-in: every call answers `response`, and records what it was sent. */
 const fakeApi = (response: () => Promise<unknown>) => {
