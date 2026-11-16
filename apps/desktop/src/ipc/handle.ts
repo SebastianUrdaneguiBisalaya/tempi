@@ -33,9 +33,30 @@ export type HandlerContext = {
 };
 
 /**
- * Registers one channel: rejects untrusted senders, validates the payload with its core schema, then runs the use case
- * as one transaction (a failed Result or a thrown error rolls back every write). Every outcome is a `Result`, so nothing raw crosses IPC.
- * Effects queued through the `CommitHooks` run after the commit or the rollback they wait for.
+ * Registers one channel's checks around `respond`: rejects untrusted senders, validates the payload with its core
+ * schema, and turns a thrown error into a failed `Result`, so nothing raw crosses IPC. `respond` decides how the work
+ * is split around transactions; most channels go through `handle`.
+ */
+export const handleRequest = <C extends Channel>(context: HandlerContext, channel: C, respond: (payload: ChannelPayload<C>) => Promise<Result<ChannelValue<C>>>): void => {
+	context.ipc.handle(channel, async (event, payload): Promise<Result<ChannelValue<C>>> => {
+		const url = event.senderFrame?.url ?? '';
+		if (!context.isTrusted(url)) return fail('internal', 'system.unexpected', { detail: `Refused ${channel} from untrusted sender "${url}"` });
+
+		const parsed = parseWith(payloadSchemas[channel], payload);
+		if (!parsed.ok) return parsed;
+		try {
+			// TS loses the channel → schema correlation through the generic index; the schema was picked by the same `channel`.
+			return await respond(parsed.value as ChannelPayload<C>);
+		} catch (error) {
+			console.error(`IPC ${channel} failed`, error);
+			return fail('internal', 'system.unexpected', { detail: `${channel} failed: ${error instanceof Error ? error.message : String(error)}` });
+		}
+	});
+};
+
+/**
+ * Registers one channel that runs its use case as one transaction (a failed Result or a thrown error rolls back every
+ * write). Effects queued through the `CommitHooks` run after the commit or the rollback they wait for.
  */
 export const handle = <C extends Channel>(
 	context: HandlerContext,
@@ -44,19 +65,11 @@ export const handle = <C extends Channel>(
 	/** Runs after the transaction commits, so main-process side effects never reflect rolled-back writes. */
 	onCommitted?: (value: ChannelValue<C>) => void
 ): void => {
-	context.ipc.handle(channel, async (event, payload): Promise<Result<ChannelValue<C>>> => {
-		const url = event.senderFrame?.url ?? '';
-		if (!context.isTrusted(url)) return fail('internal', 'system.unexpected', { detail: `Refused ${channel} from untrusted sender "${url}"` });
-
-		const parsed = parseWith(payloadSchemas[channel], payload);
-		if (!parsed.ok) return parsed;
-
+	handleRequest(context, channel, async input => {
 		const committed: (() => Promise<void>)[] = [];
 		const rolledBack: (() => Promise<void>)[] = [];
 		const hooks: CommitHooks = { afterCommit: effect => committed.push(effect), afterRollback: effect => rolledBack.push(effect) };
 		try {
-			// TS loses the channel → schema correlation through the generic index; the schema was picked by the same `channel`.
-			const input = parsed.value as ChannelPayload<C>;
 			const result = await context.transaction(() => run(input, hooks));
 			if (!result.ok) {
 				await runEffects(channel, rolledBack);
@@ -66,9 +79,8 @@ export const handle = <C extends Channel>(
 			await runEffects(channel, committed);
 			return result;
 		} catch (error) {
-			console.error(`IPC ${channel} failed`, error);
 			await runEffects(channel, rolledBack);
-			return fail('internal', 'system.unexpected', { detail: `${channel} failed: ${error instanceof Error ? error.message : String(error)}` });
+			throw error;
 		}
 	});
 };

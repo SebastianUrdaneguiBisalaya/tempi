@@ -15,6 +15,7 @@ const reminder = (overrides: Partial<Reminder['occurrence']> = {}, fireAt = '202
 		description: null,
 		endAt: '2026-11-20T15:00:00.000Z',
 		exDates: [],
+		icalUid: null,
 		id: 'event-1',
 		key: 'event-1',
 		location: null,

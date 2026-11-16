@@ -2,9 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import type { DatabaseSync } from 'node:sqlite';
 import { type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, type Settings, type UserProfile, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, openDatabase } from '@tempi/db';
+import { parseIcs, serializeIcs } from '@tempi/ical';
 import { CHANNELS, type Channel } from '@tempi/ipc';
 import type { IpcSender } from './handle';
-import { type IpcListeners, registerIpc } from './register-ipc';
+import { type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
 
 const TRUSTED = 'app://tempi';
 const T0 = '2026-11-15T10:00:00.000Z';
@@ -15,12 +16,31 @@ type Listener = (event: IpcSender, payload: unknown) => Promise<unknown>;
 let db: DatabaseSync;
 let handlers: Map<string, Listener>;
 let avatars: Map<string, AvatarImage>;
+/** What the fake open dialog returns (null: canceled), and what export dialogs and writes saw. */
+let importText: string | null;
+let exportPath: string | null;
+let written: { path: string; text: string }[];
+
+const icalIo: IcalIo = {
+	chooseExportPath: name => Promise.resolve(exportPath === null ? null : `${exportPath}/${name}`),
+	chooseImportFile: () => Promise.resolve(importText),
+	now: () => new Date(T0),
+	parse: (text, options) => Promise.resolve(parseIcs(text, options)),
+	serialize: (data, now) => Promise.resolve(serializeIcs(data, now)),
+	writeFile: (path, text) => {
+		written.push({ path, text });
+		return Promise.resolve();
+	},
+};
 
 /** Registers the handlers over a fresh in-memory database; `override` swaps ports to inject failures. */
 const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), listeners: IpcListeners = {}) => {
 	db = openDatabase(':memory:', { clock });
 	handlers = new Map();
 	avatars = new Map();
+	importText = null;
+	exportPath = '/exports';
+	written = [];
 	const avatarStore = {
 		remove: async (fileName: string) => void avatars.delete(fileName),
 		save: async (fileName: string, image: AvatarImage) => void avatars.set(fileName, image),
@@ -29,6 +49,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
+		icalIo,
 		listeners
 	);
 };
@@ -313,5 +334,124 @@ describe('showEvent listener', () => {
 		expect(await invoke(CHANNELS.app.showEvent, { key: '' })).toMatchObject({ ok: false });
 		expect(await invoke(CHANNELS.app.showEvent, { key: 'event-1', startAt: '2026-11-20T14:00:00Z' }, 'https://evil.example/')).toMatchObject({ ok: false });
 		expect(shown).toEqual([{ key: 'event-1', startAt: '2026-11-20T14:00:00.000Z' }]);
+	});
+});
+
+describe('.ics import and export', () => {
+	beforeEach(() => setup());
+
+	/** Starts over with other ports or listeners. */
+	const resetup = (...args: Parameters<typeof setup>) => {
+		db.close();
+		setup(...args);
+	};
+
+	const WEEK = { end: '2026-11-27T00:00:00Z', start: '2026-11-20T00:00:00Z' };
+	type Listed = { ok: true; value: Record<string, unknown>[] };
+
+	const succeeded = async (channel: Channel, payload?: unknown) => {
+		const result = await invoke(channel, payload);
+		if (typeof result !== 'object' || result === null || !('ok' in result) || result.ok !== true || !('value' in result)) throw new Error(`${channel} failed: ${JSON.stringify(result)}`);
+		return result.value as Record<string, unknown>;
+	};
+
+	/** The fields an event shows, without what identifies where it is stored. */
+	const shown = async (calendarId: string) => {
+		const listed = (await invoke(CHANNELS.events.list, WEEK)) as Listed;
+		return listed.value
+			.filter(event => event.calendarId === calendarId)
+			.map(({ calendarId: _calendar, createdAt: _created, icalUid: _uid, id: _id, key: _key, recurringEventId: _recurring, series: _series, updatedAt: _updated, ...fields }) => fields);
+	};
+
+	const seedEvents = async (calendarId: string) => {
+		await invoke(CHANNELS.events.create, { ...newEvent(calendarId), description: 'Agenda', location: 'Room 4', reminderMinutes: 10, videoUrl: 'https://meet.example/x' });
+		await invoke(CHANNELS.events.create, { ...newEvent(calendarId), allDay: true, endAt: '2026-11-23T05:00:00Z', startAt: '2026-11-21T05:00:00Z', title: 'Trip' });
+		const series = await succeeded(CHANNELS.events.create, {
+			...newEvent(calendarId),
+			rrule: 'FREQ=DAILY;COUNT=5',
+			startAt: '2026-11-21T09:00:00-05:00',
+			endAt: '2026-11-21T09:30:00-05:00',
+			title: 'Daily',
+		});
+		await invoke(CHANNELS.events.updateOccurrence, {
+			originalStartAt: '2026-11-23T14:00:00Z',
+			scope: 'this',
+			seriesId: series.id,
+			title: 'Daily (moved)',
+			startAt: '2026-11-23T16:00:00Z',
+			endAt: '2026-11-23T16:30:00Z',
+		});
+		await invoke(CHANNELS.events.deleteOccurrence, { originalStartAt: '2026-11-24T14:00:00Z', scope: 'this', seriesId: series.id });
+	};
+
+	test('re-importing an exported file produces the same events', async () => {
+		const source = seededCalendarId();
+		await seedEvents(source);
+		expect(await succeeded(CHANNELS.calendars.export, { calendarId: source })).toEqual({ count: 4, status: 'exported' });
+		const [file] = written;
+		expect(file?.path).toMatch(/\/exports\/.+\.ics$/);
+
+		const copy = await succeeded(CHANNELS.calendars.create, { color: '#22aa66', name: 'Copy' });
+		importText = file?.text ?? null;
+		expect(await succeeded(CHANNELS.calendars.import, { calendarId: copy.id })).toEqual({ created: 3, skipped: 0, status: 'imported', updated: 0 });
+
+		expect(await shown(String(copy.id))).toEqual(await shown(source));
+		expect((await shown(source)).length).toBe(6);
+	});
+
+	test('importing into the calendar it came from updates instead of duplicating', async () => {
+		const source = seededCalendarId();
+		await seedEvents(source);
+		await invoke(CHANNELS.calendars.export, { calendarId: source });
+		const before = await shown(source);
+
+		importText = written[0]?.text ?? null;
+		expect(await succeeded(CHANNELS.calendars.import, { calendarId: source })).toEqual({ created: 0, skipped: 0, status: 'imported', updated: 3 });
+		expect(await shown(source)).toEqual(before);
+	});
+
+	test('an invalid file shows an error and writes nothing', async () => {
+		const changes: string[] = [];
+		resetup(undefined, { eventsChanged: () => changes.push('changed') });
+		const before = rows('SELECT * FROM events');
+		importText = 'this is not a calendar';
+
+		expect(await invoke(CHANNELS.calendars.import, { calendarId: seededCalendarId() })).toMatchObject({ error: { issues: [{ key: 'ical.invalidFile' }] }, ok: false });
+		expect(rows('SELECT * FROM events')).toEqual(before);
+		expect(changes).toEqual([]);
+	});
+
+	test('a failure while writing rolls back the whole import', async () => {
+		resetup(deps => ({
+			events: {
+				...deps.events,
+				save: (() => {
+					let calls = 0;
+					return (event: Parameters<typeof deps.events.save>[0]) => (++calls === 2 ? Promise.reject(new Error('disk I/O error')) : deps.events.save(event));
+				})(),
+			},
+		}));
+		importText = [
+			'BEGIN:VCALENDAR',
+			'VERSION:2.0',
+			'PRODID:-//Test//EN',
+			...['a', 'b'].flatMap(uid => ['BEGIN:VEVENT', `UID:${uid}`, 'DTSTART:20261120T140000Z', 'DTEND:20261120T150000Z', `SUMMARY:${uid}`, 'END:VEVENT']),
+			'END:VCALENDAR',
+		].join('\r\n');
+
+		expect(await invoke(CHANNELS.calendars.import, { calendarId: seededCalendarId() })).toMatchObject({ ok: false });
+		expect(rows('SELECT id FROM events')).toEqual([]);
+	});
+
+	test('canceling a dialog changes nothing', async () => {
+		exportPath = null;
+		expect(await succeeded(CHANNELS.calendars.import, { calendarId: seededCalendarId() })).toEqual({ status: 'canceled' });
+		expect(await succeeded(CHANNELS.calendars.export, { calendarId: null })).toEqual({ status: 'canceled' });
+		expect(written).toEqual([]);
+	});
+
+	test('exporting every calendar names the file after the app', async () => {
+		await invoke(CHANNELS.calendars.export, { calendarId: null });
+		expect(written[0]?.path).toBe('/exports/Tempi.ics');
 	});
 });

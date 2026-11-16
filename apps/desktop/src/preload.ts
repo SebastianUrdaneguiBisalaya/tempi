@@ -31,6 +31,8 @@ const desktop: DesktopApi = {
 	calendars: {
 		create: input => ipcRenderer.invoke(CHANNELS.calendars.create, input),
 		delete: input => ipcRenderer.invoke(CHANNELS.calendars.delete, input),
+		export: input => ipcRenderer.invoke(CHANNELS.calendars.export, input),
+		import: input => ipcRenderer.invoke(CHANNELS.calendars.import, input),
 		list: () => ipcRenderer.invoke(CHANNELS.calendars.list),
 		update: input => ipcRenderer.invoke(CHANNELS.calendars.update, input),
 	},
