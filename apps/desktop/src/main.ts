@@ -2,15 +2,20 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { type CoreDeps, getProfile, getSettings, initializeSettings, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
+import { type CoreDeps, getProfile, getSettings, initializeSettings, type Language, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
+import { resources } from '@tempi/i18n';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
-import { app, BrowserWindow, type BrowserWindowConstructorOptions, dialog, globalShortcut, ipcMain, nativeImage, nativeTheme, powerMonitor, protocol, shell } from 'electron';
+import { app, BrowserWindow, type BrowserWindowConstructorOptions, dialog, globalShortcut, ipcMain, nativeImage, nativeTheme, net, powerMonitor, protocol, safeStorage, shell } from 'electron';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
 import { avatarPath, createFileAvatarStore } from './avatar-store.js';
 import { appDatabasePath, openAppDatabase } from './database.js';
 import { openExternalUrl } from './external-links.js';
+import { createGoogleAccountService, type GoogleAccountService } from './google/google-account.js';
+import { listenForRedirect, redirectPage } from './google/loopback.js';
+import { oauthClientFrom } from './google/oauth.js';
+import { type Cipher, createTokenStore } from './google/token-store.js';
 import { createIcalWorker } from './ical-worker-client.js';
 import { type DataIo, type IcalIo, registerIpc } from './ipc/register-ipc.js';
 import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
@@ -49,6 +54,8 @@ protocol.registerSchemesAsPrivileged([appScheme, avatarScheme]);
 let mainWindow: BrowserWindow | null = null;
 let database: DatabaseSync | null = null;
 let reminders: ReminderScheduler | null = null;
+// The stored language, for text the main process shows itself (the browser page after Google sign-in).
+let language: Language = 'en';
 
 function isTrustedUrl(url: string) {
 	return url === WEB_URL || url.startsWith(`${WEB_URL}/`);
@@ -64,6 +71,7 @@ function loadWebApp() {
 
 // The renderer's `prefers-color-scheme`, native menus and dialogs all follow `themeSource`.
 function applySettings(settings: Pick<Settings, 'language' | 'menuBarEnabled' | 'theme'>) {
+	language = settings.language;
 	nativeTheme.themeSource = settings.theme;
 	menuBar.setEnabled(settings.menuBarEnabled, settings.language);
 }
@@ -320,6 +328,30 @@ function dataIo(db: DatabaseSync, deps: CoreDeps, transaction: TransactionQueue,
 	};
 }
 
+// On Linux without a keyring, safeStorage falls back to a hardcoded key; that protects nothing, so tokens aren't stored.
+const safeStorageCipher: Cipher = {
+	decrypt: data => safeStorage.decryptString(data),
+	encrypt: text => safeStorage.encryptString(text),
+	isAvailable: () => safeStorage.isEncryptionAvailable() && (process.platform !== 'linux' || safeStorage.getSelectedStorageBackend() !== 'basic_text'),
+};
+
+// The OAuth client is inlined at build time (`bun build --env`) from the maintainer's environment, never committed.
+function googleAccount(): GoogleAccountService {
+	return createGoogleAccountService({
+		client: oauthClientFrom({ id: process.env.TEMPI_GOOGLE_CLIENT_ID, secret: process.env.TEMPI_GOOGLE_CLIENT_SECRET }),
+		// Chromium's network stack, so system proxies and certificates apply.
+		fetch: (url, init) => net.fetch(url, init),
+		listen: listenForRedirect,
+		now: () => new Date(),
+		openBrowser: url => shell.openExternal(url),
+		page: succeeded => {
+			const texts = resources[language].common.settings.integrations;
+			return redirectPage('Tempi', succeeded ? texts.browserDone : texts.browserFailed);
+		},
+		store: createTokenStore(path.join(app.getPath('userData'), 'google-account.bin'), safeStorageCipher),
+	});
+}
+
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
@@ -344,7 +376,7 @@ if (!gotLock) {
 		registerIpc(
 			{ ipc: ipcMain, isTrusted: isTrustedUrl, transaction },
 			deps,
-			{ data: dataIo(database, deps, transaction, avatarsDir), ical: icalIo() },
+			{ data: dataIo(database, deps, transaction, avatarsDir), google: googleAccount(), ical: icalIo() },
 			{
 				eventsChanged: () => void reminders?.reschedule(),
 				settingsSaved: applySettings,

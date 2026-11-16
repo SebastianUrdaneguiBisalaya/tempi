@@ -36,6 +36,11 @@ type Api<Raw extends boolean> = {
 		update: Call<'events:update', Raw>;
 		updateOccurrence: Call<'events:updateOccurrence', Raw>;
 	};
+	google: {
+		account: CallWithoutInput<'google:account', Raw>;
+		connect: CallWithoutInput<'google:connect', Raw>;
+		disconnect: CallWithoutInput<'google:disconnect', Raw>;
+	};
 	onboarding: {
 		complete: Call<'onboarding:complete', Raw>;
 	};

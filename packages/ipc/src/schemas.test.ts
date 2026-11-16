@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { parseWith } from '@tempi/core';
 import { CHANNELS } from './channels';
-import { payloadSchemas, resultSchema } from './schemas';
+import { payloadSchemas, responseValueSchemas, resultSchema } from './schemas';
 
 const T0 = '2026-11-15T10:00:00.000Z';
 
@@ -31,6 +31,9 @@ describe('payloadSchemas', () => {
 		['calendars:list', undefined],
 		['data:backup', undefined],
 		['data:restore', undefined],
+		['google:account', undefined],
+		['google:connect', undefined],
+		['google:disconnect', undefined],
 		['calendars:update', { id: 'cal-1', isVisible: false }],
 		['events:create', newEvent],
 		['events:delete', 'evt-1'],
@@ -89,5 +92,24 @@ describe('resultSchema', () => {
 		expect(schema.safeParse({ error: { code: 'not_found', issues: [{ detail: 'gone', key: 'calendar.vanished' }] }, ok: false }).success).toBe(false);
 		expect(schema.safeParse({ error: { code: 'internal', issues: [] }, ok: false }).success).toBe(false);
 		expect(schema.safeParse({ ok: true, value: 42 }).success).toBe(false);
+	});
+});
+
+describe('google answers', () => {
+	const connect = resultSchema(responseValueSchemas['google:connect']);
+
+	test('accept a connected account or a canceled sign-in', () => {
+		expect(connect.safeParse({ ok: true, value: { account: { email: 'ada@example.com' }, status: 'connected' } }).success).toBe(true);
+		expect(connect.safeParse({ ok: true, value: { status: 'canceled' } }).success).toBe(true);
+		expect(resultSchema(responseValueSchemas['google:account']).safeParse({ ok: true, value: null }).success).toBe(true);
+	});
+
+	test('reject an account without a valid email', () => {
+		expect(connect.safeParse({ ok: true, value: { account: { email: 'ada' }, status: 'connected' } }).success).toBe(false);
+	});
+
+	test('drop anything but the email, so tokens could never reach the renderer', () => {
+		const parsed = connect.parse({ ok: true, value: { account: { email: 'ada@example.com', refreshToken: 'secret' }, status: 'connected' } });
+		expect(parsed).toEqual({ ok: true, value: { account: { email: 'ada@example.com' }, status: 'connected' } });
 	});
 });

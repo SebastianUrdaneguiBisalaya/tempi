@@ -22,6 +22,8 @@ export {
 	OCCURRENCE_SCOPES,
 	occurrenceTargetSchema,
 } from './domain/event';
+export type { GoogleAccount, GoogleConnectResult } from './domain/google-account';
+export { googleAccountSchema, googleConnectResultSchema } from './domain/google-account';
 export type { ExportEventsInput, ImportEventsInput, ImportedEvent, ImportSummary } from './domain/ical-transfer';
 export { exportEventsInputSchema, importEventsInputSchema, importedEventSchema } from './domain/ical-transfer';
 export type { WeekSegment } from './domain/month-layout';

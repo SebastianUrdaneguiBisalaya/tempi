@@ -54,6 +54,11 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 		update: input => call(CHANNELS.events.update, () => api.events.update(input)),
 		updateOccurrence: input => call(CHANNELS.events.updateOccurrence, () => api.events.updateOccurrence(input)),
 	},
+	google: {
+		account: () => call(CHANNELS.google.account, () => api.google.account()),
+		connect: () => call(CHANNELS.google.connect, () => api.google.connect()),
+		disconnect: () => call(CHANNELS.google.disconnect, () => api.google.disconnect()),
+	},
 	onboarding: {
 		complete: input => call(CHANNELS.onboarding.complete, () => api.onboarding.complete(input)),
 	},

@@ -13,7 +13,7 @@
   "scripts": {
     "build": "bun run build:main && bun run build:preload && bun run build:ical-worker",
     "build:ical-worker": "bun build src/ical-worker.ts --target=node --format=esm --external electron --outfile dist/ical-worker.js",
-    "build:main": "bun build src/main.ts --target=node --format=esm --external electron --outfile dist/main.js",
+    "build:main": "bun build src/main.ts --target=node --format=esm --external electron --env='TEMPI_GOOGLE_*' --outfile dist/main.js",
     "build:preload": "bun build src/preload.ts --target=node --format=cjs --external electron --outfile dist/preload.cjs",
     "dev": "bun run build && (bun run build:main --watch & bun run build:preload --watch & bun run build:ical-worker --watch & electron .)",
     "dist:linux": "bun run build && electron-builder --linux",
