@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS } from '../domain/settings';
 import type { ProfileInput } from '../domain/user-profile';
 import { getProfile } from './get-profile';
 import { getSettings } from './get-settings';
+import { initializeSettings } from './initialize-settings';
 import { saveProfile } from './save-profile';
 import { saveSettings } from './save-settings';
 import { failure, makeDeps, T0 } from './test-fakes';
@@ -57,5 +58,20 @@ describe('settings', () => {
 		const deps = makeDeps();
 		const result = await saveSettings(deps, { defaultEventDuration: duration });
 		expect(result).toEqual(failure('validation', 'defaultEventDuration'));
+	});
+
+	test('first run persists the defaults with the system language', async () => {
+		const deps = makeDeps();
+		const result = await initializeSettings(deps, ['es-PE', 'en-US']);
+		expect(result).toEqual({ ok: true, value: { ...DEFAULT_SETTINGS, createdAt: T0, language: 'es', updatedAt: T0 } });
+		expect(deps.settings.value).toEqual({ ...DEFAULT_SETTINGS, createdAt: T0, language: 'es', updatedAt: T0 });
+	});
+
+	test('later runs keep the stored settings and ignore the system language', async () => {
+		const deps = makeDeps();
+		await saveSettings(deps, { language: 'en', theme: 'dark' });
+		deps.clock.set('2026-11-20T00:00:00.000Z');
+		const result = await initializeSettings(deps, ['es-PE']);
+		expect(result).toEqual({ ok: true, value: { ...DEFAULT_SETTINGS, createdAt: T0, theme: 'dark', updatedAt: T0 } });
 	});
 });

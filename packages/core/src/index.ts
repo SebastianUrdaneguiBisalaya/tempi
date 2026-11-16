@@ -9,7 +9,7 @@ export { calendarEventSchema, EVENT_STATUSES, eventFieldsSchema, eventPatchSchem
 export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';
 export { DOMAIN_ERROR_CODES, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
 export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, WeekStart } from './domain/settings';
-export { DEFAULT_SETTINGS, LANGUAGES, settingsPatchSchema, settingsSchema, settingsValuesSchema, THEMES, TIME_FORMATS, WEEK_STARTS } from './domain/settings';
+export { DEFAULT_SETTINGS, LANGUAGES, resolveLanguage, settingsPatchSchema, settingsSchema, settingsValuesSchema, THEMES, TIME_FORMATS, WEEK_STARTS } from './domain/settings';
 export type { Timestamps } from './domain/timestamps';
 export { singletonTimestampsSchema, storedEntitySchema, timestampsSchema } from './domain/timestamps';
 export type { ProfileInput, UserProfile } from './domain/user-profile';
@@ -31,6 +31,7 @@ export { deleteEvent } from './use-cases/delete-event';
 export type { CoreDeps } from './use-cases/deps';
 export { getProfile } from './use-cases/get-profile';
 export { getSettings } from './use-cases/get-settings';
+export { initializeSettings } from './use-cases/initialize-settings';
 export { listCalendars } from './use-cases/list-calendars';
 export { listEvents } from './use-cases/list-events';
 export { saveProfile } from './use-cases/save-profile';
