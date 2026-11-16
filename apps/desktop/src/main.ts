@@ -8,6 +8,7 @@ import { resources } from '@tempi/i18n';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
 import { createGoogleCalendarApi, GoogleAuthError, GoogleOfflineError, type SyncDeps, syncGoogle } from '@tempi/sync-google';
 import { app, BrowserWindow, type BrowserWindowConstructorOptions, dialog, globalShortcut, ipcMain, nativeImage, nativeTheme, net, powerMonitor, protocol, safeStorage, shell } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
 import { avatarPath, createFileAvatarStore } from './avatar-store.js';
@@ -24,6 +25,8 @@ import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
 import { fileReminderCheckpoint } from './reminder-checkpoint.js';
 import { createReminderNotifier } from './reminder-notifier.js';
 import { createReminderScheduler, type ReminderScheduler } from './reminder-scheduler.js';
+import { fetchLatestRelease } from './updates/latest-release.js';
+import { createUpdateService, type Downloader, type UpdateService, type UpdateStrategy } from './updates/update-service.js';
 import { loadWindowState, trackWindowState, windowOptions } from './window-state.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -57,6 +60,7 @@ let mainWindow: BrowserWindow | null = null;
 let database: DatabaseSync | null = null;
 let reminders: ReminderScheduler | null = null;
 let googleSync: SyncRunner | null = null;
+let appUpdates: UpdateService | null = null;
 // The stored language, for text the main process shows itself (the browser page after Google sign-in).
 let language: Language = 'en';
 
@@ -390,6 +394,49 @@ function createGoogleSync(deps: CoreDeps, transaction: TransactionQueue, account
 	});
 }
 
+// electron-updater against the GitHub Releases in `build.publish`: downloads in the background and installs on quit.
+function electronDownloader(): Downloader {
+	autoUpdater.autoDownload = true;
+	autoUpdater.autoInstallOnAppQuit = true;
+	// Its own logger prints every step; failures already reach the update status.
+	autoUpdater.logger = null;
+	return {
+		check: async () => {
+			await autoUpdater.checkForUpdates();
+		},
+		install: () => autoUpdater.quitAndInstall(),
+		subscribe: listener => {
+			autoUpdater.on('update-available', info => listener({ type: 'available', version: info.version }));
+			autoUpdater.on('update-not-available', () => listener({ type: 'notAvailable' }));
+			autoUpdater.on('update-downloaded', info => listener({ type: 'downloaded', version: info.version }));
+			autoUpdater.on('error', error => listener({ error, type: 'error' }));
+		},
+	};
+}
+
+// Squirrel.Mac only installs updates signed with an Apple Developer ID, and among Linux packages only the AppImage can
+// replace itself: those builds point at the newest release instead. A development run doesn't update.
+function updateStrategy(): UpdateStrategy {
+	if (!app.isPackaged) return { kind: 'unsupported' };
+	if (process.platform === 'win32' || (process.platform === 'linux' && process.env.APPIMAGE !== undefined)) return { downloader: electronDownloader(), kind: 'download' };
+	return { kind: 'notify', latestRelease: () => fetchLatestRelease((url, init) => net.fetch(url, init)) };
+}
+
+function createUpdates(): UpdateService {
+	return createUpdateService({
+		currentVersion: app.getVersion(),
+		now: () => new Date(),
+		onStatus: status => {
+			for (const window of BrowserWindow.getAllWindows()) window.webContents.send(PUSH_CHANNELS.updates.status, status);
+		},
+		setTimer: (callback, ms) => {
+			const timer = setTimeout(callback, ms);
+			return () => clearTimeout(timer);
+		},
+		strategy: updateStrategy(),
+	});
+}
+
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
@@ -414,10 +461,12 @@ if (!gotLock) {
 		const account = googleAccount();
 		const sync = createGoogleSync(deps, transaction, account);
 		googleSync = sync;
+		const updates = createUpdates();
+		appUpdates = updates;
 		registerIpc(
 			{ ipc: ipcMain, isTrusted: isTrustedUrl, transaction },
 			deps,
-			{ data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo() },
+			{ data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo(), updates },
 			{
 				eventsChanged: () => {
 					void reminders?.reschedule();
@@ -431,6 +480,7 @@ if (!gotLock) {
 		createWindow();
 		reminders = startReminders(deps, transaction);
 		if ((await account.account()) !== null) sync.start();
+		updates.start();
 		// Edits made offline go out once the computer is back, and timers stall while it sleeps.
 		powerMonitor.on('resume', () => void googleSync?.syncNow());
 	});
@@ -440,6 +490,8 @@ if (!gotLock) {
 		reminders = null;
 		void googleSync?.stop();
 		googleSync = null;
+		appUpdates?.stop();
+		appUpdates = null;
 		database?.close();
 		database = null;
 	});
