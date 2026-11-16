@@ -11,9 +11,10 @@ import { useSettings } from '../hooks/use-settings';
 import { AppearanceSettings } from './appearance-settings';
 import { CalendarSettings } from './calendar-settings';
 import { DataSettings } from './data-settings';
+import { IntegrationsSettings } from './integrations-settings';
 import { ProfileSettings } from './profile-settings';
 
-const TABS = ['profile', 'appearance', 'calendar', 'data'] as const;
+const TABS = ['profile', 'appearance', 'calendar', 'integrations', 'data'] as const;
 
 // Tailwind's `md`: below it the tabs sit on top instead of on the side.
 const SIDE_TABS_QUERY = '(min-width: 48rem)';
@@ -55,6 +56,9 @@ export function SettingsDialog({ onOpenChange, open }: SettingsDialogProps) {
 								</TabsContent>
 								<TabsContent value='calendar'>
 									<CalendarSettings settings={settings} />
+								</TabsContent>
+								<TabsContent value='integrations'>
+									<IntegrationsSettings />
 								</TabsContent>
 								<TabsContent value='data'>
 									<DataSettings />
