@@ -52,7 +52,7 @@ SmartScreen may flag Tempi as an unrecognized app. Click **More info → Run any
 
 ### Updates
 
-Tempi doesn't update itself yet. To update, quit Tempi and install the new version over the old one; your data is kept. The [manual](MANUAL.md#update) has the steps for each platform.
+On Windows and Linux (AppImage), Tempi downloads updates in the background and installs them when you restart it. On macOS, where unsigned apps can't update themselves, Tempi tells you when a new version is out and links to its download; install it over the old one and your data is kept. The [manual](MANUAL.md#update) has the details.
 
 ## How it's built
 
