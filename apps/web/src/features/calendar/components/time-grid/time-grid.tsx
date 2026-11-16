@@ -1,22 +1,25 @@
 'use client';
 
-import { type CalendarEvent, type DaySegment, DEFAULT_SETTINGS, daysToUtcRange, layoutDay, resolveLanguage } from '@tempi/core';
+import { belongsInAllDayLane, type CalendarEvent, type DaySegment, DEFAULT_SETTINGS, daysToUtcRange, fitWeek, layoutDay, layoutWeek, resolveLanguage } from '@tempi/core';
 import { type FocusEvent, type KeyboardEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
-import { useSettings } from '@/features/settings/hooks/use-settings';
+import { useSetAllDayCollapsed, useSettings } from '@/features/settings/hooks/use-settings';
 import { formatDate, formatTime, formatTimeRange, formatWeekday } from '@/lib/date-format';
 import { toUtcDate } from '@/lib/plain-date';
 import { cn } from '@/lib/utils';
 import { useCalendars } from '../../hooks/use-calendars';
 import { useEvents } from '../../hooks/use-events';
+import { AllDayLane, AllDayToggle } from './all-day-lane';
 import { CurrentTimeLine } from './current-time-line';
 import { type DayEvents, focusKey, type GridFocus, nextFocus } from './grid-focus';
-import { gridStyle, MIN_EVENT_MINUTES, SLOT_MINUTES, SLOTS_PER_DAY, scrollToCurrentHour } from './grid-geometry';
+import { ALL_DAY_LANE_REM, DAY_HEADER_REM, gridStyle, MIN_EVENT_MINUTES, SLOT_MINUTES, SLOTS_PER_DAY, scrollToCurrentHour } from './grid-geometry';
 import { TimeGridEvent } from './time-grid-event';
 
 const SLOTS = Array.from({ length: SLOTS_PER_DAY }, (_, slot) => slot);
 const FALLBACK_COLOR = 'var(--muted-foreground)';
+/** Rows the all-day lane keeps when collapsed. */
+const COLLAPSED_LANES = 2;
 
 type TimeGridProps = {
 	days: readonly Temporal.PlainDate[];
@@ -33,7 +36,8 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const { i18n, t } = useTranslation();
 	const language = resolveLanguage([i18n.language]);
 	const { data: settings } = useSettings();
-	const timeFormat = settings?.timeFormat ?? DEFAULT_SETTINGS.timeFormat;
+	const { allDayCollapsed, timeFormat } = settings ?? DEFAULT_SETTINGS;
+	const setAllDayCollapsed = useSetAllDayCollapsed();
 	const { data: calendars } = useCalendars();
 	const first = days[0];
 	const last = days.at(-1);
@@ -41,9 +45,19 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const [focus, setFocus] = useState<GridFocus | null>(null);
 
 	const calendarById = new Map((calendars ?? []).map(calendar => [calendar.id, calendar]));
-	// All-day events get their own lane later; hidden calendars stay out of the grid.
-	const shown = (events ?? []).filter(event => !event.allDay && calendarById.get(event.calendarId)?.isVisible !== false);
-	const segmentsByDay: DaySegment<CalendarEvent>[][] = days.map(day => layoutDay(shown, day, timeZone, MIN_EVENT_MINUTES));
+	const colorOf = (event: CalendarEvent) => calendarById.get(event.calendarId)?.color ?? FALLBACK_COLOR;
+	// Hidden calendars stay out; all-day and day-long events go to the lane above the hours.
+	const visible = (events ?? []).filter(event => calendarById.get(event.calendarId)?.isVisible !== false);
+	const timed = visible.filter(event => !belongsInAllDayLane(event));
+	const segmentsByDay: DaySegment<CalendarEvent>[][] = days.map(day => layoutDay(timed, day, timeZone, MIN_EVENT_MINUTES));
+
+	const laneSegments = layoutWeek(visible.filter(belongsInAllDayLane), days, timeZone);
+	const laneCount = Math.max(0, ...laneSegments.map(segment => segment.lane + 1));
+	const collapsible = laneCount > COLLAPSED_LANES;
+	const lanes = collapsible && allDayCollapsed ? COLLAPSED_LANES : laneCount;
+	const lane = fitWeek(laneSegments, days.length, Math.max(lanes, 1));
+	const headerRem = DAY_HEADER_REM + (lanes > 0 ? lanes * ALL_DAY_LANE_REM + 0.25 : 0);
+	const allDayTitles = (column: number) => laneSegments.filter(segment => column >= segment.firstColumn && column < segment.firstColumn + segment.span).map(segment => segment.item.title);
 	const dayEvents: DayEvents = segmentsByDay.map(segments =>
 		segments
 			.map(segment => ({ column: segment.column, id: segment.item.id, slot: Math.floor(segment.startMinute / SLOT_MINUTES), start: segment.startMinute }))
@@ -87,25 +101,34 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 				onFocus={onFocus}
 				onKeyDown={onKeyDown}
 				role='grid'
-				style={gridStyle(days.length)}
+				style={gridStyle(days.length, headerRem)}
 			>
 				<div className='contents' role='row'>
-					<div className='sticky top-0 left-0 z-30 border-b bg-background' role='columnheader' />
+					<div className='sticky top-0 left-0 z-30 border-b bg-background' role='columnheader'>
+						{collapsible && <AllDayToggle collapsed={allDayCollapsed} onToggle={() => setAllDayCollapsed.mutate(!allDayCollapsed)} />}
+					</div>
 					{days.map((day, index) => {
 						const isToday = index === todayIndex;
+						const titles = allDayTitles(index);
+						const date = formatDate(toUtcDate(day), { language, timeZone: 'UTC' });
 						return (
 							<div
 								aria-current={isToday ? 'date' : undefined}
-								aria-label={formatDate(toUtcDate(day), { language, timeZone: 'UTC' })}
-								className='sticky top-0 z-20 flex items-center justify-center gap-1.5 border-b border-l bg-background text-sm'
+								aria-label={titles.length === 0 ? date : `${date}. ${t('calendar.allDay.events', { titles: titles.join(', ') })}`}
+								className='sticky top-0 z-20 flex items-start justify-center gap-1.5 border-b border-l bg-background text-sm'
 								key={day.toString()}
 								role='columnheader'
 							>
-								<span className={cn('text-muted-foreground', isToday && 'font-medium text-foreground')}>{formatWeekday(toUtcDate(day), { language, timeZone: 'UTC' })}</span>
-								{isToday ? <Badge>{day.day}</Badge> : <span className='font-medium'>{day.day}</span>}
+								<div className='flex items-center gap-1.5' style={{ height: `${DAY_HEADER_REM}rem` }}>
+									<span className={cn('text-muted-foreground', isToday && 'font-medium text-foreground')}>{formatWeekday(toUtcDate(day), { language, timeZone: 'UTC' })}</span>
+									{isToday ? <Badge>{day.day}</Badge> : <span className='font-medium'>{day.day}</span>}
+								</div>
 							</div>
 						);
 					})}
+					{lanes > 0 && (
+						<AllDayLane colorOf={colorOf} days={days} hiddenByColumn={lane.hiddenByColumn} lanes={lanes} onExpand={() => setAllDayCollapsed.mutate(false)} segments={lane.shown} />
+					)}
 				</div>
 				{SLOTS.map(slot => {
 					const onHour = slot % (60 / SLOT_MINUTES) === 0;
@@ -132,7 +155,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 												const eventKey = focusKey({ day: dayIndex, eventId: segment.item.id, slot });
 												return (
 													<TimeGridEvent
-														color={calendarById.get(segment.item.calendarId)?.color ?? FALLBACK_COLOR}
+														color={colorOf(segment.item)}
 														dayCount={days.length}
 														dayIndex={dayIndex}
 														focusKey={eventKey}

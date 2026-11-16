@@ -5,8 +5,11 @@ import type { CSSProperties } from 'react';
 export const SLOT_MINUTES = 30;
 export const SLOTS_PER_DAY = MINUTES_PER_DAY / SLOT_MINUTES;
 const SLOT_REM = 1.5;
-const HEADER_REM = 3;
-const GUTTER_REM = 4;
+/** Day headers; the all-day lane adds its rows below them. */
+export const DAY_HEADER_REM = 3;
+/** One row of the all-day lane. */
+export const ALL_DAY_LANE_REM = 1.375;
+export const GUTTER_REM = 4;
 /** Narrowest day column in the week view; below it the grid scrolls sideways. */
 const MIN_DAY_REM = 7;
 /** Shortest height an event is drawn with, so its title stays readable. Also spaces short events apart. */
@@ -14,9 +17,14 @@ export const MIN_EVENT_MINUTES = 15;
 
 const minutesToRem = (minutes: number) => (minutes / SLOT_MINUTES) * SLOT_REM;
 
-export const gridStyle = (dayCount: number): CSSProperties => ({
+// The header height varies with the all-day lane; children read it from this variable instead of a prop.
+const HEADER = 'var(--time-grid-header)';
+
+/** `headerRem`: day headers plus the all-day lane. */
+export const gridStyle = (dayCount: number, headerRem: number): CSSProperties & Record<'--time-grid-header', string> => ({
+	'--time-grid-header': `${headerRem}rem`,
 	gridTemplateColumns: `${GUTTER_REM}rem repeat(${dayCount}, minmax(${dayCount > 1 ? MIN_DAY_REM : 0}rem, 1fr))`,
-	gridTemplateRows: `${HEADER_REM}rem repeat(${SLOTS_PER_DAY}, ${SLOT_REM}rem)`,
+	gridTemplateRows: `${HEADER} repeat(${SLOTS_PER_DAY}, ${SLOT_REM}rem)`,
 });
 
 /** Absolute box for something spanning `[startMinute, endMinute)` in a day column, inside lane `column` of `columns`. */
@@ -25,7 +33,7 @@ export const boxStyle = (dayIndex: number, dayCount: number, startMinute: number
 	return {
 		height: `${minutesToRem(endMinute - startMinute)}rem`,
 		left: `calc(${GUTTER_REM}rem + ${dayWidth} * ${dayIndex + column / columns})`,
-		top: `${HEADER_REM + minutesToRem(startMinute)}rem`,
+		top: `calc(${HEADER} + ${minutesToRem(startMinute)}rem)`,
 		width: `calc(${dayWidth} / ${columns})`,
 	};
 };

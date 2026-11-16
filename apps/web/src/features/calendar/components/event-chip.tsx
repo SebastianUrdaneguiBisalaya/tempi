@@ -3,7 +3,9 @@
 import type { CalendarEvent, WeekSegment } from '@tempi/core';
 import { cn } from '@/lib/utils';
 
-type MonthEventProps = {
+type EventChipProps = {
+	/** Draw it as a filled bar even if it fits in one day (e.g. in the all-day lane). */
+	bar?: boolean;
 	color: string;
 	segment: Pick<WeekSegment<CalendarEvent>, 'continuesAfter' | 'continuesBefore' | 'item' | 'span'>;
 	/** Start time of a timed event, already formatted. */
@@ -11,12 +13,12 @@ type MonthEventProps = {
 };
 
 /**
- * One event in a month cell. All-day and multi-day events are filled bars (which span their days); timed events
+ * One event in a day cell (month view, all-day lane). All-day and multi-day events are filled bars (which span their days); timed events
  * that fit in one day are a colored dot, the start time and the title, like Google Calendar.
  */
-export function MonthEvent({ color, segment, time }: MonthEventProps) {
+export function EventChip({ bar = false, color, segment, time }: EventChipProps) {
 	const { continuesAfter, continuesBefore, item: event, span } = segment;
-	const isBar = event.allDay || span > 1 || continuesBefore || continuesAfter;
+	const isBar = bar || event.allDay || span > 1 || continuesBefore || continuesAfter;
 
 	if (isBar) {
 		return (
