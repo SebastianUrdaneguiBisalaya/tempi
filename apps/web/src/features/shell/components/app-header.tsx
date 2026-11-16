@@ -4,13 +4,13 @@ import { CALENDAR_VIEWS, isCalendarView, resolveLanguage } from '@tempi/core';
 import { ChevronLeftIcon, ChevronRightIcon, PanelLeftIcon, PanelRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Kbd } from '@/components/ui/kbd';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
+import { ShortcutKeys } from '@/features/shortcuts/components/shortcut-keys';
+import { SHORTCUTS } from '@/features/shortcuts/shortcuts';
 import { formatMonthYear } from '@/lib/date-format';
 import { toUtcDate } from '@/lib/plain-date';
-import { SIDEBAR_HOTKEY } from '../shell-hotkeys';
 import { UserAvatar } from './user-avatar';
 
 type AppHeaderProps = {
@@ -32,7 +32,7 @@ export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHead
 						<PanelLeftIcon />
 					</TooltipTrigger>
 					<TooltipContent>
-						{t('shell.sidebar.toggle')} <Kbd>{SIDEBAR_HOTKEY}</Kbd>
+						{t('shell.sidebar.toggle')} <ShortcutKeys keys={[SHORTCUTS.toggleSidebar.keys]} />
 					</TooltipContent>
 				</Tooltip>
 				<UserAvatar />

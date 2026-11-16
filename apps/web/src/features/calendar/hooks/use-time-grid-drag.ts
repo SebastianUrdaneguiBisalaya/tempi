@@ -1,8 +1,8 @@
 'use client';
 
 import { type EventOccurrence, MINUTES_PER_DAY, moveRange, resizeRange, sweepRange, type TimeRange, wallTime } from '@tempi/core';
-import { useHotkeys } from '@usehotkeys/react';
 import { type PointerEvent, useRef, useState } from 'react';
+import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { focusKey } from '../components/time-grid/grid-focus';
 import { SLOT_MINUTES } from '../components/time-grid/grid-geometry';
 
@@ -75,7 +75,8 @@ export const useTimeGridDrag = ({ days, onCreate, onReschedule, timeZone }: Time
 		setDrag(null);
 	};
 
-	useHotkeys('escape', cancel, { enabled: drag !== null, ignoreInputs: false, label: 'Cancel drag' });
+	// Outranks closing the event panel: Esc during a drag only cancels the drag.
+	useShortcut('close', cancel, { enabled: drag !== null, ignoreInputs: false, priority: 1 });
 
 	const preview = drag === null ? null : rangeOf(drag);
 
