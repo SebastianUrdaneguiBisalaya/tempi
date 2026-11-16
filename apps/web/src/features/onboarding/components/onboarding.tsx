@@ -2,8 +2,9 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type OnboardingInput, onboardingInputSchema, type Settings, zodErrorKeyMap } from '@tempi/core';
+import Image from 'next/image';
 import type { KeyboardEvent, MouseEvent } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type FieldPath, FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { z } from 'zod';
@@ -54,6 +55,15 @@ export function Onboarding({ settings }: { settings: Settings }) {
 		resolver: zodResolver(onboardingInputSchema, { error: zodErrorKeyMap }),
 	});
 
+	// Steps are validated with `trigger`, never a form submit, so react-hook-form doesn't re-validate on change by itself:
+	// once a field shows an error, re-check it as the user edits so the error clears as soon as the value is valid.
+	useEffect(() => {
+		const { unsubscribe } = form.watch((_values, { name }) => {
+			if (name !== undefined && form.getFieldState(name).invalid) void form.trigger(name);
+		});
+		return unsubscribe;
+	}, [form]);
+
 	const index = STEPS.findIndex(({ name }) => name === step);
 	const progress = t('onboarding.progress', { current: index + 1, total: STEPS.length });
 
@@ -101,35 +111,43 @@ export function Onboarding({ settings }: { settings: Settings }) {
 	};
 
 	return (
-		<main className='flex min-h-svh w-full items-center justify-center p-4 sm:p-8'>
-			<div className='flex w-full max-w-md flex-col gap-6'>
-				<h1 className='font-heading text-lg font-semibold'>{t('onboarding.title')}</h1>
-				<FormProvider {...form}>
-					<Questionnaire
-						aria-label={t('onboarding.title')}
-						item={step}
-						onItemChange={name => isStepName(name) && setStep(name)}
-						onKeyDown={onKeyDown}
-						onSubmit={event => event.preventDefault()}
-					>
-						<QuestionnaireProgress aria-label={t('onboarding.title')} aria-valuetext={progress}>
-							{progress}
-						</QuestionnaireProgress>
-						<NameStep />
-						<AvatarStep />
-						<LocationStep />
-						<ThemeStep />
-						<LanguageStep />
-						<QuestionnaireActions>
-							<QuestionnairePrevious>{t('onboarding.actions.back')}</QuestionnairePrevious>
-							<QuestionnaireSkip onClick={() => form.setValue('avatar', null)}>{t('onboarding.actions.skip')}</QuestionnaireSkip>
-							<QuestionnaireNext onClick={onNavigate}>{t('onboarding.actions.next')}</QuestionnaireNext>
-							<QuestionnaireSubmit disabled={completeOnboarding.isPending} onClick={onNavigate}>
-								{t('onboarding.actions.finish')}
-							</QuestionnaireSubmit>
-						</QuestionnaireActions>
-					</Questionnaire>
-				</FormProvider>
+		<main className='grid min-h-svh w-full lg:grid-cols-2'>
+			<div className='flex items-center justify-center p-4 sm:p-8'>
+				<div className='flex w-full max-w-md flex-col gap-6'>
+					<h1 className='font-heading text-lg font-semibold'>{t('onboarding.title')}</h1>
+					<FormProvider {...form}>
+						<Questionnaire
+							aria-label={t('onboarding.title')}
+							item={step}
+							onItemChange={name => isStepName(name) && setStep(name)}
+							onKeyDown={onKeyDown}
+							onSubmit={event => event.preventDefault()}
+						>
+							<QuestionnaireProgress aria-label={t('onboarding.title')} aria-valuetext={progress}>
+								{progress}
+							</QuestionnaireProgress>
+							<NameStep />
+							<AvatarStep />
+							<LocationStep />
+							<ThemeStep />
+							<LanguageStep />
+							<QuestionnaireActions>
+								<QuestionnairePrevious>{t('onboarding.actions.back')}</QuestionnairePrevious>
+								<QuestionnaireSkip onClick={() => form.setValue('avatar', null)}>{t('onboarding.actions.skip')}</QuestionnaireSkip>
+								<QuestionnaireNext onClick={onNavigate}>{t('onboarding.actions.next')}</QuestionnaireNext>
+								<QuestionnaireSubmit disabled={completeOnboarding.isPending} onClick={onNavigate}>
+									{t('onboarding.actions.finish')}
+								</QuestionnaireSubmit>
+							</QuestionnaireActions>
+						</Questionnaire>
+					</FormProvider>
+				</div>
+			</div>
+			{/* Decorative only, so it's hidden from assistive tech and dropped on narrow screens where the form needs the room. */}
+			<div className='relative hidden lg:block'>
+				<Image alt='' className='object-cover' fill priority sizes='50vw' src='/bg-tempi.png' />
+				{/* Fades the image into the page background so the seam with the form column isn't a hard edge, in either theme. */}
+				<div className='absolute inset-0 bg-linear-to-r from-background via-background/40 via-30% to-transparent' />
 			</div>
 		</main>
 	);
