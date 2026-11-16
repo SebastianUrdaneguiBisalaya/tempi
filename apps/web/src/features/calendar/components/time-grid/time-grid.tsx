@@ -27,7 +27,9 @@ import { toUtcDate } from '@/lib/plain-date';
 import { cn } from '@/lib/utils';
 import { useCalendars } from '../../hooks/use-calendars';
 import { useEvents } from '../../hooks/use-events';
+import { useMinute } from '../../hooks/use-minute';
 import { useTimeGridDrag } from '../../hooks/use-time-grid-drag';
+import { eventLook } from '../event-style';
 import { AllDayLane, AllDayToggle } from './all-day-lane';
 import { CurrentTimeLine } from './current-time-line';
 import { type DayEvents, focusKey, type GridFocus, nextFocus } from './grid-focus';
@@ -71,6 +73,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const first = days[0];
 	const last = days.at(-1);
 	const { data: events } = useEvents(first && last ? daysToUtcRange(first, last, timeZone) : null);
+	const now = useMinute();
 	const [focus, setFocus] = useState<GridFocus | null>(null);
 	// An event moved from the keyboard can land in another slot, which remounts it: focus follows it there.
 	const refocusId = useRef<string | null>(null);
@@ -218,6 +221,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 							days={days}
 							hiddenByColumn={lane.hiddenByColumn}
 							lanes={lanes}
+							now={now}
 							onExpand={() => setAllDayCollapsed.mutate(false)}
 							onOpen={openEvent}
 							segments={lane.shown}
@@ -258,6 +262,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 														isActive={eventKey === activeKey}
 														isDragged={segment.item.key === drag.draggedKey}
 														isSelected={segment.item.key === selectedKey}
+														look={eventLook(segment.item, now)}
 														key={segment.item.key}
 														onMovePointerDown={pointer => drag.startMove(pointer, segment.item)}
 														onOpen={() => openEvent(segment.item)}

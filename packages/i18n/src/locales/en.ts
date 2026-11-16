@@ -43,12 +43,15 @@ export const en = {
 				location: 'Location',
 				reminder: 'Reminder',
 				start: 'Starts',
+				status: 'Status',
 				timeZone: 'Time zone',
 				timeZoneEmpty: 'No time zones found.',
 				timeZoneSearch: 'Search time zones…',
 				title: 'Title',
 				titlePlaceholder: 'Add a title',
+				videoUrl: 'Video call',
 			},
+			join: 'Join',
 			menu: {
 				calendar: 'Calendar',
 				label: 'Event actions',
@@ -95,6 +98,10 @@ export const en = {
 				editTitle: 'Edit recurring event',
 				following: 'This and following events',
 				this: 'This event',
+			},
+			status: {
+				confirmed: 'Confirmed',
+				tentative: 'Tentative',
 			},
 			reminders: {
 				atStart: 'At start time',

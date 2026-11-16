@@ -45,12 +45,15 @@ export const es = {
 				location: 'Ubicación',
 				reminder: 'Recordatorio',
 				start: 'Empieza',
+				status: 'Estado',
 				timeZone: 'Zona horaria',
 				timeZoneEmpty: 'No se encontraron zonas horarias.',
 				timeZoneSearch: 'Buscar zonas horarias…',
 				title: 'Título',
 				titlePlaceholder: 'Añade un título',
+				videoUrl: 'Videollamada',
 			},
+			join: 'Unirse',
 			menu: {
 				calendar: 'Calendario',
 				label: 'Acciones del evento',
@@ -97,6 +100,10 @@ export const es = {
 				editTitle: 'Editar evento periódico',
 				following: 'Este evento y los siguientes',
 				this: 'Este evento',
+			},
+			status: {
+				confirmed: 'Confirmado',
+				tentative: 'Tentativo',
 			},
 			reminders: {
 				atStart: 'A la hora de inicio',

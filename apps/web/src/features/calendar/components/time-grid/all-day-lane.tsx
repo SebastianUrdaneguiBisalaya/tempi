@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { EventContextMenu } from '@/features/events/components/event-context-menu';
 import { EventChip } from '../event-chip';
+import { eventLook } from '../event-style';
 import { ALL_DAY_LANE_REM, DAY_HEADER_REM } from './grid-geometry';
 
 type AllDayLaneProps = {
@@ -14,6 +15,8 @@ type AllDayLaneProps = {
 	hiddenByColumn: readonly number[];
 	/** Rows drawn: every lane when expanded, at most two when collapsed. */
 	lanes: number;
+	/** Epoch ms, to mute past events; null while prerendering. */
+	now: number | null;
 	onExpand: () => void;
 	onOpen: (event: EventOccurrence) => void;
 	segments: readonly WeekSegment<EventOccurrence>[];
@@ -23,7 +26,7 @@ type AllDayLaneProps = {
  * Bars for all-day and multi-day events, under the day headers. It spans every day column, so an event over three
  * days is one continuous bar. Screen readers get the same events from each day's column header.
  */
-export function AllDayLane({ colorOf, days, hiddenByColumn, lanes, onExpand, onOpen, segments }: AllDayLaneProps) {
+export function AllDayLane({ colorOf, days, hiddenByColumn, lanes, now, onExpand, onOpen, segments }: AllDayLaneProps) {
 	const { t } = useTranslation();
 	const percent = (columns: number) => `${(columns / days.length) * 100}%`;
 	const top = (lane: number) => `${DAY_HEADER_REM + lane * ALL_DAY_LANE_REM}rem`;
@@ -41,7 +44,7 @@ export function AllDayLane({ colorOf, days, hiddenByColumn, lanes, onExpand, onO
 						tabIndex={-1}
 						type='button'
 					>
-						<EventChip bar color={colorOf(segment.item)} segment={segment} time='' />
+						<EventChip bar color={colorOf(segment.item)} look={eventLook(segment.item, now)} segment={segment} time='' />
 					</button>
 				</EventContextMenu>
 			))}
