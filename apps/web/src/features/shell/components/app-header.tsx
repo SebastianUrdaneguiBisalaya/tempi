@@ -1,6 +1,6 @@
 'use client';
 
-import { resolveLanguage } from '@tempi/core';
+import { CALENDAR_VIEWS, isCalendarView, resolveLanguage } from '@tempi/core';
 import { ChevronLeftIcon, ChevronRightIcon, PanelLeftIcon, PanelRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -8,8 +8,8 @@ import { Kbd } from '@/components/ui/kbd';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
-import { CALENDAR_VIEWS, isCalendarView } from '@/lib/calendar-navigation';
 import { formatMonthYear } from '@/lib/date-format';
+import { toUtcDate } from '@/lib/plain-date';
 import { SIDEBAR_HOTKEY } from '../shell-hotkeys';
 import { UserAvatar } from './user-avatar';
 
@@ -48,7 +48,7 @@ export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHead
 					</Button>
 				</nav>
 				<h1 aria-live='polite' className='min-w-0 truncate font-heading text-xl font-semibold first-letter:uppercase md:text-2xl'>
-					{date !== null && formatMonthYear(date, { language: resolveLanguage([i18n.language]) })}
+					{date !== null && formatMonthYear(toUtcDate(date), { language: resolveLanguage([i18n.language]), timeZone: 'UTC' })}
 				</h1>
 			</div>
 			<div className='flex items-center gap-2'>

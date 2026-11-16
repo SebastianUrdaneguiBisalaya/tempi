@@ -1,45 +1,53 @@
 'use client';
 
-import { DEFAULT_SETTINGS } from '@tempi/core';
+import { type CalendarView, DEFAULT_SETTINGS, shiftDate, visibleDays } from '@tempi/core';
 import { createContext, type ReactNode, use, useState } from 'react';
+import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { useSettings } from '@/features/settings/hooks/use-settings';
-import { type CalendarView, shiftDate, type VisibleRange, visibleRange } from '@/lib/calendar-navigation';
 import { useToday } from '../hooks/use-today';
 
 type CalendarNavigation = {
 	/** The day the view is anchored on, or null while prerendering (today isn't known yet). */
-	date: Date | null;
+	date: Temporal.PlainDate | null;
+	/** Every day the current view covers, in order; null while prerendering. */
+	days: Temporal.PlainDate[] | null;
 	/** Anchors the current view on `day`, e.g. a day picked in the mini calendar. */
-	goToDate: (day: Date) => void;
+	goToDate: (day: Temporal.PlainDate) => void;
 	goToNext: () => void;
 	goToPrevious: () => void;
 	goToToday: () => void;
-	range: VisibleRange | null;
 	setView: (view: CalendarView) => void;
+	/** IANA zone every day and time is shown in. */
+	timeZone: string;
+	today: Temporal.PlainDate | null;
 	view: CalendarView;
 };
 
 const CalendarNavigationContext = createContext<CalendarNavigation | null>(null);
 
-/** Holds the date and view every part of the calendar shows (header, sidebar, grid). */
+/** Holds the date and view every part of the calendar shows (header, sidebar, grid), as days in the user's time zone. */
 export function CalendarNavigationProvider({ children }: { children: ReactNode }) {
-	const today = useToday();
+	const timeZone = useTimeZone();
+	const todayText = useToday(timeZone);
 	const { data: settings } = useSettings();
 	// Null follows today, so the calendar moves with the clock until the user navigates away.
-	const [anchor, setAnchor] = useState<Date | null>(null);
+	const [anchor, setAnchor] = useState<Temporal.PlainDate | null>(null);
 	const [view, setView] = useState<CalendarView>('week');
 
-	const date = anchor ?? (today === null ? null : new Date(today));
-	const step = (direction: -1 | 1) => setAnchor(current => shiftDate(current ?? new Date(), view, direction));
+	const today = todayText === null ? null : Temporal.PlainDate.from(todayText);
+	const date = anchor ?? today;
+	const step = (direction: -1 | 1) => setAnchor(current => shiftDate(current ?? Temporal.Now.plainDateISO(timeZone), view, direction));
 
 	const value: CalendarNavigation = {
 		date,
+		days: date === null ? null : visibleDays(date, view, settings?.weekStart ?? DEFAULT_SETTINGS.weekStart),
 		goToDate: setAnchor,
 		goToNext: () => step(1),
 		goToPrevious: () => step(-1),
 		goToToday: () => setAnchor(null),
-		range: date === null ? null : visibleRange(date, view, settings?.weekStart ?? DEFAULT_SETTINGS.weekStart),
 		setView,
+		timeZone,
+		today,
 		view,
 	};
 

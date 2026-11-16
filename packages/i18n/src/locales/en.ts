@@ -10,6 +10,9 @@ export const en = {
 			edit: 'Edit',
 			save: 'Save',
 		},
+		calendar: {
+			grid: 'Schedule',
+		},
 		onboarding: {
 			actions: {
 				back: 'Back',
