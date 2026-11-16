@@ -14,7 +14,8 @@ export { SqliteEventRepository } from './repositories/sqlite-event-repository';
 export { SqliteProfileRepository } from './repositories/sqlite-profile-repository';
 export { SqliteSettingsRepository } from './repositories/sqlite-settings-repository';
 export { DEFAULT_CALENDAR, seedDefaultCalendar } from './seed';
-export { transaction } from './transaction';
+export type { TransactionQueue } from './transaction';
+export { createTransactionQueue, transaction } from './transaction';
 
 export type SqliteRepositories = {
 	calendars: CalendarRepository;

@@ -1,15 +1,16 @@
-/** Every IPC channel, named `domain:action`. One `ipcMain.handle` per channel. */
+/** Every IPC channel, named `domain:action`. Each one runs a single core use case; one `ipcMain.handle` per channel. */
 export const CHANNELS = {
 	calendars: {
-		get: 'calendars:get',
+		create: 'calendars:create',
+		delete: 'calendars:delete',
 		list: 'calendars:list',
-		save: 'calendars:save',
+		update: 'calendars:update',
 	},
 	events: {
-		deleteByCalendar: 'events:deleteByCalendar',
-		get: 'events:get',
+		create: 'events:create',
+		delete: 'events:delete',
 		list: 'events:list',
-		save: 'events:save',
+		update: 'events:update',
 	},
 	profile: {
 		get: 'profile:get',

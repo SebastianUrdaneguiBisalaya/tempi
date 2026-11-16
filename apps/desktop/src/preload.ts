@@ -2,27 +2,28 @@
 import { CHANNELS, type DesktopApi } from '@tempi/ipc';
 import { contextBridge, ipcRenderer } from 'electron';
 
-// Only small, typed functions, one per channel: never `ipcRenderer`, a generic invoke or any Node API.
-// Payloads are validated in the main process, so nothing here is trusted.
+// Only small, typed functions, one per use case: never `ipcRenderer`, a generic invoke or any Node API.
+// Payloads are validated in the main process and answers in the renderer client, so nothing here is trusted.
 const desktop: DesktopApi = {
 	calendars: {
-		get: id => ipcRenderer.invoke(CHANNELS.calendars.get, id),
+		create: input => ipcRenderer.invoke(CHANNELS.calendars.create, input),
+		delete: id => ipcRenderer.invoke(CHANNELS.calendars.delete, id),
 		list: () => ipcRenderer.invoke(CHANNELS.calendars.list),
-		save: calendar => ipcRenderer.invoke(CHANNELS.calendars.save, calendar),
+		update: input => ipcRenderer.invoke(CHANNELS.calendars.update, input),
 	},
 	events: {
-		deleteByCalendar: payload => ipcRenderer.invoke(CHANNELS.events.deleteByCalendar, payload),
-		get: id => ipcRenderer.invoke(CHANNELS.events.get, id),
+		create: input => ipcRenderer.invoke(CHANNELS.events.create, input),
+		delete: id => ipcRenderer.invoke(CHANNELS.events.delete, id),
 		list: range => ipcRenderer.invoke(CHANNELS.events.list, range),
-		save: event => ipcRenderer.invoke(CHANNELS.events.save, event),
+		update: input => ipcRenderer.invoke(CHANNELS.events.update, input),
 	},
 	profile: {
 		get: () => ipcRenderer.invoke(CHANNELS.profile.get),
-		save: profile => ipcRenderer.invoke(CHANNELS.profile.save, profile),
+		save: input => ipcRenderer.invoke(CHANNELS.profile.save, input),
 	},
 	settings: {
 		get: () => ipcRenderer.invoke(CHANNELS.settings.get),
-		save: settings => ipcRenderer.invoke(CHANNELS.settings.save, settings),
+		save: patch => ipcRenderer.invoke(CHANNELS.settings.save, patch),
 	},
 	version: process.versions.electron ?? '',
 };
