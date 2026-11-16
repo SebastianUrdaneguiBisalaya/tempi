@@ -11,8 +11,19 @@ const eventRowSchema = z
 		deleted_at: z.string().nullable(),
 		description: z.string().nullable(),
 		end_at: z.string(),
+		// JSON text; the domain schema below checks what it holds.
+		ex_dates: z.string().transform((text, ctx): unknown => {
+			try {
+				return JSON.parse(text);
+			} catch {
+				ctx.addIssue({ code: 'custom', message: 'ex_dates is not JSON' });
+				return z.NEVER;
+			}
+		}),
 		id: z.string(),
 		location: z.string().nullable(),
+		original_start_at: z.string().nullable(),
+		recurring_event_id: z.string().nullable(),
 		reminder_minutes: z.number().nullable(),
 		rrule: z.string().nullable(),
 		start_at: z.string(),
@@ -30,8 +41,11 @@ const eventRowSchema = z
 			deletedAt: row.deleted_at,
 			description: row.description,
 			endAt: row.end_at,
+			exDates: row.ex_dates,
 			id: row.id,
 			location: row.location,
+			originalStartAt: row.original_start_at,
+			recurringEventId: row.recurring_event_id,
 			reminderMinutes: row.reminder_minutes,
 			rrule: row.rrule,
 			startAt: row.start_at,
@@ -52,8 +66,11 @@ const toRow = (event: CalendarEvent) => ({
 	deleted_at: event.deletedAt === null ? null : toInstantColumn(event.deletedAt),
 	description: event.description,
 	end_at: toInstantColumn(event.endAt),
+	ex_dates: JSON.stringify(event.exDates.map(toInstantColumn)),
 	id: event.id,
 	location: event.location,
+	original_start_at: event.originalStartAt === null ? null : toInstantColumn(event.originalStartAt),
+	recurring_event_id: event.recurringEventId,
 	reminder_minutes: event.reminderMinutes,
 	rrule: event.rrule,
 	start_at: toInstantColumn(event.startAt),
@@ -64,25 +81,32 @@ const toRow = (event: CalendarEvent) => ({
 	video_url: event.videoUrl,
 });
 
-const COLUMNS = 'id, calendar_id, title, description, location, video_url, start_at, end_at, all_day, time_zone, rrule, reminder_minutes, status, created_at, updated_at, deleted_at';
+const COLUMNS =
+	'id, calendar_id, title, description, location, video_url, start_at, end_at, all_day, time_zone, rrule, ex_dates, recurring_event_id, original_start_at, reminder_minutes, status, created_at, updated_at, deleted_at';
 
 export class SqliteEventRepository implements EventRepository {
 	private readonly findByIdStatement: StatementSync;
+	private readonly listBySeriesStatement: StatementSync;
 	private readonly listInRangeStatement: StatementSync;
+	private readonly listSeriesStatement: StatementSync;
 	private readonly saveStatement: StatementSync;
 	private readonly softDeleteByCalendarStatement: StatementSync;
 
 	constructor(db: DatabaseSync) {
 		this.findByIdStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE id = :id`);
 		// Half-open overlap: [start_at, end_at) intersects [start, end). Text comparison works because instants are normalized UTC.
-		this.listInRangeStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND start_at < :end AND end_at > :start ORDER BY start_at, id`);
+		// Series are expanded by core, so only events without a recurrence are listed by their own times.
+		this.listInRangeStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NULL AND start_at < :end AND end_at > :start ORDER BY start_at, id`);
+		this.listSeriesStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND rrule IS NOT NULL AND start_at < :before ORDER BY start_at, id`);
+		this.listBySeriesStatement = db.prepare(`SELECT ${COLUMNS} FROM events WHERE deleted_at IS NULL AND recurring_event_id = :series_id ORDER BY original_start_at, id`);
 		this.saveStatement = db.prepare(
 			`INSERT INTO events (${COLUMNS})
-			VALUES (:id, :calendar_id, :title, :description, :location, :video_url, :start_at, :end_at, :all_day, :time_zone, :rrule, :reminder_minutes, :status, :created_at, :updated_at, :deleted_at)
+			VALUES (:id, :calendar_id, :title, :description, :location, :video_url, :start_at, :end_at, :all_day, :time_zone, :rrule, :ex_dates, :recurring_event_id, :original_start_at, :reminder_minutes, :status, :created_at, :updated_at, :deleted_at)
 			ON CONFLICT (id) DO UPDATE SET
 				calendar_id = excluded.calendar_id, title = excluded.title, description = excluded.description,
 				location = excluded.location, video_url = excluded.video_url, start_at = excluded.start_at, end_at = excluded.end_at,
-				all_day = excluded.all_day, time_zone = excluded.time_zone, rrule = excluded.rrule,
+				all_day = excluded.all_day, time_zone = excluded.time_zone, rrule = excluded.rrule, ex_dates = excluded.ex_dates,
+				recurring_event_id = excluded.recurring_event_id, original_start_at = excluded.original_start_at,
 				reminder_minutes = excluded.reminder_minutes, status = excluded.status,
 				created_at = excluded.created_at, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at`
 		);
@@ -98,6 +122,14 @@ export class SqliteEventRepository implements EventRepository {
 
 	listInRange(range: DateRange): Promise<CalendarEvent[]> {
 		return defer(() => this.listInRangeStatement.all({ end: toInstantColumn(range.end), start: toInstantColumn(range.start) }).map(row => parseRow(eventRowSchema, row)));
+	}
+
+	listBySeries(seriesId: string): Promise<CalendarEvent[]> {
+		return defer(() => this.listBySeriesStatement.all({ series_id: seriesId }).map(row => parseRow(eventRowSchema, row)));
+	}
+
+	listSeries(before: string): Promise<CalendarEvent[]> {
+		return defer(() => this.listSeriesStatement.all({ before: toInstantColumn(before) }).map(row => parseRow(eventRowSchema, row)));
 	}
 
 	save(event: CalendarEvent): Promise<void> {
