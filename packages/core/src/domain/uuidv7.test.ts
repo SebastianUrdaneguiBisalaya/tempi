@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { uuidv7 } from './ids';
+import { uuidv7 } from './uuidv7';
 
 describe('uuidv7', () => {
 	test('is a version 7, RFC 9562 variant UUID', () => {

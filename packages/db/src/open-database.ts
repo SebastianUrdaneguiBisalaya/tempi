@@ -1,7 +1,6 @@
 import { rmSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
-import type { Clock, IdGenerator } from '@tempi/core';
-import { systemClock, uuidv7Ids } from './ids';
+import { type Clock, type IdGenerator, systemClock, uuidv7Ids } from '@tempi/core';
 import { loadMigrations, type Migration, migrate, readUserVersion } from './migrations';
 import { seedDefaultCalendar } from './seed';
 

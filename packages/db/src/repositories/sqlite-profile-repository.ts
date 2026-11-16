@@ -1,10 +1,7 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite';
-import { type ProfileRepository, profileInputSchema, type UserProfile } from '@tempi/core';
+import { type ProfileRepository, type UserProfile, userProfileSchema } from '@tempi/core';
 import { z } from 'zod';
-import { type DomainFields, defer, instantColumn, parseRow, toInstantColumn } from '../columns';
-
-// Re-validate reads with the domain schema so a corrupt row never reaches use cases.
-const storedProfileSchema = profileInputSchema.extend({ createdAt: instantColumn, updatedAt: instantColumn });
+import { type DomainFields, defer, parseRow, toInstantColumn } from '../columns';
 
 const profileRowSchema = z
 	.object({
@@ -17,7 +14,7 @@ const profileRowSchema = z
 		updated_at: z.string(),
 	})
 	.transform(
-		(row): DomainFields<typeof storedProfileSchema> => ({
+		(row): DomainFields<typeof userProfileSchema> => ({
 			avatar: row.avatar,
 			country: row.country,
 			createdAt: row.created_at,
@@ -27,7 +24,8 @@ const profileRowSchema = z
 			updatedAt: row.updated_at,
 		})
 	)
-	.pipe(storedProfileSchema);
+	// Re-validate reads with the domain schema so a corrupt row never reaches use cases.
+	.pipe(userProfileSchema);
 
 export class SqliteProfileRepository implements ProfileRepository {
 	private readonly getStatement: StatementSync;

@@ -31,6 +31,9 @@ export const es = {
 		range: {
 			endBeforeStart: 'El fin del rango debe ser posterior a su inicio.',
 		},
+		system: {
+			unexpected: 'Algo salió mal. Vuelve a intentarlo.',
+		},
 		validation: {
 			custom: 'Este valor no es válido.',
 			instant: 'Introduce una fecha y hora válidas.',

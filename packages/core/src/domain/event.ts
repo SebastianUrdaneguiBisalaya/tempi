@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Timestamps } from './timestamps';
+import { storedEntitySchema } from './timestamps';
 import { idSchema, optionalTextSchema, requiredTextSchema, timeZoneSchema, utcInstantSchema } from './values';
 
 export const EVENT_STATUSES = ['confirmed', 'tentative'] as const;
@@ -47,5 +47,8 @@ export type EventFields = z.output<typeof eventFieldsSchema>;
 export type NewEventInput = z.input<typeof newEventInputSchema>;
 export type EventPatch = z.input<typeof eventPatchSchema>;
 
+/** A stored event, as repositories save and return it. */
+export const calendarEventSchema = eventFieldsSchema.and(storedEntitySchema);
+
 // Named CalendarEvent so it never shadows the DOM `Event` in the renderer.
-export type CalendarEvent = EventFields & Timestamps & { id: string };
+export type CalendarEvent = z.output<typeof calendarEventSchema>;

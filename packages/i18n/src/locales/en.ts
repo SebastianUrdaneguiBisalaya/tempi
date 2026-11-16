@@ -30,6 +30,9 @@ export const en = {
 		range: {
 			endBeforeStart: 'The end of the range must be after its start.',
 		},
+		system: {
+			unexpected: 'Something went wrong. Please try again.',
+		},
 		validation: {
 			custom: 'This value isn’t valid.',
 			instant: 'Enter a valid date and time.',

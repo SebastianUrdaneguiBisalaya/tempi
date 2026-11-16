@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { singletonTimestampsSchema } from './timestamps';
 import { optionalTextSchema, requiredTextSchema, timeZoneSchema } from './values';
 
 export const profileInputSchema = z.object({
@@ -18,7 +19,6 @@ export const profileInputSchema = z.object({
 export type ProfileInput = z.input<typeof profileInputSchema>;
 
 /** The single local user. There is one profile per installation, so it has no id. */
-export type UserProfile = z.output<typeof profileInputSchema> & {
-	createdAt: string;
-	updatedAt: string;
-};
+export const userProfileSchema = profileInputSchema.extend(singletonTimestampsSchema.shape);
+
+export type UserProfile = z.output<typeof userProfileSchema>;

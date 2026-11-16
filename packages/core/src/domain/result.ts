@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 import { ERROR_KEYS, type ErrorKey, isErrorKey } from './error-keys';
 
-export const DOMAIN_ERROR_CODES = ['validation', 'not_found', 'conflict'] as const;
+export const DOMAIN_ERROR_CODES = ['validation', 'not_found', 'conflict', 'internal'] as const;
 
 export type DomainErrorCode = (typeof DOMAIN_ERROR_CODES)[number];
 
