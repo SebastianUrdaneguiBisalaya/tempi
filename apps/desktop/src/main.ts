@@ -1,7 +1,8 @@
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { createRepositories } from '@tempi/db';
+import { systemClock, uuidv7Ids } from '@tempi/core';
+import { createRepositories, createTransactionQueue } from '@tempi/db';
 import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron';
 import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol.js';
 import { openAppDatabase } from './database.js';
@@ -125,7 +126,7 @@ if (!gotLock) {
 		}
 		if (app.isPackaged) handleAppProtocol(WEB_DIR);
 		database = openAppDatabase();
-		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl }, createRepositories(database));
+		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction: createTransactionQueue(database) }, { ...createRepositories(database), clock: systemClock, ids: uuidv7Ids });
 		createWindow();
 	});
 

@@ -129,7 +129,7 @@ packages/
       channels.ts            channel names ('events:list', …)
       schemas.ts             runtime payload validation (composes core zod schemas)
       desktop-api.ts         DesktopApi type exposed by preload, Window augmentation
-      ipc-event-repository.ts  renderer adapter: implements core ports via window.desktop
+      ipc-client.ts          renderer client: calls the use cases through window.desktop, validates answers
       index.ts
   i18n/                      @tempi/i18n: shared en/es translations for web and desktop (plain data, no i18n runtime)
     src/
@@ -149,7 +149,7 @@ apps/web/src/
   features/<feature>/        components/, hooks/ (calendar, events, settings)
   components/                shared app components
   components/ui/             generated (shadcn); do not edit by hand
-  providers/                 repository provider (injects the port implementation)
+  providers/                 api provider (injects the use-case client: `useApi()`)
   lib/                       small framework-free helpers
 ```
 
@@ -190,14 +190,16 @@ apps/web/src/
 - In every handler, check `event.senderFrame.url` against the trusted origin, then validate the payload at runtime with the core zod schemas. TypeScript types do not exist at runtime.
 - Pass only plain serializable data. Return results; don't throw raw errors across IPC.
 - Define the bridge type once (`DesktopApi`), share it with web, and declare it on `Window`.
-- `apps/web` must not assume Electron: feature-detect `window.desktop` and go through the repository port.
+- Channels are use cases (`events:create`), never repository operations. The renderer never touches repositories.
+- Each handler runs its core use case inside one SQLite transaction through `@tempi/db`'s `createTransactionQueue`: calls are serialized, and a thrown error or a failed `Result` rolls back every write.
+- `apps/web` must not assume Electron: feature-detect `window.desktop` and go through the API provider (`useApi()`).
 
 ## SQLite (`node:sqlite`)
 
 - The database lives in the main process only, at `app.getPath('userData')/tempi.db`. The renderer reaches it only through IPC.
 - Set on open: `journal_mode = WAL`, `foreign_keys = ON`, `synchronous = NORMAL` and `busy_timeout = 5000`.
 - Use prepared statements with bound parameters only. Never build SQL from strings.
-- Wrap multi-statement writes in a transaction (`BEGIN IMMEDIATE` … `COMMIT`/`ROLLBACK`).
+- Wrap multi-statement writes in a transaction (`BEGIN IMMEDIATE` … `COMMIT`/`ROLLBACK`). Use cases get theirs from the IPC handler's transaction queue.
 - Migrations: write ordered SQL files tracked by `PRAGMA user_version`, run each in a transaction, and only move forward. Back up with `VACUUM INTO` before migrating.
 - `DatabaseSync` blocks the main process. Keep queries indexed and small. Move bulk work (import, export, search) to a `utilityProcess`.
 - Store every instant (`created_at`, `updated_at`, `deleted_at`, event start/end) as UTC ISO-8601 text. Convert to the user's time zone only for display. Store the event's IANA time zone separately, and recurrence as RFC 5545 `RRULE` text.
@@ -216,7 +218,7 @@ apps/web/src/
 ## React (19, Next static export)
 
 - With static export there is no runtime server: no server actions, no dynamic route handlers, no middleware, no `headers()`/`cookies()`. Dynamic routes need `generateStaticParams`.
-- Data comes from the client through hooks that wrap the repository port. Components never call `window.desktop` directly.
+- Data comes from the client through hooks that wrap `useApi()`. Components never call `window.desktop` directly.
 - Derive values during render instead of syncing them into state. Use `useEffect` only to synchronize with external systems.
 - Use `useSyncExternalStore` for external stores. Avoid prop drilling beyond two levels: lift state or use context.
 - Use stable keys from IDs, never array indexes.
