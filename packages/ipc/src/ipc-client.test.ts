@@ -16,6 +16,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 	const api: DesktopApi = {
 		calendars: { create: answer, delete: answer, list: answer, update: answer },
 		events: { create: answer, delete: answer, list: answer, update: answer },
+		onboarding: { complete: answer },
 		profile: { get: answer, save: answer },
 		settings: { get: answer, save: answer },
 		version: 'test',

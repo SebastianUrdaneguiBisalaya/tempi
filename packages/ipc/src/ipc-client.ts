@@ -33,6 +33,9 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 		list: range => call(CHANNELS.events.list, () => api.events.list(range)),
 		update: input => call(CHANNELS.events.update, () => api.events.update(input)),
 	},
+	onboarding: {
+		complete: input => call(CHANNELS.onboarding.complete, () => api.onboarding.complete(input)),
+	},
 	profile: {
 		get: () => call(CHANNELS.profile.get, () => api.profile.get()),
 		save: input => call(CHANNELS.profile.save, () => api.profile.save(input)),
