@@ -51,3 +51,20 @@ export const formatMonthDay = (instant: Date | string, { language, timeZone }: D
 
 /** Month and year for calendar headers, e.g. "November 2026" / "noviembre de 2026". */
 export const formatMonthYear = (instant: Date | string, { language, timeZone }: DateFormatOptions): string => formatter(language, { month: 'long', timeZone, year: 'numeric' }).format(toDate(instant));
+
+const relativeFormatters = new Map<Language, Intl.RelativeTimeFormat>();
+
+/**
+ * How long until `minutes` from now, e.g. "in 5 minutes" / "en 5 minutos": minutes under an hour, hours under a day,
+ * days after that. Rounds up under an hour, so a start that is seconds away still reads "in 1 minute".
+ */
+export const formatRelativeMinutes = (minutes: number, language: Language): string => {
+	let format = relativeFormatters.get(language);
+	if (format === undefined) {
+		format = new Intl.RelativeTimeFormat(language, { numeric: 'always' });
+		relativeFormatters.set(language, format);
+	}
+	if (minutes < 60) return format.format(Math.max(1, Math.ceil(minutes)), 'minute');
+	if (minutes < 24 * 60) return format.format(Math.round(minutes / 60), 'hour');
+	return format.format(Math.round(minutes / (24 * 60)), 'day');
+};

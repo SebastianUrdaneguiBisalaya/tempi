@@ -39,6 +39,7 @@ export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeForm
 export { DEFAULT_SETTINGS, LANGUAGES, resolveLanguage, settingsPatchSchema, settingsSchema, settingsValuesSchema, THEMES, TIME_FORMATS, WEEK_STARTS } from './domain/settings';
 export type { Timestamps } from './domain/timestamps';
 export { singletonTimestampsSchema, storedEntitySchema, timestampsSchema } from './domain/timestamps';
+export { UPCOMING_WINDOW_DAYS, upcomingEvent } from './domain/upcoming';
 export type { ProfileInput, ProfileUpdateInput, UserProfile } from './domain/user-profile';
 export { profileInputSchema, profileUpdateInputSchema, userProfileSchema } from './domain/user-profile';
 export { uuidv7 } from './domain/uuidv7';

@@ -324,6 +324,13 @@ export const en = {
 			profileUpdated: 'Profile saved.',
 			settingsSaved: 'Settings saved.',
 		},
+		upcoming: {
+			empty: 'No upcoming event',
+			label: 'Upcoming',
+			location: 'Location',
+			ongoing: 'Now · ends {{relative}}',
+			startsIn: 'Upcoming {{relative}}',
+		},
 	},
 	// Keys mirror core's ERROR_KEYS. Interpolation values come from `DomainIssue.params`.
 	errors: {

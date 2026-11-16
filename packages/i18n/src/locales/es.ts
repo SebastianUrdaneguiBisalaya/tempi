@@ -326,6 +326,13 @@ export const es = {
 			profileUpdated: 'Perfil guardado.',
 			settingsSaved: 'Configuración guardada.',
 		},
+		upcoming: {
+			empty: 'No hay próximos eventos',
+			label: 'Próximo',
+			location: 'Ubicación',
+			ongoing: 'Ahora · termina {{relative}}',
+			startsIn: 'Próximo {{relative}}',
+		},
 	},
 	errors: {
 		avatar: {
