@@ -12,6 +12,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatMonthDay, formatWeekday } from '@/lib/date-format';
 import type { EventFormOutput, EventFormValues } from '@/lib/event-form-values';
 import { toUtcDate } from '@/lib/plain-date';
+import { DateTimeField } from './date-time-field';
 
 const UNIT_KEYS = { DAILY: 'day', MONTHLY: 'month', WEEKLY: 'week', YEARLY: 'year' } as const satisfies Record<RecurrenceFrequency, string>;
 const NTH_KEYS = { '-1': 'last', '1': 'first', '2': 'second', '3': 'third', '4': 'fourth' } as const;
@@ -200,7 +201,18 @@ export function RecurrenceFields({ control, id }: RecurrenceFieldsProps) {
 													name='recurrence.until'
 													render={({ field: until, fieldState }) => (
 														<div className='flex-1'>
-															<Input aria-invalid={fieldState.invalid || undefined} aria-label={endLabels.until} disabled={ends !== 'until'} type='date' {...until} />
+															<DateTimeField
+																allDay
+																dateLabel={endLabels.until}
+																disabled={ends !== 'until'}
+																id={`${id}-until`}
+																invalid={fieldState.invalid}
+																onBlur={until.onBlur}
+																onChange={until.onChange}
+																ref={until.ref}
+																timeLabel={endLabels.until}
+																value={until.value}
+															/>
 															<FormFieldError error={fieldState.error} />
 														</div>
 													)}
