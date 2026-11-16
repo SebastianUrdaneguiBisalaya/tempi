@@ -29,6 +29,7 @@ describe('payloadSchemas', () => {
 		['events:create', newEvent],
 		['events:delete', 'evt-1'],
 		['events:list', { end: '2026-11-21T00:00:00Z', start: '2026-11-20T00:00:00Z' }],
+		['events:restore', 'evt-1'],
 		['events:update', { id: 'evt-1', title: 'Retro' }],
 		['onboarding:complete', onboarding],
 		['onboarding:complete', { ...onboarding, avatar: null }],

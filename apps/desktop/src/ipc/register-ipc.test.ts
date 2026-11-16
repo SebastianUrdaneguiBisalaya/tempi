@@ -68,6 +68,18 @@ describe('registerIpc', () => {
 		expect(await invoke(CHANNELS.settings.save, { theme: 'dark' })).toMatchObject({ ok: true, value: { theme: 'dark', weekStart: 'monday' } });
 	});
 
+	test('restores a deleted event', async () => {
+		const range = { end: '2026-11-21T00:00:00Z', start: '2026-11-20T00:00:00Z' };
+		const created = await invoke(CHANNELS.events.create, newEvent(seededCalendarId()));
+		if (typeof created !== 'object' || created === null || !('value' in created) || typeof created.value !== 'object' || created.value === null || !('id' in created.value))
+			throw new Error('create failed');
+		const { id } = created.value;
+		await invoke(CHANNELS.events.delete, id);
+		expect(await invoke(CHANNELS.events.list, range)).toEqual({ ok: true, value: [] });
+		expect(await invoke(CHANNELS.events.restore, id)).toMatchObject({ ok: true, value: { deletedAt: null, id } });
+		expect(await invoke(CHANNELS.events.list, range)).toMatchObject({ ok: true, value: [{ id }] });
+	});
+
 	test('updates take the id next to the patch fields', async () => {
 		const id = seededCalendarId();
 		expect(await invoke(CHANNELS.calendars.update, { id, name: 'Home' })).toMatchObject({ ok: true, value: { id, name: 'Home' } });
