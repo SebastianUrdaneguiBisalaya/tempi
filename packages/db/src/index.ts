@@ -5,6 +5,8 @@ import { SqliteEventRepository } from './repositories/sqlite-event-repository';
 import { SqliteProfileRepository } from './repositories/sqlite-profile-repository';
 import { SqliteSettingsRepository } from './repositories/sqlite-settings-repository';
 
+export type { BackupFile } from './backup';
+export { prepareRestore, swapInRestore, writeBackup } from './backup';
 export type { Migration } from './migrations';
 export { loadMigrations, migrate, readUserVersion } from './migrations';
 export type { OpenDatabaseOptions } from './open-database';
