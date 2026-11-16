@@ -66,7 +66,7 @@ export function AvatarField({ currentUrl = null, onUnreadableChange }: AvatarFie
 
 	return (
 		<div className='flex flex-col gap-2'>
-			<Attachment className='w-full max-w-sm' state={state}>
+			<Attachment className='w-full' state={state}>
 				<AttachmentMedia className='w-14 rounded-full bg-transparent'>
 					<Avatar className='size-full'>
 						{shownUrl !== null && <AvatarImage alt='' src={shownUrl} />}
