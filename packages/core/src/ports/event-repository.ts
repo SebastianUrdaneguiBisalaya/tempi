@@ -6,6 +6,13 @@ export type EventRepository = {
 	findById(id: string): Promise<CalendarEvent | null>;
 	/** Non-deleted events without a recurrence (single events and edited occurrences) whose [startAt, endAt) overlaps the range. */
 	listInRange(range: DateRange): Promise<CalendarEvent[]>;
+	/**
+	 * The non-deleted event of a calendar whose iCalendar UID is `uid` (its `icalUid`, or its id for events made in
+	 * Tempi), or null. Edited occurrences share their series' UID and are never returned.
+	 */
+	findByUid(calendarId: string, uid: string): Promise<CalendarEvent | null>;
+	/** Every non-deleted event of a calendar: single events, series and edited occurrences, by start. */
+	listByCalendar(calendarId: string): Promise<CalendarEvent[]>;
 	/** Non-deleted edited occurrences of a series. */
 	listBySeries(seriesId: string): Promise<CalendarEvent[]>;
 	/** Non-deleted recurring series that start before `before`; expanding them tells which occur in a range. */

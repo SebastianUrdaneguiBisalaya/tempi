@@ -22,6 +22,8 @@ export {
 	OCCURRENCE_SCOPES,
 	occurrenceTargetSchema,
 } from './domain/event';
+export type { ExportEventsInput, ImportEventsInput, ImportedEvent, ImportSummary } from './domain/ical-transfer';
+export { exportEventsInputSchema, importEventsInputSchema, importedEventSchema } from './domain/ical-transfer';
 export type { WeekSegment } from './domain/month-layout';
 export { belongsInAllDayLane, fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './domain/month-layout';
 export type { OnboardingInput } from './domain/onboarding';
@@ -71,8 +73,11 @@ export { deleteCalendar } from './use-cases/delete-calendar';
 export { deleteEvent } from './use-cases/delete-event';
 export type { CoreDeps } from './use-cases/deps';
 export { duplicateEvent } from './use-cases/duplicate-event';
+export type { ExportedCalendars } from './use-cases/export-events';
+export { exportEvents } from './use-cases/export-events';
 export { getProfile } from './use-cases/get-profile';
 export { getSettings } from './use-cases/get-settings';
+export { importEvents } from './use-cases/import-events';
 export { initializeSettings } from './use-cases/initialize-settings';
 export { listCalendars } from './use-cases/list-calendars';
 export { listEvents } from './use-cases/list-events';
