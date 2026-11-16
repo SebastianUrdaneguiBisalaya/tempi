@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProfile } from '@/features/profile/hooks/use-profile';
+import { ShortcutList } from '@/features/shortcuts/components/shortcut-list';
 import { useDialogShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useSettings } from '../hooks/use-settings';
@@ -14,7 +15,7 @@ import { DataSettings } from './data-settings';
 import { IntegrationsSettings } from './integrations-settings';
 import { ProfileSettings } from './profile-settings';
 
-const TABS = ['profile', 'appearance', 'calendar', 'integrations', 'data'] as const;
+const TABS = ['profile', 'appearance', 'calendar', 'integrations', 'shortcuts', 'data'] as const;
 
 export type SettingsTab = (typeof TABS)[number];
 
@@ -66,6 +67,9 @@ export function SettingsDialog({ initialTab, onOpenChange, open }: SettingsDialo
 								</TabsContent>
 								<TabsContent value='integrations'>
 									<IntegrationsSettings />
+								</TabsContent>
+								<TabsContent className='text-xs' value='shortcuts'>
+									<ShortcutList />
 								</TabsContent>
 								<TabsContent value='data'>
 									<DataSettings />

@@ -298,6 +298,7 @@ export const en = {
 				data: 'Data',
 				integrations: 'Integrations',
 				profile: 'Profile',
+				shortcuts: 'Shortcuts',
 			},
 			title: 'Settings',
 		},
@@ -358,8 +359,8 @@ export const en = {
 				navigation: 'Navigation',
 				views: 'Views',
 			},
+			hint: 'See all keyboard shortcuts',
 			title: 'Keyboard shortcuts',
-			useful: 'Useful shortcuts',
 		},
 		toasts: {
 			backupCreated: 'Backup created.',

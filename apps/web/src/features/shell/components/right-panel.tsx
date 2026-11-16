@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-/** Right column: a search field on top and stacked sections below, both filled in by later features. */
-export function RightPanel({ children, search }: { children?: ReactNode; search?: ReactNode }) {
+/** Right column: a search field on top, stacked sections that take the remaining height, and an optional footer pinned at the bottom. */
+export function RightPanel({ children, footer, search }: { children?: ReactNode; footer?: ReactNode; search?: ReactNode }) {
 	const { t } = useTranslation();
 	return (
 		<div className='flex h-full min-h-0 flex-col'>
@@ -15,6 +15,7 @@ export function RightPanel({ children, search }: { children?: ReactNode; search?
 			<ScrollArea className='min-h-0 flex-1'>
 				<div className='flex flex-col gap-4 p-3'>{children}</div>
 			</ScrollArea>
+			{footer !== undefined && <div className='px-3 py-2'>{footer}</div>}
 		</div>
 	);
 }
