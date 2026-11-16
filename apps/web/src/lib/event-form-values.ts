@@ -1,5 +1,6 @@
 import {
 	type CalendarEvent,
+	EVENT_STATUSES,
 	fromRrule,
 	MONTHLY_MODES,
 	newEventInputSchema,
@@ -40,8 +41,11 @@ const eventFormValuesSchema = z.object({
 	reminderMinutes: z.number().nullable(),
 	repeat: z.enum(RECURRENCE_PRESETS),
 	startAt: z.string(),
+	status: z.enum(EVENT_STATUSES),
 	timeZone: z.string(),
 	title: z.string(),
+	/** Blank for none; core checks it is an http(s) URL. */
+	videoUrl: z.string(),
 });
 
 export type EventFormValues = z.input<typeof eventFormValuesSchema>;
@@ -129,6 +133,8 @@ export const eventToFormValues = (event: CalendarEvent): EventFormValues => ({
 	location: event.location ?? '',
 	reminderMinutes: event.reminderMinutes,
 	startAt: toFormTime(event.startAt, event.timeZone, event.allDay),
+	status: event.status,
 	timeZone: event.timeZone,
 	title: event.title,
+	videoUrl: event.videoUrl ?? '',
 });

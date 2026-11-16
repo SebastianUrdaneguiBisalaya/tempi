@@ -32,8 +32,10 @@ export function EventPanel() {
 		location: '',
 		reminderMinutes: null,
 		startAt: toFormTime(draft.startAt, timeZone, draft.allDay),
+		status: 'confirmed',
 		timeZone,
 		title: '',
+		videoUrl: '',
 	};
 	return <EventForm calendars={calendars} defaultValues={defaultValues} event={null} key={`new:${draft.startAt}:${draft.endAt}`} />;
 }

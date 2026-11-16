@@ -13,8 +13,10 @@ import { toUtcDate } from '@/lib/plain-date';
 import { cn } from '@/lib/utils';
 import { useCalendars } from '../../hooks/use-calendars';
 import { useEvents } from '../../hooks/use-events';
+import { useMinute } from '../../hooks/use-minute';
 import { useCalendarNavigation } from '../calendar-navigation-provider';
 import { EventChip } from '../event-chip';
+import { eventLook } from '../event-style';
 
 // Pixel sizes: the number of event lanes per week is measured from the rendered row height.
 const DAY_LABEL_PX = 28;
@@ -50,6 +52,7 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 	const firstDay = allWeeks[0]?.[0] ?? date;
 	const lastDay = allWeeks.at(-1)?.at(-1) ?? date;
 	const { data: events } = useEvents(daysToUtcRange(firstDay, lastDay, timeZone));
+	const now = useMinute();
 
 	const calendarById = new Map((calendars ?? []).map(calendar => [calendar.id, calendar]));
 	const shown = (events ?? []).filter(event => calendarById.get(event.calendarId)?.isVisible !== false);
@@ -179,6 +182,7 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 																<EventContextMenu event={segment.item}>
 																	<button className='block size-full rounded-sm text-left hover:bg-accent' onClick={() => openEvent(segment.item)} type='button'>
 																		<EventChip
+																			look={eventLook(segment.item, now)}
 																			color={colorOf(segment.item)}
 																			segment={{ ...segment, continuesAfter: false, continuesBefore: false, span: 1 }}
 																			time={timeOf(segment.item)}
@@ -214,7 +218,7 @@ export function MonthGrid({ date, timeZone, today }: MonthGridProps) {
 											tabIndex={-1}
 											type='button'
 										>
-											<EventChip color={colorOf(segment.item)} segment={segment} time={timeOf(segment.item)} />
+											<EventChip color={colorOf(segment.item)} look={eventLook(segment.item, now)} segment={segment} time={timeOf(segment.item)} />
 										</button>
 									</EventContextMenu>
 								))}

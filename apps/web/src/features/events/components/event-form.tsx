@@ -1,13 +1,13 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { asOccurrence, type Calendar, type EventOccurrence, type EventPatch, zodErrorKeyMap } from '@tempi/core';
-import { Trash2Icon, XIcon } from 'lucide-react';
+import { asOccurrence, type Calendar, EVENT_STATUSES, type EventOccurrence, type EventPatch, zodErrorKeyMap } from '@tempi/core';
+import { Trash2Icon, VideoIcon, XIcon } from 'lucide-react';
 import { useId } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormFieldError } from '@/components/form-field-error';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -60,16 +60,16 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 			createEvent.mutate(values, { onError: showFieldErrors, onSuccess });
 			return;
 		}
-		// The form doesn't edit status or the video link, so the update leaves them as they are.
-		const { status: _status, videoUrl: _videoUrl, ...fields } = values;
 		const { dirtyFields } = formState;
 		const repeatChanged = dirtyFields.repeat === true || dirtyFields.recurrence !== undefined;
 		const timesChanged = dirtyFields.allDay || dirtyFields.startAt || dirtyFields.endAt || dirtyFields.timeZone;
 		// Only what the user changed, so an occurrence's edit doesn't copy every field onto the rest of its series.
 		const patch: EventPatch = {
-			...Object.fromEntries((['calendarId', 'description', 'location', 'reminderMinutes', 'title'] as const).filter(key => dirtyFields[key]).map(key => [key, fields[key]])),
-			...(timesChanged && { allDay: fields.allDay, endAt: fields.endAt, startAt: fields.startAt, timeZone: fields.timeZone }),
-			...(repeatChanged && { rrule: fields.rrule }),
+			...Object.fromEntries(
+				(['calendarId', 'description', 'location', 'reminderMinutes', 'status', 'title', 'videoUrl'] as const).filter(key => dirtyFields[key]).map(key => [key, values[key]])
+			),
+			...(timesChanged && { allDay: values.allDay, endAt: values.endAt, startAt: values.startAt, timeZone: values.timeZone }),
+			...(repeatChanged && { rrule: values.rrule }),
 		};
 		if (event.series === null) {
 			updateEvent.mutate({ id: event.id, patch }, { onError: showFieldErrors, onSuccess });
@@ -95,6 +95,7 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 		if (minutes === 1440) return t('events.reminders.day');
 		return t('events.reminders.minutes', { count: minutes });
 	};
+	const statusItems = EVENT_STATUSES.map(status => ({ label: t(`events.status.${status}`), value: status }));
 	const reminderItems = REMINDERS.map(minutes => ({ label: reminderLabel(minutes), value: minutes === null ? 'none' : String(minutes) }));
 	const timeType = allDay ? 'date' : 'datetime-local';
 
@@ -182,6 +183,47 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 									))}
 								</SelectContent>
 							</Select>
+							<FormFieldError error={fieldState.error} />
+						</Field>
+					)}
+				/>
+				<Controller
+					control={control}
+					name='status'
+					render={({ field }) => (
+						<Field>
+							<FieldLabel htmlFor={`${id}-status`}>{t('events.form.status')}</FieldLabel>
+							<Select items={statusItems} onValueChange={value => value !== null && field.onChange(value)} value={field.value}>
+								<SelectTrigger className='w-full' id={`${id}-status`} ref={field.ref}>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{statusItems.map(item => (
+										<SelectItem key={item.value} value={item.value}>
+											{item.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</Field>
+					)}
+				/>
+				<Controller
+					control={control}
+					name='videoUrl'
+					render={({ field, fieldState }) => (
+						<Field data-invalid={fieldState.invalid || undefined}>
+							<FieldLabel htmlFor={`${id}-video`}>{t('events.form.videoUrl')}</FieldLabel>
+							<div className='flex gap-2'>
+								<Input aria-invalid={fieldState.invalid || undefined} id={`${id}-video`} inputMode='url' placeholder='https://' type='url' {...field} />
+								{/* The saved link only: core has validated it. The desktop app opens new-window links with shell.openExternal. */}
+								{event?.videoUrl && (
+									<a className={buttonVariants()} href={event.videoUrl} rel='noreferrer' target='_blank'>
+										<VideoIcon data-icon='inline-start' />
+										{t('events.join')}
+									</a>
+								)}
+							</div>
 							<FormFieldError error={fieldState.error} />
 						</Field>
 					)}
