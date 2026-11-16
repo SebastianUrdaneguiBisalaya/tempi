@@ -12,11 +12,63 @@ export const es = {
 			edit: 'Editar',
 			save: 'Guardar',
 		},
+		onboarding: {
+			actions: {
+				back: 'Atrás',
+				finish: 'Empezar',
+				next: 'Continuar',
+				skip: 'Omitir',
+			},
+			avatar: {
+				change: 'Cambiar foto',
+				choose: 'Elegir foto',
+				description: 'Opcional. Se queda en este dispositivo.',
+				invalid: 'No se puede usar esta imagen. Prueba con otra.',
+				remove: 'Quitar foto',
+				title: 'Añade una foto de perfil',
+			},
+			language: {
+				description: 'Puedes cambiarlo luego en la configuración.',
+				title: 'Elige tu idioma',
+			},
+			location: {
+				country: 'País',
+				countryEmpty: 'No se encontraron países.',
+				countryPlaceholder: 'Selecciona un país',
+				countrySearch: 'Buscar países…',
+				description: 'Tu zona horaria mantiene cada evento a la hora correcta.',
+				timeZone: 'Zona horaria',
+				title: '¿Dónde estás?',
+			},
+			name: {
+				description: 'Personaliza tu calendario.',
+				firstName: 'Nombre',
+				lastName: 'Apellido',
+				title: '¿Cómo te llamas?',
+			},
+			progress: 'Paso {{current}} de {{total}}',
+			theme: {
+				description: 'Puedes cambiarlo luego en la configuración.',
+				options: {
+					dark: 'Oscuro',
+					light: 'Claro',
+					system: 'Sistema',
+				},
+				systemDescription: 'Sigue a tu dispositivo.',
+				title: 'Elige un tema',
+			},
+			title: 'Te damos la bienvenida a Tempi',
+		},
 		toasts: {
+			onboardingCompleted: 'Todo listo.',
 			settingsSaved: 'Configuración guardada.',
 		},
 	},
 	errors: {
+		avatar: {
+			fileName: 'No se encuentra esta foto.',
+			tooLarge: 'Esta foto es demasiado grande.',
+		},
 		calendar: {
 			color: 'Elige un color válido.',
 			defaultNotDeletable: 'El calendario predeterminado no se puede eliminar.',

@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toast';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { ApiProvider } from '@/providers/api-provider';
+import { AppearancePreviewProvider } from '@/providers/appearance-preview-provider';
 import { I18nProvider } from '@/providers/i18n-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
@@ -34,13 +35,15 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 			<body className='min-h-full flex flex-col'>
 				<ApiProvider>
 					<QueryProvider>
-						<I18nProvider>
-							<ThemeProvider>
-								<Toaster>
-									<TooltipProvider>{children}</TooltipProvider>
-								</Toaster>
-							</ThemeProvider>
-						</I18nProvider>
+						<AppearancePreviewProvider>
+							<I18nProvider>
+								<ThemeProvider>
+									<Toaster>
+										<TooltipProvider>{children}</TooltipProvider>
+									</Toaster>
+								</ThemeProvider>
+							</I18nProvider>
+						</AppearancePreviewProvider>
 					</QueryProvider>
 				</ApiProvider>
 			</body>

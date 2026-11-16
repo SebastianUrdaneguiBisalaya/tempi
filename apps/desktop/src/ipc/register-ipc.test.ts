@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import type { DatabaseSync } from 'node:sqlite';
-import { type Calendar, type CalendarRepository, type CoreDeps, type Settings, uuidv7Ids } from '@tempi/core';
+import { type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, type Settings, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, openDatabase } from '@tempi/db';
 import { CHANNELS, type Channel } from '@tempi/ipc';
 import type { IpcSender } from './handle';
@@ -14,12 +14,15 @@ type Listener = (event: IpcSender, payload: unknown) => Promise<unknown>;
 
 let db: DatabaseSync;
 let handlers: Map<string, Listener>;
+let avatars: Map<string, AvatarImage>;
 
 /** Registers the handlers over a fresh in-memory database; `override` swaps ports to inject failures. */
 const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), listeners: IpcListeners = {}) => {
 	db = openDatabase(':memory:', { clock });
 	handlers = new Map();
-	const deps: CoreDeps = { ...createRepositories(db), clock, ids: uuidv7Ids };
+	avatars = new Map();
+	const avatarStore = { save: async (fileName: string, image: AvatarImage) => void avatars.set(fileName, image) };
+	const deps: CoreDeps = { ...createRepositories(db), avatars: avatarStore, clock, ids: uuidv7Ids };
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
@@ -92,6 +95,36 @@ describe('registerIpc', () => {
 		expect(results).toEqual([expect.objectContaining({ ok: true }), expect.objectContaining({ ok: true })]);
 		expect(rows('SELECT name FROM calendars WHERE is_default = 1')).toEqual([expect.objectContaining({ name: 'Home' })]);
 		expect(rows('SELECT id FROM calendars')).toHaveLength(3);
+	});
+});
+
+describe('onboarding:complete', () => {
+	const onboarding = { avatar: null, country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', theme: 'dark', timeZone: 'America/Lima' };
+
+	test('saves the profile, the avatar and the completed settings', async () => {
+		setup();
+		const avatar: AvatarImage = { bytes: new Uint8Array([1, 2, 3]), type: 'image/png' };
+		const result = await invoke(CHANNELS.onboarding.complete, { ...onboarding, avatar });
+
+		expect(result).toMatchObject({
+			ok: true,
+			value: { profile: { avatar: expect.stringMatching(/\.png$/), country: 'PE' }, settings: { language: 'es', onboardingCompleted: true, theme: 'dark' } },
+		});
+		expect([...avatars.values()]).toEqual([avatar]);
+		expect(rows('SELECT first_name, avatar FROM profile')).toEqual([expect.objectContaining({ avatar: [...avatars.keys()][0], first_name: 'Ana' })]);
+	});
+
+	test('keeps the profile unsaved when the settings write fails', async () => {
+		setup(deps => ({ settings: { get: () => deps.settings.get(), save: () => Promise.reject(new Error('disk I/O error')) } }));
+		expect(await invoke(CHANNELS.onboarding.complete, onboarding)).toMatchObject({ ok: false });
+		expect(rows('SELECT * FROM profile')).toEqual([]);
+	});
+
+	test('notifies the saved settings once committed', async () => {
+		const saved: Settings[] = [];
+		setup(undefined, { settingsSaved: settings => saved.push(settings) });
+		await invoke(CHANNELS.onboarding.complete, onboarding);
+		expect(saved).toEqual([expect.objectContaining({ onboardingCompleted: true, theme: 'dark' })]);
 	});
 });
 

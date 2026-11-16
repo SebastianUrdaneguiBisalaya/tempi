@@ -21,8 +21,8 @@ describe('profile', () => {
 		expect(first.ok && first.value).toEqual({ avatar: null, country: 'PE', createdAt: T0, firstName: 'Ana', lastName: 'Quispe', timeZone: 'America/Lima', updatedAt: T0 });
 
 		deps.clock.set('2026-11-20T00:00:00.000Z');
-		await saveProfile(deps, { ...profileInput, avatar: '/avatars/me.png' });
-		expect(await getProfile(deps)).toMatchObject({ avatar: '/avatars/me.png', createdAt: T0, updatedAt: '2026-11-20T00:00:00.000Z' });
+		await saveProfile(deps, { ...profileInput, avatar: 'me.png' });
+		expect(await getProfile(deps)).toMatchObject({ avatar: 'me.png', createdAt: T0, updatedAt: '2026-11-20T00:00:00.000Z' });
 	});
 
 	test.each([

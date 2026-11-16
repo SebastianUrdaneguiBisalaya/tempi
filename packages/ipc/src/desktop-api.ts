@@ -20,6 +20,9 @@ type Api<Raw extends boolean> = {
 		list: Call<'events:list', Raw>;
 		update: Call<'events:update', Raw>;
 	};
+	onboarding: {
+		complete: Call<'onboarding:complete', Raw>;
+	};
 	profile: {
 		get: CallWithoutInput<'profile:get', Raw>;
 		save: Call<'profile:save', Raw>;

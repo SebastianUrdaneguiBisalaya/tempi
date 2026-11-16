@@ -12,6 +12,9 @@ export const CHANNELS = {
 		list: 'events:list',
 		update: 'events:update',
 	},
+	onboarding: {
+		complete: 'onboarding:complete',
+	},
 	profile: {
 		get: 'profile:get',
 		save: 'profile:save',

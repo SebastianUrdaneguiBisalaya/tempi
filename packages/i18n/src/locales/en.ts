@@ -10,12 +10,64 @@ export const en = {
 			edit: 'Edit',
 			save: 'Save',
 		},
+		onboarding: {
+			actions: {
+				back: 'Back',
+				finish: 'Get started',
+				next: 'Continue',
+				skip: 'Skip',
+			},
+			avatar: {
+				change: 'Change photo',
+				choose: 'Choose photo',
+				description: 'Optional. It stays on this device.',
+				invalid: 'This image can’t be used. Try another one.',
+				remove: 'Remove photo',
+				title: 'Add a profile photo',
+			},
+			language: {
+				description: 'You can change it later in settings.',
+				title: 'Choose your language',
+			},
+			location: {
+				country: 'Country',
+				countryEmpty: 'No countries found.',
+				countryPlaceholder: 'Select a country',
+				countrySearch: 'Search countries…',
+				description: 'Your time zone keeps every event at the right hour.',
+				timeZone: 'Time zone',
+				title: 'Where are you?',
+			},
+			name: {
+				description: 'It personalizes your calendar.',
+				firstName: 'First name',
+				lastName: 'Last name',
+				title: 'What’s your name?',
+			},
+			progress: 'Step {{current}} of {{total}}',
+			theme: {
+				description: 'You can change it later in settings.',
+				options: {
+					dark: 'Dark',
+					light: 'Light',
+					system: 'System',
+				},
+				systemDescription: 'Follows your device.',
+				title: 'Choose a theme',
+			},
+			title: 'Welcome to Tempi',
+		},
 		toasts: {
+			onboardingCompleted: 'You’re all set.',
 			settingsSaved: 'Settings saved.',
 		},
 	},
 	// Keys mirror core's ERROR_KEYS. Interpolation values come from `DomainIssue.params`.
 	errors: {
+		avatar: {
+			fileName: 'This photo can’t be found.',
+			tooLarge: 'This photo is too large.',
+		},
 		calendar: {
 			color: 'Pick a valid color.',
 			defaultNotDeletable: 'The default calendar can’t be deleted.',

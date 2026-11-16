@@ -3,6 +3,8 @@
  * User-facing translations live in `@tempi/i18n`, which must cover every key here.
  */
 export const ERROR_KEYS = {
+	'avatar.fileName': 'Avatar must be a stored file name (id plus jpg, png or webp extension)',
+	'avatar.tooLarge': 'Avatar image exceeds the maximum size',
 	'calendar.color': 'Color must be a #rrggbb hex value',
 	'calendar.defaultNotDeletable': 'The default calendar cannot be deleted',
 	'calendar.defaultRequired': 'A calendar must stay the default; promote another one instead',

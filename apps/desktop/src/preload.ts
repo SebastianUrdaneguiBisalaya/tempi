@@ -17,6 +17,9 @@ const desktop: DesktopApi = {
 		list: range => ipcRenderer.invoke(CHANNELS.events.list, range),
 		update: input => ipcRenderer.invoke(CHANNELS.events.update, input),
 	},
+	onboarding: {
+		complete: input => ipcRenderer.invoke(CHANNELS.onboarding.complete, input),
+	},
 	profile: {
 		get: () => ipcRenderer.invoke(CHANNELS.profile.get),
 		save: input => ipcRenderer.invoke(CHANNELS.profile.save, input),

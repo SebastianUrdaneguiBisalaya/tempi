@@ -1,3 +1,4 @@
+export { AVATAR_HOST, AVATAR_SCHEME, avatarUrl } from './avatar-url';
 export type { Channel } from './channels';
 export { CHANNELS } from './channels';
 export type { DesktopApi, TempiApi } from './desktop-api';

@@ -1,3 +1,4 @@
+import type { AvatarStore } from '../ports/avatar-store';
 import type { CalendarRepository } from '../ports/calendar-repository';
 import type { Clock } from '../ports/clock';
 import type { EventRepository } from '../ports/event-repository';
@@ -7,6 +8,7 @@ import type { SettingsRepository } from '../ports/settings-repository';
 
 /** Every port a use case may need. Each use case asks only for its slice via `Pick`. */
 export type CoreDeps = {
+	avatars: AvatarStore;
 	calendars: CalendarRepository;
 	clock: Clock;
 	events: EventRepository;

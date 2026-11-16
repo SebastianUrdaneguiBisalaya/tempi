@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useSyncExternalStore } from 'react';
 import { useSettings } from '@/features/settings/hooks/use-settings';
+import { useAppearancePreview } from '@/providers/appearance-preview-provider';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
@@ -14,11 +15,12 @@ const subscribeToSystemTheme = (onChange: () => void) => {
 const getSystemDark = () => window.matchMedia(DARK_QUERY).matches;
 const getServerDark = () => false;
 
-/** Applies the selected theme (dark, light, or system following the OS live) as the `dark` class on `<html>`. */
+/** Applies the previewed or selected theme (dark, light, or system following the OS live) as the `dark` class on `<html>`. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
 	const { data: settings } = useSettings();
+	const { preview } = useAppearancePreview();
 	const systemDark = useSyncExternalStore(subscribeToSystemTheme, getSystemDark, getServerDark);
-	const theme = settings?.theme ?? 'system';
+	const theme = preview.theme ?? settings?.theme ?? 'system';
 	const dark = theme === 'system' ? systemDark : theme === 'dark';
 
 	useEffect(() => {

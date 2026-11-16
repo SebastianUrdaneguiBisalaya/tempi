@@ -145,8 +145,8 @@ describe('SqliteProfileRepository', () => {
 	test('is empty until saved, then round-trips and updates the single row', async () => {
 		expect(await repos.profile.get()).toBeNull();
 		await repos.profile.save(profile);
-		await repos.profile.save({ ...profile, avatar: '/tmp/a.png', updatedAt: '2026-11-16T10:00:00.000Z' });
-		expect(await repos.profile.get()).toEqual({ ...profile, avatar: '/tmp/a.png', updatedAt: '2026-11-16T10:00:00.000Z' });
+		await repos.profile.save({ ...profile, avatar: 'a.png', updatedAt: '2026-11-16T10:00:00.000Z' });
+		expect(await repos.profile.get()).toEqual({ ...profile, avatar: 'a.png', updatedAt: '2026-11-16T10:00:00.000Z' });
 		expect(db.prepare('SELECT COUNT(*) AS count FROM profile').get()).toMatchObject({ count: 1 });
 	});
 });

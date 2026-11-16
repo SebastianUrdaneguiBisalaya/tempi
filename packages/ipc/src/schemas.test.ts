@@ -11,6 +11,8 @@ const newEvent = { calendarId: 'cal-1', endAt: '2026-11-20T10:00:00-05:00', star
 
 const profile = { country: 'pe', firstName: 'Ada', lastName: 'Lovelace', timeZone: 'America/Lima' };
 
+const onboarding = { ...profile, avatar: { bytes: new Uint8Array([1, 2, 3]), type: 'image/webp' }, language: 'es', theme: 'dark' };
+
 const fieldsOf = (result: ReturnType<typeof parseWith>) => (result.ok ? [] : result.error.issues.map(issue => issue.field ?? '').sort());
 
 describe('payloadSchemas', () => {
@@ -28,6 +30,8 @@ describe('payloadSchemas', () => {
 		['events:delete', 'evt-1'],
 		['events:list', { end: '2026-11-21T00:00:00Z', start: '2026-11-20T00:00:00Z' }],
 		['events:update', { id: 'evt-1', title: 'Retro' }],
+		['onboarding:complete', onboarding],
+		['onboarding:complete', { ...onboarding, avatar: null }],
 		['profile:get', undefined],
 		['profile:save', profile],
 		['settings:get', undefined],
@@ -45,7 +49,8 @@ describe('payloadSchemas', () => {
 		['events:delete', 42, ['']],
 		['events:list', { end: '2026-11-20T00:00:00Z', start: '2026-11-21T00:00:00Z' }, ['end']],
 		['events:update', { id: 'evt-1', reminderMinutes: -5, title: '' }, ['reminderMinutes', 'title']],
-		['profile:save', { ...profile, country: 'Peru' }, ['country']],
+		['onboarding:complete', { ...onboarding, avatar: { bytes: 'abc', type: 'image/gif' }, firstName: '', language: 'fr' }, ['avatar.bytes', 'avatar.type', 'firstName', 'language']],
+		['profile:save', { ...profile, avatar: '../../secrets.png', country: 'Peru' }, ['avatar', 'country']],
 		['settings:save', { defaultEventDuration: 0, theme: 'neon' }, ['defaultEventDuration', 'theme']],
 	] as const)('%s rejects an invalid payload, reporting every issue at form field paths', (channel, payload, fields) => {
 		const result = parseWith(payloadSchemas[channel], payload);

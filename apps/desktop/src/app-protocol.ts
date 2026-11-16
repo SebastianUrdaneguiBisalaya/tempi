@@ -1,7 +1,7 @@
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { net, protocol } from 'electron';
+import { type CustomScheme, net, protocol } from 'electron';
 
 // The packaged app serves the static export of @tempi/web (apps/web/out, copied by electron-builder's
 // extraResources into <resources>/web) from app://tempi/ instead of file://, so absolute paths
@@ -10,15 +10,11 @@ const APP_SCHEME = 'app';
 const APP_HOST = 'tempi';
 export const APP_ORIGIN = `${APP_SCHEME}://${APP_HOST}`;
 
-// Must run before the app's `ready` event.
-export function registerAppScheme() {
-	protocol.registerSchemesAsPrivileged([
-		{
-			scheme: APP_SCHEME,
-			privileges: { codeCache: true, secure: true, standard: true, supportFetchAPI: true },
-		},
-	]);
-}
+/** Registered as privileged (with every other custom scheme, in one call) before the app's `ready` event. */
+export const appScheme: CustomScheme = {
+	scheme: APP_SCHEME,
+	privileges: { codeCache: true, secure: true, standard: true, supportFetchAPI: true },
+};
 
 async function isFile(filePath: string) {
 	try {
