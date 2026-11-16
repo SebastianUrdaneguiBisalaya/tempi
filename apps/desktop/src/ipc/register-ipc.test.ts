@@ -161,6 +161,12 @@ describe('onboarding:complete', () => {
 		expect(rows('SELECT * FROM profile')).toEqual([]);
 	});
 
+	test('deletes the stored avatar when a later step fails', async () => {
+		setup(deps => ({ settings: { get: () => deps.settings.get(), save: () => Promise.reject(new Error('disk I/O error')) } }));
+		expect(await invoke(CHANNELS.onboarding.complete, { ...onboarding, avatar: { bytes: new Uint8Array([1]), type: 'image/png' } })).toMatchObject({ ok: false });
+		expect(avatars.size).toBe(0);
+	});
+
 	test('notifies the saved settings once committed', async () => {
 		const saved: Settings[] = [];
 		setup(undefined, { settingsSaved: settings => saved.push(settings) });
@@ -205,7 +211,7 @@ describe('profile:update avatar files', () => {
 		expect(avatars.size).toBe(0);
 	});
 
-	test('keeps the current image when the update fails', async () => {
+	test('keeps the current image and deletes the new one when the update fails', async () => {
 		setup(deps => ({
 			profile: { get: () => deps.profile.get(), save: (profile: UserProfile) => (profile.firstName === 'Fail' ? Promise.reject(new Error('disk I/O error')) : deps.profile.save(profile)) },
 		}));
@@ -213,7 +219,9 @@ describe('profile:update avatar files', () => {
 		const [current] = [...avatars.keys()];
 
 		expect(await invoke(CHANNELS.profile.update, { ...fields, avatar: second, firstName: 'Fail' })).toMatchObject({ ok: false });
-		expect(avatars.get(current ?? '')).toEqual(first);
+		// The old image stays and the new one, written before the failure, is deleted with the rollback.
+		expect([...avatars.keys()]).toEqual([current ?? '']);
+		expect([...avatars.values()]).toEqual([first]);
 		expect(rows('SELECT avatar FROM profile')).toEqual([expect.objectContaining({ avatar: current })]);
 	});
 });
