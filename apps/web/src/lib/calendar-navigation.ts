@@ -9,7 +9,8 @@ export const isCalendarView = (value: unknown): value is CalendarView => CALENDA
 /** Local days shown by a view; `end` is exclusive (the start of the first day after the range). */
 export type VisibleRange = { end: Date; start: Date };
 
-const WEEK_STARTS_ON = { monday: 1, saturday: 6, sunday: 0 } as const satisfies Record<WeekStart, 0 | 1 | 2 | 3 | 4 | 5 | 6>;
+/** `WeekStart` as a weekday index (0 = Sunday), as date-fns and react-day-picker expect it. */
+export const WEEK_STARTS_ON = { monday: 1, saturday: 6, sunday: 0 } as const satisfies Record<WeekStart, 0 | 1 | 2 | 3 | 4 | 5 | 6>;
 
 /** The day, week (from the user's first weekday) or month that contains `date`. */
 export const visibleRange = (date: Date, view: CalendarView, weekStart: WeekStart): VisibleRange => {
