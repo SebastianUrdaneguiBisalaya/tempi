@@ -1,0 +1,23 @@
+{
+  "name": "@tempi/ipc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "IPC contract between @tempi/desktop and @tempi/web: channels, payload schemas, DesktopApi and renderer adapters.",
+  "license": "ISC",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tempi/core": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}
