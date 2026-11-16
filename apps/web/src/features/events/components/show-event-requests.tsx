@@ -1,9 +1,9 @@
 'use client';
 
-import { useReminderClicks } from '../hooks/use-reminder-clicks';
+import { useShowEventRequests } from '../hooks/use-show-event-requests';
 
-/** Opens the event of a clicked reminder notification in the calendar and the panel. */
-export function ReminderClicks() {
-	useReminderClicks();
+/** Opens in the calendar and the panel each occurrence the main process asks to show (reminders, the menu bar calendar). */
+export function ShowEventRequests() {
+	useShowEventRequests();
 	return null;
 }
