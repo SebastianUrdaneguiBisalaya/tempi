@@ -16,6 +16,8 @@ type EventPanel = {
 	close: () => void;
 	newEvent: (draft: EventDraft) => void;
 	openEvent: (event: CalendarEvent) => void;
+	/** Shows an event's saved changes if it is the open one, so its form doesn't hold stale values. */
+	refreshEvent: (event: CalendarEvent) => void;
 	/** Asks for confirmation, then deletes; closes the event's detail if it was open. */
 	requestDelete: (event: CalendarEvent) => void;
 	selection: EventSelection;
@@ -41,6 +43,7 @@ export function EventPanelProvider({ children }: { children: ReactNode }) {
 		close: () => setSelection(null),
 		newEvent: draft => setSelection({ draft, kind: 'new' }),
 		openEvent: event => setSelection({ event, kind: 'event' }),
+		refreshEvent: event => setSelection(current => (current?.kind === 'event' && current.event.id === event.id ? { event, kind: 'event' } : current)),
 		requestDelete: setPendingDelete,
 		selection,
 	};

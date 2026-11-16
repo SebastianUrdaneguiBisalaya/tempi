@@ -1,6 +1,8 @@
 'use client';
 
 import type { CalendarEvent, DaySegment } from '@tempi/core';
+import type { PointerEvent, Ref } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { boxStyle, MIN_EVENT_MINUTES, SLOT_MINUTES } from './grid-geometry';
 
@@ -10,15 +12,21 @@ type TimeGridEventProps = {
 	dayIndex: number;
 	focusKey: string;
 	isActive: boolean;
+	/** Being moved or resized: faded while the preview shows where it goes. */
+	isDragged: boolean;
 	/** Open in the right panel. */
 	isSelected: boolean;
+	onMovePointerDown: (pointer: PointerEvent<HTMLElement>) => void;
 	onOpen: () => void;
+	onResizePointerDown: (pointer: PointerEvent<HTMLElement>) => void;
+	ref?: Ref<HTMLButtonElement>;
 	segment: DaySegment<CalendarEvent>;
 	timeLabel: string;
 };
 
 /** One event in a day column, placed by time and lane, tinted with its calendar's color. */
-export function TimeGridEvent({ color, dayCount, dayIndex, focusKey, isActive, isSelected, onOpen, segment, timeLabel }: TimeGridEventProps) {
+export function TimeGridEvent({ color, dayCount, dayIndex, focusKey, isActive, isDragged, isSelected, onMovePointerDown, onOpen, onResizePointerDown, ref, segment, timeLabel }: TimeGridEventProps) {
+	const { t } = useTranslation();
 	const { column, columns, continuesAfter, continuesBefore, endMinute, item: event, startMinute } = segment;
 	const drawnEnd = Math.max(endMinute, startMinute + MIN_EVENT_MINUTES);
 	// Short events fit only one line: put the time next to the title instead of under it.
@@ -26,6 +34,8 @@ export function TimeGridEvent({ color, dayCount, dayIndex, focusKey, isActive, i
 
 	return (
 		<button
+			aria-description={t('calendar.event.keyboard')}
+			aria-keyshortcuts='Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Alt+Shift+ArrowUp Alt+Shift+ArrowDown'
 			aria-label={`${event.title}, ${timeLabel}`}
 			aria-pressed={isSelected}
 			className={cn(
@@ -34,14 +44,18 @@ export function TimeGridEvent({ color, dayCount, dayIndex, focusKey, isActive, i
 				continuesBefore && 'rounded-t-none',
 				continuesAfter && 'rounded-b-none',
 				event.status === 'tentative' && 'border-dashed',
-				isSelected && 'z-[6] ring-2 ring-primary'
+				isSelected && 'z-[6] ring-2 ring-primary',
+				isDragged && 'opacity-40'
 			)}
+			data-event-id={event.id}
 			data-focus-key={focusKey}
 			onClick={clickEvent => {
 				// The slot under the event would start a new one.
 				clickEvent.stopPropagation();
 				onOpen();
 			}}
+			onPointerDown={onMovePointerDown}
+			ref={ref}
 			style={{
 				...boxStyle(dayIndex, dayCount, startMinute, drawnEnd, column, columns),
 				backgroundColor: `color-mix(in oklab, ${color} 22%, var(--background))`,
@@ -52,6 +66,8 @@ export function TimeGridEvent({ color, dayCount, dayIndex, focusKey, isActive, i
 		>
 			<span className='truncate font-medium'>{event.title}</span>
 			<span className='truncate text-muted-foreground'>{timeLabel}</span>
+			{/* The end can only be dragged where the event ends; a segment that continues tomorrow has none. */}
+			{!continuesAfter && <span aria-hidden className='absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize' onPointerDown={onResizePointerDown} />}
 		</button>
 	);
 }

@@ -21,6 +21,9 @@ export const es = {
 				events: 'Todo el día: {{titles}}',
 				more: '+{{count}} más',
 			},
+			event: {
+				keyboard: 'Alt y las flechas lo mueven; Alt, Mayús y flecha arriba o abajo cambian su fin.',
+			},
 			grid: 'Agenda',
 			month: {
 				more: '+{{count}} más',

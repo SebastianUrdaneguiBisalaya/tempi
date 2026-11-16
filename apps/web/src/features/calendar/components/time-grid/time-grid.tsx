@@ -1,10 +1,25 @@
 'use client';
 
-import { belongsInAllDayLane, type CalendarEvent, type DaySegment, DEFAULT_SETTINGS, daysToUtcRange, fitWeek, layoutDay, layoutWeek, resolveLanguage } from '@tempi/core';
-import { type FocusEvent, type KeyboardEvent, useState } from 'react';
+import {
+	belongsInAllDayLane,
+	type CalendarEvent,
+	type DaySegment,
+	DEFAULT_SETTINGS,
+	daysToUtcRange,
+	fitWeek,
+	layoutDay,
+	layoutWeek,
+	moveRange,
+	resizeRange,
+	resolveLanguage,
+	SNAP_MINUTES,
+	type TimeRange,
+} from '@tempi/core';
+import { type FocusEvent, type KeyboardEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { useEventPanel } from '@/features/events/components/event-panel-provider';
+import { useRescheduleEvent } from '@/features/events/hooks/use-event-mutations';
 import { useSetAllDayCollapsed, useSettings } from '@/features/settings/hooks/use-settings';
 import { formatDate, formatTime, formatTimeRange, formatWeekday } from '@/lib/date-format';
 import { draftAt } from '@/lib/event-draft';
@@ -12,6 +27,7 @@ import { toUtcDate } from '@/lib/plain-date';
 import { cn } from '@/lib/utils';
 import { useCalendars } from '../../hooks/use-calendars';
 import { useEvents } from '../../hooks/use-events';
+import { useTimeGridDrag } from '../../hooks/use-time-grid-drag';
 import { AllDayLane, AllDayToggle } from './all-day-lane';
 import { CurrentTimeLine } from './current-time-line';
 import { type DayEvents, focusKey, type GridFocus, nextFocus } from './grid-focus';
@@ -22,6 +38,15 @@ const SLOTS = Array.from({ length: SLOTS_PER_DAY }, (_, slot) => slot);
 const FALLBACK_COLOR = 'var(--muted-foreground)';
 /** Rows the all-day lane keeps when collapsed. */
 const COLLAPSED_LANES = 2;
+
+/** New times for a focused event's keyboard shortcut: Alt+↑/↓ move 15 minutes, Alt+←/→ a day, Alt+Shift+↑/↓ move the end. */
+const rescheduleByKey = (event: CalendarEvent, key: string, shiftKey: boolean, timeZone: string): TimeRange | null => {
+	const minutes = key === 'ArrowUp' ? -SNAP_MINUTES : key === 'ArrowDown' ? SNAP_MINUTES : 0;
+	if (shiftKey) return minutes === 0 ? null : resizeRange(event, Temporal.Instant.from(event.endAt).toZonedDateTimeISO(timeZone).add({ minutes }));
+	if (minutes !== 0) return moveRange(event, { days: 0, minutes }, timeZone);
+	if (key === 'ArrowLeft' || key === 'ArrowRight') return moveRange(event, { days: key === 'ArrowLeft' ? -1 : 1, minutes: 0 }, timeZone);
+	return null;
+};
 
 type TimeGridProps = {
 	days: readonly Temporal.PlainDate[];
@@ -39,13 +64,16 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const language = resolveLanguage([i18n.language]);
 	const { data: settings } = useSettings();
 	const { allDayCollapsed, defaultEventDuration, timeFormat } = settings ?? DEFAULT_SETTINGS;
-	const { newEvent, openEvent, selection } = useEventPanel();
+	const { newEvent, openEvent, refreshEvent, selection } = useEventPanel();
+	const reschedule = useRescheduleEvent();
 	const setAllDayCollapsed = useSetAllDayCollapsed();
 	const { data: calendars } = useCalendars();
 	const first = days[0];
 	const last = days.at(-1);
 	const { data: events } = useEvents(first && last ? daysToUtcRange(first, last, timeZone) : null);
 	const [focus, setFocus] = useState<GridFocus | null>(null);
+	// An event moved from the keyboard can land in another slot, which remounts it: focus follows it there.
+	const refocusId = useRef<string | null>(null);
 
 	const calendarById = new Map((calendars ?? []).map(calendar => [calendar.id, calendar]));
 	const colorOf = (event: CalendarEvent) => calendarById.get(event.calendarId)?.color ?? FALLBACK_COLOR;
@@ -92,12 +120,43 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 		if (day !== undefined) newEvent(draftAt(day, slot * SLOT_MINUTES, timeZone, defaultEventDuration));
 	};
 
-	// The new event's form is open: preview it where it will go.
-	const draft = selection?.kind === 'new' && !selection.draft.allDay ? { ...selection.draft, id: 'draft' } : null;
-	const draftSegments = draft === null ? [] : days.flatMap((day, dayIndex) => layoutDay([draft], day, timeZone, MIN_EVENT_MINUTES).map(segment => ({ dayIndex, segment })));
+	const applyReschedule = (event: CalendarEvent, range: TimeRange) => {
+		if (range.startAt === event.startAt && range.endAt === event.endAt) return;
+		reschedule.mutate(
+			{ id: event.id, range },
+			{
+				onSettled: () => {
+					refocusId.current = null;
+				},
+				onSuccess: refreshEvent,
+			}
+		);
+	};
+
+	const drag = useTimeGridDrag({ days, onCreate: range => newEvent({ allDay: false, ...range }), onReschedule: applyReschedule, timeZone });
+
+	const refocus = (node: HTMLElement | null, eventId: string) => {
+		if (node === null || refocusId.current !== eventId || node === document.activeElement) return;
+		refocusId.current = null;
+		node.focus();
+	};
+
+	// Where a dragged event would go, or the new event's form is open: preview it there.
+	const draft = selection?.kind === 'new' && !selection.draft.allDay ? selection.draft : null;
+	const ghost = drag.preview ?? draft;
+	const ghostSegments = ghost === null ? [] : days.flatMap((day, dayIndex) => layoutDay([{ ...ghost, id: 'ghost' }], day, timeZone, MIN_EVENT_MINUTES).map(segment => ({ dayIndex, segment })));
 	const selectedId = selection?.kind === 'event' ? selection.event.id : null;
 
 	const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+		const eventId = event.target instanceof HTMLElement ? event.target.dataset.eventId : undefined;
+		const focused = eventId === undefined ? undefined : timed.find(item => item.id === eventId);
+		const range = focused !== undefined && event.altKey ? rescheduleByKey(focused, event.key, event.shiftKey, timeZone) : null;
+		if (focused !== undefined && range !== null) {
+			event.preventDefault();
+			refocusId.current = focused.id;
+			applyReschedule(focused, range);
+			return;
+		}
 		if (event.key === 'Enter' && event.target instanceof HTMLElement && event.target.getAttribute('role') === 'gridcell') {
 			event.preventDefault();
 			const current = focusValid ? focus : fallbackFocus;
@@ -117,11 +176,12 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 				aria-colcount={days.length + 1}
 				aria-label={t('calendar.grid')}
 				aria-rowcount={SLOTS_PER_DAY + 1}
-				className='relative grid'
+				className={cn('relative grid select-none', drag.dragKind === 'move' && 'cursor-grabbing', drag.dragKind === 'resize' && 'cursor-ns-resize')}
 				onFocus={onFocus}
 				onKeyDown={onKeyDown}
 				role='grid'
 				style={gridStyle(days.length, headerRem)}
+				{...drag.gridHandlers}
 			>
 				<div className='contents' role='row'>
 					<div className='sticky top-0 left-0 z-30 border-b bg-background' role='columnheader'>
@@ -175,6 +235,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 										data-focus-key={key}
 										key={day.toString()}
 										onClick={() => createAt(dayIndex, slot)}
+										onPointerDown={drag.startCreate}
 										role='gridcell'
 										tabIndex={key === activeKey ? 0 : -1}
 									>
@@ -189,9 +250,13 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 														dayIndex={dayIndex}
 														focusKey={eventKey}
 														isActive={eventKey === activeKey}
+														isDragged={segment.item.id === drag.draggedId}
 														isSelected={segment.item.id === selectedId}
 														key={segment.item.id}
+														onMovePointerDown={pointer => drag.startMove(pointer, segment.item)}
 														onOpen={() => openEvent(segment.item)}
+														onResizePointerDown={pointer => drag.startResize(pointer, segment.item)}
+														ref={node => refocus(node, segment.item.id)}
 														segment={segment}
 														timeLabel={formatTimeRange(segment.item.startAt, segment.item.endAt, { language, timeFormat, timeZone })}
 													/>
@@ -203,7 +268,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 						</div>
 					);
 				})}
-				{draftSegments.map(({ dayIndex, segment }) => (
+				{ghostSegments.map(({ dayIndex, segment }) => (
 					<div
 						aria-hidden
 						className='pointer-events-none absolute z-[5] rounded-md border-2 border-dashed border-primary bg-primary/10'
