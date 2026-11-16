@@ -24,6 +24,7 @@
   "devDependencies": {
     "@tempi/core": "workspace:*",
     "@tempi/db": "workspace:*",
+    "@tempi/i18n": "workspace:*",
     "@tempi/ipc": "workspace:*",
     "@types/node": "catalog:",
     "electron": "45.2.1",

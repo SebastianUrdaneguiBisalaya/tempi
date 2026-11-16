@@ -1,4 +1,6 @@
 import type { CoreDeps, Settings } from '@tempi/core';
+import type { OccurrenceRef } from '@tempi/ipc';
+import { registerAppHandlers } from './app';
 import { registerCalendarHandlers } from './calendars';
 import { registerEventHandlers } from './events';
 import type { HandlerContext } from './handle';
@@ -14,10 +16,13 @@ export type IpcListeners = {
 	eventsChanged?: () => void;
 	/** The settings were saved, e.g. to sync `nativeTheme` with the selected theme. */
 	settingsSaved?: (settings: Settings) => void;
+	/** A window asked to show an occurrence in the main window. */
+	showEvent?: (ref: OccurrenceRef) => void;
 };
 
 /** Registers every channel of the `@tempi/ipc` contract, each running its core use case against `deps`. */
 export const registerIpc = (context: HandlerContext, deps: CoreDeps, listeners: IpcListeners = {}): void => {
+	registerAppHandlers(context, listeners.showEvent);
 	registerCalendarHandlers(context, deps, listeners.eventsChanged);
 	registerEventHandlers(context, deps, listeners.eventsChanged);
 	registerOnboardingHandlers(context, deps, listeners.settingsSaved);

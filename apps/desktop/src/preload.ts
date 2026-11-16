@@ -4,17 +4,30 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 // Only small, typed functions, one per use case: never `ipcRenderer`, a generic invoke or any Node API.
 // Payloads are validated in the main process and answers in the renderer client, so nothing here is trusted.
-// A clicked reminder can arrive before the page has subscribed (e.g. the window was reopened for it), so keep the
+// An occurrence to show can arrive before the page has subscribed (e.g. the window was reopened for it), so keep the
 // latest one until a listener takes it.
-type ReminderListener = (target: unknown) => void;
-const reminderListeners = new Set<ReminderListener>();
-let pendingReminder: { target: unknown } | null = null;
-ipcRenderer.on(PUSH_CHANNELS.reminders.open, (_event, target: unknown) => {
-	if (reminderListeners.size === 0) pendingReminder = { target };
-	for (const listener of reminderListeners) listener(target);
+type ShowEventListener = (ref: unknown) => void;
+const showEventListeners = new Set<ShowEventListener>();
+let pendingShowEvent: { ref: unknown } | null = null;
+ipcRenderer.on(PUSH_CHANNELS.events.show, (_event, ref: unknown) => {
+	if (showEventListeners.size === 0) pendingShowEvent = { ref };
+	for (const listener of showEventListeners) listener(ref);
 });
 
 const desktop: DesktopApi = {
+	app: {
+		onShowEvent: listener => {
+			showEventListeners.add(listener);
+			if (pendingShowEvent !== null) {
+				listener(pendingShowEvent.ref);
+				pendingShowEvent = null;
+			}
+			return () => {
+				showEventListeners.delete(listener);
+			};
+		},
+		showEvent: ref => ipcRenderer.invoke(CHANNELS.app.showEvent, ref),
+	},
 	calendars: {
 		create: input => ipcRenderer.invoke(CHANNELS.calendars.create, input),
 		delete: input => ipcRenderer.invoke(CHANNELS.calendars.delete, input),
@@ -38,18 +51,6 @@ const desktop: DesktopApi = {
 	profile: {
 		get: () => ipcRenderer.invoke(CHANNELS.profile.get),
 		update: input => ipcRenderer.invoke(CHANNELS.profile.update, input),
-	},
-	reminders: {
-		onOpen: listener => {
-			reminderListeners.add(listener);
-			if (pendingReminder !== null) {
-				listener(pendingReminder.target);
-				pendingReminder = null;
-			}
-			return () => {
-				reminderListeners.delete(listener);
-			};
-		},
 	},
 	settings: {
 		get: () => ipcRenderer.invoke(CHANNELS.settings.get),
