@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { type AvatarStore, avatarFileNameSchema } from '@tempi/core';
 
@@ -15,5 +15,10 @@ export const createFileAvatarStore = (dir: string): AvatarStore => ({
 		if (target === null) throw new Error(`Refused to store an avatar as "${fileName}"`);
 		await mkdir(dir, { recursive: true });
 		await writeFile(target, image.bytes);
+	},
+	remove: async fileName => {
+		const target = avatarPath(dir, fileName);
+		if (target === null) throw new Error(`Refused to remove an avatar named "${fileName}"`);
+		await rm(target, { force: true });
 	},
 });

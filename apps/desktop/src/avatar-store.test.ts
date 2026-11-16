@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { avatarPath, createFileAvatarStore } from './avatar-store';
@@ -17,6 +17,20 @@ describe('createFileAvatarStore', () => {
 		const dir = path.join(root, 'avatars');
 		await createFileAvatarStore(dir).save('id-1.webp', { bytes: new Uint8Array([1, 2, 3]), type: 'image/webp' });
 		expect([...(await readFile(path.join(dir, 'id-1.webp')))]).toEqual([1, 2, 3]);
+	});
+
+	test('removes a stored image, and a missing one is not an error', async () => {
+		const store = createFileAvatarStore(root);
+		await store.save('id-1.png', { bytes: new Uint8Array([1]), type: 'image/png' });
+		await store.remove('id-1.png');
+		await expect(access(path.join(root, 'id-1.png'))).rejects.toThrow();
+		await store.remove('id-1.png');
+	});
+
+	test('refuses to remove a file outside the folder', async () => {
+		await writeFile(path.join(root, 'tempi.db'), 'data');
+		await expect(createFileAvatarStore(path.join(root, 'avatars')).remove('../tempi.db')).rejects.toThrow('Refused');
+		expect(await readFile(path.join(root, 'tempi.db'), 'utf8')).toBe('data');
 	});
 
 	test('refuses a file name that could leave the folder', async () => {

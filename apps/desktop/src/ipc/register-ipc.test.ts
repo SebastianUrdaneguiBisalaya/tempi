@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import type { DatabaseSync } from 'node:sqlite';
-import { type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, type Settings, uuidv7Ids } from '@tempi/core';
+import { type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, type Settings, type UserProfile, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, openDatabase } from '@tempi/db';
 import { CHANNELS, type Channel } from '@tempi/ipc';
 import type { IpcSender } from './handle';
@@ -21,7 +21,10 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	db = openDatabase(':memory:', { clock });
 	handlers = new Map();
 	avatars = new Map();
-	const avatarStore = { save: async (fileName: string, image: AvatarImage) => void avatars.set(fileName, image) };
+	const avatarStore = {
+		remove: async (fileName: string) => void avatars.delete(fileName),
+		save: async (fileName: string, image: AvatarImage) => void avatars.set(fileName, image),
+	};
 	const deps: CoreDeps = { ...createRepositories(db), avatars: avatarStore, clock, ids: uuidv7Ids };
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
@@ -183,6 +186,35 @@ describe('profile:update', () => {
 			ok: true,
 			value: { avatar: [...avatars.keys()][0], firstName: 'Ana' },
 		});
+	});
+});
+
+describe('profile:update avatar files', () => {
+	const onboarding = { country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', theme: 'dark', timeZone: 'America/Lima' };
+	const fields = { country: 'PE', firstName: 'Ana', lastName: 'Quispe', timeZone: 'America/Lima' };
+	const first: AvatarImage = { bytes: new Uint8Array([1]), type: 'image/png' };
+	const second: AvatarImage = { bytes: new Uint8Array([2]), type: 'image/png' };
+
+	test('deletes the replaced image once the update is committed', async () => {
+		setup();
+		await invoke(CHANNELS.onboarding.complete, { ...onboarding, avatar: first });
+		await invoke(CHANNELS.profile.update, { ...fields, avatar: second });
+		expect([...avatars.values()]).toEqual([second]);
+
+		await invoke(CHANNELS.profile.update, { ...fields, avatar: null });
+		expect(avatars.size).toBe(0);
+	});
+
+	test('keeps the current image when the update fails', async () => {
+		setup(deps => ({
+			profile: { get: () => deps.profile.get(), save: (profile: UserProfile) => (profile.firstName === 'Fail' ? Promise.reject(new Error('disk I/O error')) : deps.profile.save(profile)) },
+		}));
+		await invoke(CHANNELS.onboarding.complete, { ...onboarding, avatar: first });
+		const [current] = [...avatars.keys()];
+
+		expect(await invoke(CHANNELS.profile.update, { ...fields, avatar: second, firstName: 'Fail' })).toMatchObject({ ok: false });
+		expect(avatars.get(current ?? '')).toEqual(first);
+		expect(rows('SELECT avatar FROM profile')).toEqual([expect.objectContaining({ avatar: current })]);
 	});
 });
 

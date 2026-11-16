@@ -10,6 +10,9 @@ export type IpcRegistrar = {
 	handle(channel: string, listener: (event: IpcSender, payload: unknown) => Promise<unknown>): void;
 };
 
+/** Lets a use case's handler queue work that must only happen once its writes are committed, e.g. deleting a file. */
+export type CommitHooks = { afterCommit: (effect: () => Promise<void>) => void };
+
 export type HandlerContext = {
 	ipc: IpcRegistrar;
 	/** True only for the app's own origin (app://tempi or the dev server). */
@@ -21,11 +24,12 @@ export type HandlerContext = {
 /**
  * Registers one channel: rejects untrusted senders, validates the payload with its core schema, then runs the use case
  * as one transaction (a failed Result or a thrown error rolls back every write). Every outcome is a `Result`, so nothing raw crosses IPC.
+ * Effects queued with `afterCommit` run only after a successful commit; their failures are logged, since the call already succeeded.
  */
 export const handle = <C extends Channel>(
 	context: HandlerContext,
 	channel: C,
-	run: (payload: ChannelPayload<C>) => Promise<Result<ChannelValue<C>>>,
+	run: (payload: ChannelPayload<C>, hooks: CommitHooks) => Promise<Result<ChannelValue<C>>>,
 	/** Runs after the transaction commits, so main-process side effects never reflect rolled-back writes. */
 	onCommitted?: (value: ChannelValue<C>) => void
 ): void => {
@@ -39,8 +43,13 @@ export const handle = <C extends Channel>(
 		try {
 			// TS loses the channel → schema correlation through the generic index; the schema was picked by the same `channel`.
 			const input = parsed.value as ChannelPayload<C>;
-			const result = await context.transaction(() => run(input));
-			if (result.ok) onCommitted?.(result.value);
+			const effects: (() => Promise<void>)[] = [];
+			const result = await context.transaction(() => run(input, { afterCommit: effect => effects.push(effect) }));
+			if (!result.ok) return result;
+			onCommitted?.(result.value);
+			for (const effect of effects) {
+				await effect().catch((error: unknown) => console.error(`IPC ${channel} committed, but a follow-up step failed`, error));
+			}
 			return result;
 		} catch (error) {
 			console.error(`IPC ${channel} failed`, error);
