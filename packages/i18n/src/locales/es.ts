@@ -10,6 +10,7 @@ export const es = {
 			create: 'Crear',
 			delete: 'Eliminar',
 			discard: 'Descartar',
+			duplicate: 'Duplicar',
 			edit: 'Editar',
 			save: 'Guardar',
 			undo: 'Deshacer',
@@ -22,7 +23,7 @@ export const es = {
 				more: '+{{count}} más',
 			},
 			event: {
-				keyboard: 'Alt y las flechas lo mueven; Alt, Mayús y flecha arriba o abajo cambian su fin.',
+				keyboard: 'Alt y las flechas lo mueven; Alt, Mayús y flecha arriba o abajo cambian su fin; Mayús y F10 muestran sus acciones.',
 			},
 			grid: 'Agenda',
 			month: {
@@ -49,6 +50,10 @@ export const es = {
 				timeZoneSearch: 'Buscar zonas horarias…',
 				title: 'Título',
 				titlePlaceholder: 'Añade un título',
+			},
+			menu: {
+				calendar: 'Calendario',
+				label: 'Acciones del evento',
 			},
 			newEvent: 'Nuevo evento',
 			repeat: {
@@ -184,6 +189,7 @@ export const es = {
 		toasts: {
 			eventCreated: 'Evento creado.',
 			eventDeleted: 'Evento eliminado.',
+			eventDuplicated: 'Evento duplicado.',
 			eventRestored: 'Evento restaurado.',
 			eventUpdated: 'Evento actualizado.',
 			onboardingCompleted: 'Todo listo.',
