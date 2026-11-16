@@ -1,0 +1,50 @@
+import type { Language, TimeFormat } from '@tempi/core';
+
+/** Where and how to display an instant: the UI language, the user's 12h/24h choice and an IANA time zone. */
+export type DateFormatOptions = {
+	language: Language;
+	/** Defaults to the system time zone. */
+	timeZone?: string;
+};
+
+export type TimeFormatOptions = DateFormatOptions & { timeFormat: TimeFormat };
+
+// Instants are stored as UTC ISO-8601 text; formatting converts them to the display time zone.
+const toDate = (instant: Date | string): Date => (typeof instant === 'string' ? new Date(instant) : instant);
+
+// Constructing Intl formatters is costly and calendar grids format hundreds of cells, so reuse them per option set.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+const formatter = (language: Language, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat => {
+	const cacheKey = `${language}|${JSON.stringify(options)}`;
+	let cached = formatters.get(cacheKey);
+	if (cached === undefined) {
+		cached = new Intl.DateTimeFormat(language, options);
+		formatters.set(cacheKey, cached);
+	}
+	return cached;
+};
+
+const hourCycle = (timeFormat: TimeFormat): Intl.DateTimeFormatOptions['hourCycle'] => (timeFormat === '12h' ? 'h12' : 'h23');
+
+/** e.g. "Sunday, November 15, 2026" / "domingo, 15 de noviembre de 2026" with the default `dateStyle: 'full'`. */
+export const formatDate = (instant: Date | string, { language, timeZone }: DateFormatOptions, style: Intl.DateTimeFormatOptions['dateStyle'] = 'full'): string =>
+	formatter(language, { dateStyle: style, timeZone }).format(toDate(instant));
+
+/** e.g. "9:30 PM" (12h) or "21:30" (24h). */
+export const formatTime = (instant: Date | string, { language, timeFormat, timeZone }: TimeFormatOptions): string =>
+	formatter(language, { hour: 'numeric', hourCycle: hourCycle(timeFormat), minute: '2-digit', timeZone }).format(toDate(instant));
+
+/** e.g. "Nov 15, 2026, 9:30 PM". */
+export const formatDateTime = (instant: Date | string, { language, timeFormat, timeZone }: TimeFormatOptions): string =>
+	formatter(language, { day: 'numeric', hour: 'numeric', hourCycle: hourCycle(timeFormat), minute: '2-digit', month: 'short', timeZone, year: 'numeric' }).format(toDate(instant));
+
+/** A start–end span collapsed by Intl, e.g. "9:00 – 10:30 AM" on the same day. */
+export const formatTimeRange = (start: Date | string, end: Date | string, { language, timeFormat, timeZone }: TimeFormatOptions): string =>
+	formatter(language, { hour: 'numeric', hourCycle: hourCycle(timeFormat), minute: '2-digit', timeZone }).formatRange(toDate(start), toDate(end));
+
+/** Weekday name, e.g. "Mon" / "lun" (`short`) or "Monday" / "lunes" (`long`). */
+export const formatWeekday = (instant: Date | string, { language, timeZone }: DateFormatOptions, style: 'long' | 'narrow' | 'short' = 'short'): string =>
+	formatter(language, { timeZone, weekday: style }).format(toDate(instant));
+
+/** Month and year for calendar headers, e.g. "November 2026" / "noviembre de 2026". */
+export const formatMonthYear = (instant: Date | string, { language, timeZone }: DateFormatOptions): string => formatter(language, { month: 'long', timeZone, year: 'numeric' }).format(toDate(instant));

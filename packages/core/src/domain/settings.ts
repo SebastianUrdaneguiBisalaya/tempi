@@ -45,3 +45,17 @@ export const DEFAULT_SETTINGS = {
 	timeFormat: '24h',
 	weekStart: 'monday',
 } as const satisfies SettingsValues;
+
+const isLanguage = (value: string): value is Language => (LANGUAGES as readonly string[]).includes(value);
+
+/**
+ * The first supported language among BCP 47 locales in preference order (`es-PE` → `es`), or the default.
+ * Feed it the OS or browser preferences (`navigator.languages`, `app.getPreferredSystemLanguages()`).
+ */
+export const resolveLanguage = (locales: readonly string[]): Language => {
+	for (const locale of locales) {
+		const base = locale.split(/[-_]/)[0]?.toLowerCase() ?? '';
+		if (isLanguage(base)) return base;
+	}
+	return DEFAULT_SETTINGS.language;
+};
