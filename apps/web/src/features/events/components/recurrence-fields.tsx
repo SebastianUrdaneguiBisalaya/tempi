@@ -15,8 +15,11 @@ import { toUtcDate } from '@/lib/plain-date';
 
 const UNIT_KEYS = { DAILY: 'day', MONTHLY: 'month', WEEKLY: 'week', YEARLY: 'year' } as const satisfies Record<RecurrenceFrequency, string>;
 const NTH_KEYS = { '-1': 'last', '1': 'first', '2': 'second', '3': 'third', '4': 'fourth' } as const;
-// 2026-03-02 is a Monday: offsets 0–6 give each weekday's name in ISO order.
-const MONDAY = Temporal.PlainDate.from('2026-03-02');
+/**
+ * A day that falls on `weekday`, to print its name: 2026-03-02 is a Monday, so offsets 0–6 follow ISO order.
+ * Built on call, not at import: the static export prerenders in Node, which has no `Temporal`.
+ */
+const dayOfWeekday = (weekday: Weekday): Temporal.PlainDate => Temporal.PlainDate.from('2026-03-02').add({ days: WEEKDAYS.indexOf(weekday) });
 
 /** The day the form's start falls on, or today while the start is being typed. */
 const startDay = (startAt: string): Temporal.PlainDate => {
@@ -41,7 +44,7 @@ export function RecurrenceFields({ control, id }: RecurrenceFieldsProps) {
 	const day = startDay(startAt);
 	const dayDate = toUtcDate(day);
 	const utc = { language, timeZone: 'UTC' };
-	const weekdayName = (weekday: Weekday, style: 'long' | 'short') => formatWeekday(toUtcDate(MONDAY.add({ days: WEEKDAYS.indexOf(weekday) })), utc, style);
+	const weekdayName = (weekday: Weekday, style: 'long' | 'short') => formatWeekday(toUtcDate(dayOfWeekday(weekday)), utc, style);
 	const { nth, weekday } = monthWeekday(day);
 
 	const presetLabels = {

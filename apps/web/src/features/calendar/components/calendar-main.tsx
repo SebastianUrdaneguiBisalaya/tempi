@@ -2,6 +2,7 @@
 
 import { DEFAULT_SETTINGS, isWeekend } from '@tempi/core';
 import { useSettings } from '@/features/settings/hooks/use-settings';
+import { useGridShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 import { useCalendarNavigation } from './calendar-navigation-provider';
 import { MonthGrid } from './month-grid/month-grid';
 import { TimeGrid } from './time-grid/time-grid';
@@ -10,6 +11,7 @@ import { TimeGrid } from './time-grid/time-grid';
 export function CalendarMain() {
 	const { date, days, timeZone, today, view } = useCalendarNavigation();
 	const { data: settings } = useSettings();
+	useGridShortcutScope();
 
 	// Today is unknown while prerendering.
 	if (date === null || days === null || today === null) return null;

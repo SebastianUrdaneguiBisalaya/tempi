@@ -1,19 +1,22 @@
 'use client';
 
-import { useHotkeys } from '@usehotkeys/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { CalendarMain } from '@/features/calendar/components/calendar-main';
 import { CalendarNavigationProvider } from '@/features/calendar/components/calendar-navigation-provider';
+import { CalendarShortcuts } from '@/features/calendar/components/calendar-shortcuts';
+import { GoToDateDialog } from '@/features/calendar/components/go-to-date-dialog';
 import { MiniCalendar } from '@/features/calendar/components/mini-calendar';
 import { CalendarList } from '@/features/calendars/components/calendar-list';
 import { EventPanel } from '@/features/events/components/event-panel';
 import { EventPanelProvider, useEventPanel } from '@/features/events/components/event-panel-provider';
 import { EventShortcuts } from '@/features/events/components/event-shortcuts';
+import { ShortcutsDialog } from '@/features/shortcuts/components/shortcuts-dialog';
+import { UsefulShortcuts } from '@/features/shortcuts/components/useful-shortcuts';
+import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { SIDEBAR_HOTKEY } from '../shell-hotkeys';
 import { AppHeader } from './app-header';
 import { RightPanel } from './right-panel';
 
@@ -26,8 +29,11 @@ export function AppShell() {
 	return (
 		<CalendarNavigationProvider>
 			<EventPanelProvider>
+				<CalendarShortcuts />
 				<EventShortcuts />
 				<ShellLayout />
+				<GoToDateDialog />
+				<ShortcutsDialog />
 			</EventPanelProvider>
 		</CalendarNavigationProvider>
 	);
@@ -44,8 +50,15 @@ function ShellLayout() {
 	const [panelDrawerOpen, setPanelDrawerOpen] = useState(false);
 
 	const toggleSidebar = () => (sidebarInline ? setSidebarExpanded(open => !open) : setSidebarDrawerOpen(open => !open));
-	useHotkeys(SIDEBAR_HOTKEY, toggleSidebar, { label: 'Toggle sidebar', layout: 'physical' });
-	const panelContent = selection === null ? <RightPanel /> : <EventPanel />;
+	useShortcut('toggleSidebar', toggleSidebar);
+	const panelContent =
+		selection === null ? (
+			<RightPanel>
+				<UsefulShortcuts />
+			</RightPanel>
+		) : (
+			<EventPanel />
+		);
 
 	return (
 		<SidebarProvider className='h-svh min-h-0' onOpenChange={setSidebarExpanded} open={sidebarExpanded}>

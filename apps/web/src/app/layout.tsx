@@ -6,6 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { ApiProvider } from '@/providers/api-provider';
 import { AppearancePreviewProvider } from '@/providers/appearance-preview-provider';
+import { HotkeysProvider } from '@/providers/hotkeys-provider';
 import { I18nProvider } from '@/providers/i18n-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 							<I18nProvider>
 								<ThemeProvider>
 									<Toaster>
-										<TooltipProvider>{children}</TooltipProvider>
+										<TooltipProvider>
+											<HotkeysProvider>{children}</HotkeysProvider>
+										</TooltipProvider>
 									</Toaster>
 								</ThemeProvider>
 							</I18nProvider>

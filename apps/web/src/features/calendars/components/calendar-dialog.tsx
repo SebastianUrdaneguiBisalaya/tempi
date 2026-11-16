@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { useDialogShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 import { useCreateCalendar, useUpdateCalendar } from '../hooks/use-calendar-mutations';
 import { ColorField } from './color-field';
 
@@ -32,6 +33,7 @@ type CalendarDialogProps = {
 /** Creates or edits a calendar: its name and color. */
 export function CalendarDialog({ calendar, defaultColor, onClose, open }: CalendarDialogProps) {
 	const { t } = useTranslation();
+	useDialogShortcutScope(open);
 	return (
 		<Dialog onOpenChange={next => !next && onClose()} open={open}>
 			<DialogContent>

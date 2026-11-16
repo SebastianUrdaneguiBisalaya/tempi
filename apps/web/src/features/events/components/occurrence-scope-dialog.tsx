@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { FieldLabel } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useDialogShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 
 /** What a change to an occurrence of a recurring event asks before it runs. */
 export type ScopeRequest = {
@@ -29,6 +30,7 @@ export function OccurrenceScopeDialog({ onClose, request }: OccurrenceScopeDialo
 	const [choice, setChoice] = useState<{ request: ScopeRequest | null; scope: OccurrenceScope }>({ request: null, scope: 'this' });
 	const scope = choice.request === request && scopes.includes(choice.scope) ? choice.scope : (scopes[0] ?? 'all');
 	const isDelete = request?.action === 'delete';
+	useDialogShortcutScope(request !== null);
 
 	return (
 		<AlertDialog onOpenChange={open => !open && onClose(null)} open={request !== null}>

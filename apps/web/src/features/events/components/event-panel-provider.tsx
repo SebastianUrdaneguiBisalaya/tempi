@@ -4,6 +4,7 @@ import type { EventOccurrence, OccurrenceScope } from '@tempi/core';
 import { createContext, type ReactNode, use, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useDialogShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 import { useDeleteEvent, useDeleteOccurrence } from '../hooks/use-event-mutations';
 import { OccurrenceScopeDialog, type ScopeRequest } from './occurrence-scope-dialog';
 
@@ -38,6 +39,7 @@ export function EventPanelProvider({ children }: { children: ReactNode }) {
 	const resolveScope = useRef<((scope: OccurrenceScope | null) => void) | null>(null);
 	const deleteEvent = useDeleteEvent();
 	const deleteOccurrence = useDeleteOccurrence();
+	useDialogShortcutScope(pendingDelete !== null);
 
 	const closeIfOpen = (key: string) => setSelection(current => (current?.kind === 'event' && current.event.key === key ? null : current));
 

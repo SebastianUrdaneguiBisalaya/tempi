@@ -7,6 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { FieldLabel } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useDialogShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 import { useDeleteCalendar } from '../hooks/use-calendar-mutations';
 
 type DeleteCalendarDialogProps = {
@@ -21,6 +22,7 @@ export function DeleteCalendarDialog({ calendar, calendars, onClose }: DeleteCal
 	const { t } = useTranslation();
 	const id = useId();
 	const deleteCalendar = useDeleteCalendar();
+	useDialogShortcutScope(calendar !== null);
 	const targets = calendars.filter(other => other.id !== calendar?.id);
 	const defaultTarget = targets.find(other => other.isDefault) ?? targets[0];
 	// Kept per calendar: a new request starts from moving to the default.
