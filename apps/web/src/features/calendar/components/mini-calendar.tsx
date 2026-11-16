@@ -25,8 +25,11 @@ export function MiniCalendar() {
 	return (
 		<Calendar
 			aria-label={t('shell.sidebar.datePicker')}
-			className='mx-auto bg-transparent p-0 [--cell-size:--spacing(7)]'
+			// Fills the sidebar group so its edges line up with the calendar list below (the generated root is `w-fit`).
+			className='w-full! bg-transparent p-0 [--cell-size:--spacing(7)]'
 			{...dayPickerOptions}
+			// Always six weeks, so the sidebar doesn't jump when a month spans fewer rows.
+			fixedWeeks
 			mode='single'
 			modifiers={{ visibleRange: { from: toLocalDate(days[0] ?? date), to: toLocalDate(days.at(-1) ?? date) } }}
 			modifiersClassNames={{ visibleRange: 'bg-accent text-accent-foreground' }}

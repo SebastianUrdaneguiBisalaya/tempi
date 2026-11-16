@@ -300,6 +300,7 @@ export const es = {
 				data: 'Datos',
 				integrations: 'Integraciones',
 				profile: 'Perfil',
+				shortcuts: 'Atajos',
 			},
 			title: 'Ajustes',
 		},
@@ -360,8 +361,8 @@ export const es = {
 				navigation: 'Navegación',
 				views: 'Vistas',
 			},
+			hint: 'Ver todos los atajos de teclado',
 			title: 'Atajos de teclado',
-			useful: 'Atajos útiles',
 		},
 		toasts: {
 			backupCreated: 'Copia de seguridad creada.',

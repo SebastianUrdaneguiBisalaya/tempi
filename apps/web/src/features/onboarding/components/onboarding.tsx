@@ -114,7 +114,11 @@ export function Onboarding({ settings }: { settings: Settings }) {
 		<main className='grid min-h-svh w-full lg:grid-cols-2'>
 			<div className='flex items-center justify-center p-4 sm:p-8'>
 				<div className='flex w-full max-w-md flex-col gap-6'>
-					<h1 className='font-heading text-lg font-semibold'>{t('onboarding.title')}</h1>
+					<div className='flex flex-col items-start'>
+						{/* The artwork is a white glyph with wide margins: inverted on light themes, pulled left so it lines up with the title. */}
+						<Image alt='' className='-ml-5 size-20 invert dark:invert-0' height={80} priority src='/tempi-icon.png' width={80} />
+						<h1 className='font-heading text-lg font-semibold'>{t('onboarding.title')}</h1>
+					</div>
 					<FormProvider {...form}>
 						<Questionnaire
 							aria-label={t('onboarding.title')}

@@ -21,7 +21,7 @@ import { GoogleSyncWatcher } from '@/features/settings/components/google-sync-wa
 import { SettingsDialogProvider } from '@/features/settings/components/settings-dialog-provider';
 import { CommandMenu } from '@/features/shortcuts/components/command-menu';
 import { ShortcutsDialog } from '@/features/shortcuts/components/shortcuts-dialog';
-import { UsefulShortcuts } from '@/features/shortcuts/components/useful-shortcuts';
+import { ShortcutsHint } from '@/features/shortcuts/components/shortcuts-hint';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { AppHeader } from './app-header';
@@ -65,9 +65,8 @@ function ShellLayout() {
 	useShortcut('toggleSidebar', toggleSidebar);
 	const panelContent =
 		selection === null ? (
-			<SearchablePanel>
+			<SearchablePanel footer={<ShortcutsHint />}>
 				<UpcomingEvent />
-				<UsefulShortcuts />
 			</SearchablePanel>
 		) : (
 			<EventPanel />

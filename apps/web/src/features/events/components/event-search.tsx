@@ -16,7 +16,7 @@ import { useShowEvent } from '../hooks/use-show-event';
  * The right panel with event search on top. While the field has text, the results replace the panel's sections;
  * arrows move through them and Enter shows the event. Esc clears the field.
  */
-export function SearchablePanel({ children }: { children: ReactNode }) {
+export function SearchablePanel({ children, footer }: { children: ReactNode; footer?: ReactNode }) {
 	const { t } = useTranslation();
 	const [query, setQuery] = useState('');
 	// Typing stays responsive while the results for the latest text render.
@@ -26,6 +26,7 @@ export function SearchablePanel({ children }: { children: ReactNode }) {
 	return (
 		<Command className='h-full rounded-none bg-transparent p-0' label={t('search.label')} shouldFilter={false}>
 			<RightPanel
+				footer={footer}
 				search={
 					<CommandInput
 						aria-label={t('search.label')}
