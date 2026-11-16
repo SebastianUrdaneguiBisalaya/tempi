@@ -1,17 +1,18 @@
 'use client';
 
 import { CALENDAR_VIEWS, isCalendarView, resolveLanguage } from '@tempi/core';
-import { ChevronLeftIcon, ChevronRightIcon, PanelLeftIcon, PanelRightIcon } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, PanelLeftIcon, PanelRightIcon, SettingsIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
+import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { ShortcutKeys } from '@/features/shortcuts/components/shortcut-keys';
 import { SHORTCUTS } from '@/features/shortcuts/shortcuts';
 import { formatMonthYear } from '@/lib/date-format';
 import { toUtcDate } from '@/lib/plain-date';
-import { UserAvatar } from './user-avatar';
+import { UserAvatarButton } from './user-avatar';
 
 type AppHeaderProps = {
 	/** Shown only when the right panel is collapsed into a drawer. */
@@ -23,6 +24,7 @@ type AppHeaderProps = {
 export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHeaderProps) {
 	const { i18n, t } = useTranslation();
 	const { date, goToNext, goToPrevious, goToToday, setView, view } = useCalendarNavigation();
+	const { openSettings } = useSettingsDialog();
 
 	return (
 		<header className='flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2'>
@@ -35,7 +37,7 @@ export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHead
 						{t('shell.sidebar.toggle')} <ShortcutKeys keys={[SHORTCUTS.toggleSidebar.keys]} />
 					</TooltipContent>
 				</Tooltip>
-				<UserAvatar />
+				<UserAvatarButton label={t('settings.open')} onClick={openSettings} />
 				<nav aria-label={t('shell.header.label')} className='flex items-center gap-1'>
 					<Button onClick={goToToday} variant='outline'>
 						{t('shell.header.today')}
@@ -67,6 +69,14 @@ export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHead
 						</ToggleGroupItem>
 					))}
 				</ToggleGroup>
+				<Tooltip>
+					<TooltipTrigger render={<Button aria-label={t('settings.open')} onClick={openSettings} size='icon' variant='ghost' />}>
+						<SettingsIcon />
+					</TooltipTrigger>
+					<TooltipContent>
+						{t('settings.open')} <ShortcutKeys keys={[SHORTCUTS.openSettings.keys]} />
+					</TooltipContent>
+				</Tooltip>
 				{onOpenPanel && (
 					<Button aria-label={t('shell.panel.open')} onClick={onOpenPanel} size='icon' variant='ghost'>
 						<PanelRightIcon />

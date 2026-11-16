@@ -14,6 +14,7 @@ import { EventPanel } from '@/features/events/components/event-panel';
 import { EventPanelProvider, useEventPanel } from '@/features/events/components/event-panel-provider';
 import { SearchablePanel } from '@/features/events/components/event-search';
 import { EventShortcuts } from '@/features/events/components/event-shortcuts';
+import { SettingsDialogProvider } from '@/features/settings/components/settings-dialog-provider';
 import { ShortcutsDialog } from '@/features/shortcuts/components/shortcuts-dialog';
 import { UsefulShortcuts } from '@/features/shortcuts/components/useful-shortcuts';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
@@ -29,11 +30,13 @@ export function AppShell() {
 	return (
 		<CalendarNavigationProvider>
 			<EventPanelProvider>
-				<CalendarShortcuts />
-				<EventShortcuts />
-				<ShellLayout />
-				<GoToDateDialog />
-				<ShortcutsDialog />
+				<SettingsDialogProvider>
+					<CalendarShortcuts />
+					<EventShortcuts />
+					<ShellLayout />
+					<GoToDateDialog />
+					<ShortcutsDialog />
+				</SettingsDialogProvider>
 			</EventPanelProvider>
 		</CalendarNavigationProvider>
 	);

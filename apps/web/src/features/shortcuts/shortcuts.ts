@@ -30,6 +30,7 @@ export const SHORTCUTS = {
 	deleteEvent: { group: 'events', keys: ['backspace', 'delete'], scope: HOTKEY_SCOPES.grid },
 	undo: { group: 'events', keys: 'mod+z', scope: HOTKEY_SCOPES.global },
 	showShortcuts: { group: 'general', keys: '?', scope: HOTKEY_SCOPES.global },
+	openSettings: { group: 'general', keys: 'mod+,', scope: HOTKEY_SCOPES.global },
 	// The physical key under Esc (`Backquote`), not the character: on layouts such as Spanish, "`" is a dead key
 	// that never reaches the page as a plain keypress.
 	toggleSidebar: { group: 'general', keys: '`', layout: 'physical', scope: HOTKEY_SCOPES.global },
