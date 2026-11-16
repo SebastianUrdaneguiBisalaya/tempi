@@ -127,6 +127,15 @@
 	html {
 		@apply font-sans;
 	}
+	/* Tailwind v4 dropped the pointer cursor on buttons; bring it back for every clickable control except disabled ones. */
+	button:not(:disabled),
+	[role="button"]:not([aria-disabled="true"]),
+	a[href],
+	summary,
+	label[for],
+	select:not(:disabled) {
+		cursor: pointer;
+	}
 }
 
 /*
