@@ -26,6 +26,8 @@ describe('payloadSchemas', () => {
 		['calendars:create', { color: '#3B82F6', name: 'Work' }],
 		['calendars:delete', { id: 'cal-1', moveEventsTo: null }],
 		['calendars:delete', { id: 'cal-1', moveEventsTo: 'cal-2' }],
+		['calendars:export', { calendarId: null }],
+		['calendars:import', { calendarId: '01890a5d-ac96-774b-bcce-b302099a8057' }],
 		['calendars:list', undefined],
 		['calendars:update', { id: 'cal-1', isVisible: false }],
 		['events:create', newEvent],

@@ -9,6 +9,7 @@ import {
 	eventOccurrenceSchema,
 	eventPatchSchema,
 	eventSearchQuerySchema,
+	exportEventsInputSchema,
 	idSchema,
 	isErrorKey,
 	newCalendarInputSchema,
@@ -35,10 +36,24 @@ export type OccurrenceRef = z.output<typeof occurrenceRefSchema>;
  * What the renderer sends on each channel: the core use case input. The main process parses every payload with these.
  * Updates carry the id next to the patch fields, so field errors keep the same paths the forms use (`title`, not `patch.title`).
  */
+/** An import picks its file in a native dialog, which the user can cancel. */
+export const importResultSchema = z.discriminatedUnion('status', [
+	z.object({ status: z.literal('canceled') }),
+	z.object({ created: z.number().int(), skipped: z.number().int(), status: z.literal('imported'), updated: z.number().int() }),
+]);
+
+export type ImportResult = z.output<typeof importResultSchema>;
+
+export const exportResultSchema = z.discriminatedUnion('status', [z.object({ status: z.literal('canceled') }), z.object({ count: z.number().int(), status: z.literal('exported') })]);
+
+export type ExportResult = z.output<typeof exportResultSchema>;
+
 export const payloadSchemas = {
 	'app:showEvent': occurrenceRefSchema,
 	'calendars:create': newCalendarInputSchema,
 	'calendars:delete': deleteCalendarInputSchema,
+	'calendars:export': exportEventsInputSchema,
+	'calendars:import': z.object({ calendarId: idSchema }),
 	'calendars:list': noPayload,
 	'calendars:update': calendarPatchSchema.extend({ id: idSchema }),
 	'events:create': newEventInputSchema,
@@ -62,6 +77,8 @@ export const responseValueSchemas = {
 	'app:showEvent': z.null(),
 	'calendars:create': calendarSchema,
 	'calendars:delete': z.null(),
+	'calendars:export': exportResultSchema,
+	'calendars:import': importResultSchema,
 	'calendars:list': z.array(calendarSchema),
 	'calendars:update': calendarSchema,
 	'events:create': calendarEventSchema,

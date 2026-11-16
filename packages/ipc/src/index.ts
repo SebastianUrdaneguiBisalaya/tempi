@@ -3,5 +3,5 @@ export type { Channel } from './channels';
 export { CHANNELS, PUSH_CHANNELS } from './channels';
 export type { DesktopApi, TempiApi } from './desktop-api';
 export { createIpcClient } from './ipc-client';
-export type { ChannelInput, ChannelPayload, ChannelValue, OccurrenceRef } from './schemas';
-export { domainErrorSchema, occurrenceRefSchema, payloadSchemas, responseValueSchemas, resultSchema } from './schemas';
+export type { ChannelInput, ChannelPayload, ChannelValue, ExportResult, ImportResult, OccurrenceRef } from './schemas';
+export { domainErrorSchema, exportResultSchema, importResultSchema, occurrenceRefSchema, payloadSchemas, responseValueSchemas, resultSchema } from './schemas';

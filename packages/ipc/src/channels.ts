@@ -7,6 +7,10 @@ export const CHANNELS = {
 	calendars: {
 		create: 'calendars:create',
 		delete: 'calendars:delete',
+		/** Asks for a file to save, then writes one calendar (or all) as `.ics`. */
+		export: 'calendars:export',
+		/** Asks for an `.ics` file, then adds its events to a calendar. */
+		import: 'calendars:import',
 		list: 'calendars:list',
 		update: 'calendars:update',
 	},
