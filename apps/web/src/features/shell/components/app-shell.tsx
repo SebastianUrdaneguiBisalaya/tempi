@@ -26,7 +26,7 @@ export function AppShell() {
 	const [panelDrawerOpen, setPanelDrawerOpen] = useState(false);
 
 	const toggleSidebar = () => (sidebarInline ? setSidebarExpanded(open => !open) : setSidebarDrawerOpen(open => !open));
-	useHotkeys(SIDEBAR_HOTKEY, toggleSidebar, { label: 'Toggle sidebar' });
+	useHotkeys(SIDEBAR_HOTKEY, toggleSidebar, { label: 'Toggle sidebar', layout: 'physical' });
 
 	return (
 		<CalendarNavigationProvider>
