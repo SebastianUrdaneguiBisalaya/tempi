@@ -1,17 +1,32 @@
 'use client';
 
 import type { AppUpdateStatus } from '@tempi/core';
-import { DownloadIcon, RefreshCwIcon, RotateCwIcon } from 'lucide-react';
+import { BugIcon, DownloadIcon, GlobeIcon, type LucideIcon, NotebookTextIcon, RefreshCwIcon, RotateCwIcon, SquareCodeIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { formatDateTime } from '@/lib/date-format';
 import { useAppUpdateStatus, useCheckForUpdates, useInstallUpdate } from '../hooks/use-app-update';
 import { useSettings } from '../hooks/use-settings';
 
-/** The installed version and its updates: where they stand, a manual check, and installing or downloading a new one. */
+const AUTHOR = { name: 'Sebastian Marat Urdanegui Bisalaya', url: 'https://sebastianurdanegui.com' } as const;
+const WEBSITE_URL = 'https://tempi.sebastianurdanegui.com';
+const REPO_URL = 'https://github.com/SebastianUrdaneguiBisalaya/tempi';
+
+/** Opens in the system browser: the main process sends new-window links there. */
+function ExternalLink({ href, icon: Icon, label }: { href: string; icon: LucideIcon; label: string }) {
+	return (
+		<a className={buttonVariants({ className: 'justify-start', size: 'sm', variant: 'ghost' })} href={href} rel='noreferrer' target='_blank'>
+			<Icon data-icon='inline-start' />
+			{label}
+		</a>
+	);
+}
+
+/** What Tempi is and who makes it, the installed version and its updates: where they stand, a manual check, and installing or downloading a new one. */
 export function AboutSettings() {
 	const { t } = useTranslation();
 	const { data: status } = useAppUpdateStatus();
@@ -33,6 +48,15 @@ export function AboutSettings() {
 					{status !== undefined && <p className='text-muted-foreground'>{t('settings.about.version', { version: status.currentVersion })}</p>}
 				</div>
 			</div>
+			<p className='max-w-prose text-muted-foreground'>{t('settings.about.description')}</p>
+			<p>
+				{t('settings.about.madeBy')}{' '}
+				<a className='font-medium underline underline-offset-4 hover:text-foreground' href={AUTHOR.url} rel='noreferrer' target='_blank'>
+					{AUTHOR.name}
+				</a>
+			</p>
+			<Separator />
+			<h4 className='font-heading text-sm font-semibold'>{t('settings.about.updatesTitle')}</h4>
 			<div className='flex flex-col gap-1'>
 				<p aria-live='polite'>{status === undefined ? t('settings.about.status.unsupported') : statusText(status)}</p>
 				{status?.checkedAt != null && settings !== undefined && (
@@ -62,6 +86,17 @@ export function AboutSettings() {
 					</Button>
 				)}
 			</div>
+			<Separator />
+			<nav aria-label={t('settings.about.linksTitle')} className='flex flex-col gap-1'>
+				<h4 className='font-heading text-sm font-semibold'>{t('settings.about.linksTitle')}</h4>
+				<div className='-mx-2 flex flex-wrap gap-1'>
+					<ExternalLink href={WEBSITE_URL} icon={GlobeIcon} label={t('settings.about.links.website')} />
+					<ExternalLink href={REPO_URL} icon={SquareCodeIcon} label={t('settings.about.links.source')} />
+					<ExternalLink href={`${REPO_URL}/releases`} icon={NotebookTextIcon} label={t('settings.about.links.releases')} />
+					<ExternalLink href={`${REPO_URL}/issues/new`} icon={BugIcon} label={t('settings.about.links.issue')} />
+				</div>
+			</nav>
+			<p className='text-muted-foreground'>{t('settings.about.license', { year: new Date().getFullYear(), name: AUTHOR.name })}</p>
 		</div>
 	);
 }

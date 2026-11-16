@@ -235,8 +235,18 @@ export const en = {
 			about: {
 				availableToast: 'Tempi {{version}} is available.',
 				check: 'Check for updates',
+				description: 'A local-first desktop calendar. Your calendars live on this computer, with no account and no cloud; Google Calendar sync is optional.',
 				download: 'Download {{version}}',
 				lastChecked: 'Last checked {{time}}',
+				license: '© {{year}} {{name}}. Open source under the ISC License.',
+				links: {
+					issue: 'Report a problem',
+					releases: 'Release notes',
+					source: 'Source code',
+					website: 'Website',
+				},
+				linksTitle: 'Links',
+				madeBy: 'Made by',
 				readyToast: 'Tempi {{version}} is ready to install.',
 				restart: 'Restart to update',
 				status: {
@@ -250,6 +260,7 @@ export const en = {
 					upToDate: 'Tempi is up to date.',
 				},
 				title: 'Tempi',
+				updatesTitle: 'Updates',
 				version: 'Version {{version}}',
 			},
 			appearance: {
