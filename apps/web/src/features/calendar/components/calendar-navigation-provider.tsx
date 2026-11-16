@@ -9,6 +9,8 @@ import { useToday } from '../hooks/use-today';
 type CalendarNavigation = {
 	/** The day the view is anchored on, or null while prerendering (today isn't known yet). */
 	date: Date | null;
+	/** Anchors the current view on `day`, e.g. a day picked in the mini calendar. */
+	goToDate: (day: Date) => void;
 	goToNext: () => void;
 	goToPrevious: () => void;
 	goToToday: () => void;
@@ -32,6 +34,7 @@ export function CalendarNavigationProvider({ children }: { children: ReactNode }
 
 	const value: CalendarNavigation = {
 		date,
+		goToDate: setAnchor,
 		goToNext: () => step(1),
 		goToPrevious: () => step(-1),
 		goToToday: () => setAnchor(null),

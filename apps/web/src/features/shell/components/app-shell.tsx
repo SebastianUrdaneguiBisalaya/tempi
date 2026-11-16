@@ -4,8 +4,9 @@ import { useHotkeys } from '@usehotkeys/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Sidebar, SidebarContent, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarGroup, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { CalendarNavigationProvider } from '@/features/calendar/components/calendar-navigation-provider';
+import { MiniCalendar } from '@/features/calendar/components/mini-calendar';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { SIDEBAR_HOTKEY } from '../shell-hotkeys';
 import { AppHeader } from './app-header';
@@ -33,7 +34,11 @@ export function AppShell() {
 			<SidebarProvider className='h-svh min-h-0' onOpenChange={setSidebarExpanded} open={sidebarExpanded}>
 				{sidebarInline ? (
 					<Sidebar aria-label={t('shell.sidebar.label')} role='complementary'>
-						<SidebarContent />
+						<SidebarContent>
+							<SidebarGroup>
+								<MiniCalendar />
+							</SidebarGroup>
+						</SidebarContent>
 					</Sidebar>
 				) : (
 					<Drawer onOpenChange={setSidebarDrawerOpen} open={sidebarDrawerOpen} swipeDirection='left'>
@@ -41,7 +46,11 @@ export function AppShell() {
 							<DrawerHeader className='sr-only'>
 								<DrawerTitle>{t('shell.sidebar.label')}</DrawerTitle>
 							</DrawerHeader>
-							<SidebarContent />
+							<SidebarContent>
+								<SidebarGroup>
+									<MiniCalendar />
+								</SidebarGroup>
+							</SidebarContent>
 						</DrawerContent>
 					</Drawer>
 				)}
