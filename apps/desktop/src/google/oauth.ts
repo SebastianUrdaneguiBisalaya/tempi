@@ -5,8 +5,17 @@ const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 const REVOKE_ENDPOINT = 'https://oauth2.googleapis.com/revoke';
 
-// Only who the account is. Sync asks for calendar access later through incremental authorization.
-export const SCOPES = ['openid', 'email'] as const;
+/** What sync needs: the account's calendar list, and its events to read and write. */
+export const CALENDAR_SCOPES = ['https://www.googleapis.com/auth/calendar.calendarlist.readonly', 'https://www.googleapis.com/auth/calendar.events'] as const;
+
+// Who the account is, plus calendar access.
+export const SCOPES = ['openid', 'email', ...CALENDAR_SCOPES] as const;
+
+/** True when a granted `scope` (space-separated) covers sync; accounts connected before sync came lack it. */
+export const hasCalendarScopes = (scope: string): boolean => {
+	const granted = new Set(scope.split(' '));
+	return CALENDAR_SCOPES.every(needed => granted.has(needed));
+};
 
 /**
  * The OAuth client the maintainer registers as a Google "Desktop app". Google requires its secret even with PKCE; for
@@ -113,6 +122,43 @@ export const exchangeCode = async (fetch: Fetch, client: OAuthClient, grant: { c
 		scope: tokens.data.scope,
 		subject: claims.sub,
 	};
+};
+
+const refreshResponseSchema = z.object({ access_token: z.string().min(1), expires_in: z.number().int().positive(), scope: z.string().optional() });
+
+/** Thrown when Google can't be reached at all. */
+export class OAuthNetworkError extends OAuthError {
+	override name = 'OAuthNetworkError';
+}
+
+/** Thrown when Google no longer honors the refresh token (revoked, expired, password changed): connect again. */
+export class GrantRevokedError extends OAuthError {
+	override name = 'GrantRevokedError';
+}
+
+/** A new access token from the refresh token. */
+export const refreshAccessToken = async (
+	fetch: Fetch,
+	client: OAuthClient,
+	grant: { now: Date; refreshToken: string }
+): Promise<{ accessToken: string; expiresAt: string; scope: string | undefined }> => {
+	let response: Awaited<ReturnType<Fetch>>;
+	try {
+		response = await fetch(TOKEN_ENDPOINT, {
+			body: new URLSearchParams({ client_id: client.id, client_secret: client.secret, grant_type: 'refresh_token', refresh_token: grant.refreshToken }),
+			method: 'POST',
+		});
+	} catch (error) {
+		throw new OAuthNetworkError(`Google could not be reached to refresh the token: ${error instanceof Error ? error.message : String(error)}`);
+	}
+	const body: unknown = await response.json().catch(() => null);
+	if (!response.ok) {
+		const detail = `Refreshing failed with ${response.status}: ${JSON.stringify(body)}`;
+		throw response.status === 400 && JSON.stringify(body).includes('invalid_grant') ? new GrantRevokedError(detail) : new OAuthError(detail);
+	}
+	const tokens = refreshResponseSchema.safeParse(body);
+	if (!tokens.success) throw new OAuthError(`Unexpected refresh response: ${tokens.error.message}`);
+	return { accessToken: tokens.data.access_token, expiresAt: new Date(grant.now.getTime() + tokens.data.expires_in * 1000).toISOString(), scope: tokens.data.scope };
 };
 
 /**

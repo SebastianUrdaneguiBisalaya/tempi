@@ -5,6 +5,7 @@ import { createRepositories, createTransactionQueue, openDatabase } from '@tempi
 import { parseIcs, serializeIcs } from '@tempi/ical';
 import { CHANNELS, type Channel } from '@tempi/ipc';
 import type { GoogleAccountService } from '../google/google-account';
+import type { SyncRunner } from '../google/sync-runner';
 import type { IpcSender } from './handle';
 import { type DataIo, type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
 
@@ -51,9 +52,29 @@ const google: GoogleAccountService = {
 		googleEmail = 'ada@example.com';
 		return Promise.resolve(ok({ account: { email: googleEmail }, status: 'connected' as const }));
 	},
+	accessToken: () => Promise.resolve(ok('token')),
 	disconnect: () => {
 		googleEmail = null;
 		return Promise.resolve(ok(null));
+	},
+};
+
+/** What the fake sync runner was asked to do. */
+let syncCalls: string[];
+
+const IDLE = { error: null, lastSyncedAt: null, state: 'idle' } as const;
+
+const sync: SyncRunner = {
+	schedule: () => void syncCalls.push('schedule'),
+	start: () => void syncCalls.push('start'),
+	status: () => IDLE,
+	stop: () => {
+		syncCalls.push('stop');
+		return Promise.resolve();
+	},
+	syncNow: () => {
+		syncCalls.push('syncNow');
+		return Promise.resolve({ ...IDLE, lastSyncedAt: T0 });
 	},
 };
 
@@ -79,6 +100,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	restoreSource = null;
 	dataCalls = [];
 	googleEmail = null;
+	syncCalls = [];
 	exportPath = '/exports';
 	written = [];
 	const avatarStore = {
@@ -89,7 +111,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
-		{ data: dataIo, google, ical: icalIo },
+		{ data: dataIo, google: { account: google, sync }, ical: icalIo },
 		listeners
 	);
 };
@@ -538,5 +560,30 @@ describe('Google account', () => {
 	test('refuses untrusted senders', async () => {
 		expect(await invoke(CHANNELS.google.connect, undefined, 'https://evil.example/')).toMatchObject({ ok: false });
 		expect(googleEmail).toBeNull();
+	});
+
+	test('connecting starts sync; disconnecting stops it first, then removes Google calendars and their events', async () => {
+		await invoke(CHANNELS.google.connect);
+		expect(syncCalls).toEqual(['start', 'syncNow']);
+		db.prepare("INSERT INTO calendars (id, name, color, source, is_default, is_visible, read_only, created_at, updated_at) VALUES ('gcal', 'Ada', '#0b8043', 'google', 0, 1, 0, :t, :t)").run({
+			t: T0,
+		});
+		db.prepare(
+			"INSERT INTO google_calendars (google_id, calendar_id, name, color, access_role, is_primary, time_zone, selected) VALUES ('ada@example.com', 'gcal', 'Ada', '#0b8043', 'owner', 1, 'UTC', 1)"
+		).run();
+		expect(await invoke(CHANNELS.calendars.list)).toMatchObject({ value: [{}, { id: 'gcal', source: 'google' }] });
+
+		expect(await invoke(CHANNELS.google.disconnect)).toEqual({ ok: true, value: null });
+		expect(syncCalls).toEqual(['start', 'syncNow', 'stop']);
+		expect(await invoke(CHANNELS.calendars.list)).toMatchObject({ value: [{ source: 'local' }] });
+		expect(rows('SELECT * FROM google_calendars')).toEqual([]);
+	});
+
+	test('choosing calendars and Sync now trigger a sync', async () => {
+		db.prepare("INSERT INTO google_calendars (google_id, name, color, access_role, is_primary, time_zone, selected) VALUES ('team@example.com', 'Team', '#0b8043', 'writer', 0, 'UTC', 0)").run();
+		expect(await invoke(CHANNELS.google.selectCalendars, { googleIds: ['team@example.com'] })).toMatchObject({ ok: true, value: [{ googleId: 'team@example.com', selected: true }] });
+		expect(await invoke(CHANNELS.google.sync)).toEqual({ ok: true, value: { ...IDLE, lastSyncedAt: T0 } });
+		expect(syncCalls).toEqual(['syncNow', 'syncNow']);
+		expect(await invoke(CHANNELS.google.syncStatus)).toEqual({ ok: true, value: IDLE });
 	});
 });

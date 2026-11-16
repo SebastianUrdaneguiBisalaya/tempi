@@ -27,7 +27,7 @@ describe('loopback redirect', () => {
 		const { outcome, redirectUri } = await listen();
 		await fetch(`${redirectUri}/?state=state-1&code=abc`);
 		await outcome;
-		expect(fetch(`${redirectUri}/?state=state-1&code=again`)).rejects.toThrow();
+		await expect(fetch(`${redirectUri}/?state=state-1&code=again`)).rejects.toThrow();
 	});
 
 	test('ends on timeout or abort', async () => {

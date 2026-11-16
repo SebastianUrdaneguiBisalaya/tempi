@@ -6,6 +6,7 @@ import { type CoreDeps, getProfile, getSettings, initializeSettings, type Langua
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
 import { resources } from '@tempi/i18n';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
+import { createGoogleCalendarApi, GoogleAuthError, GoogleOfflineError, type SyncDeps, syncGoogle } from '@tempi/sync-google';
 import { app, BrowserWindow, type BrowserWindowConstructorOptions, dialog, globalShortcut, ipcMain, nativeImage, nativeTheme, net, powerMonitor, protocol, safeStorage, shell } from 'electron';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
@@ -15,6 +16,7 @@ import { openExternalUrl } from './external-links.js';
 import { createGoogleAccountService, type GoogleAccountService } from './google/google-account.js';
 import { listenForRedirect, redirectPage } from './google/loopback.js';
 import { oauthClientFrom } from './google/oauth.js';
+import { createSyncRunner, type SyncRunner } from './google/sync-runner.js';
 import { type Cipher, createTokenStore } from './google/token-store.js';
 import { createIcalWorker } from './ical-worker-client.js';
 import { type DataIo, type IcalIo, registerIpc } from './ipc/register-ipc.js';
@@ -54,6 +56,7 @@ protocol.registerSchemesAsPrivileged([appScheme, avatarScheme]);
 let mainWindow: BrowserWindow | null = null;
 let database: DatabaseSync | null = null;
 let reminders: ReminderScheduler | null = null;
+let googleSync: SyncRunner | null = null;
 // The stored language, for text the main process shows itself (the browser page after Google sign-in).
 let language: Language = 'en';
 
@@ -303,6 +306,9 @@ function dataIo(db: DatabaseSync, deps: CoreDeps, transaction: TransactionQueue,
 			const prepared = await prepareRestore(source, `${live}.restoring`);
 			if (!prepared.ok) return prepared;
 			try {
+				// Not awaited: a sync waiting on the transactions would wait on this one too.
+				void googleSync?.stop();
+				googleSync = null;
 				await transaction.exclusive(async () => {
 					reminders?.stop();
 					reminders = null;
@@ -352,6 +358,38 @@ function googleAccount(): GoogleAccountService {
 	});
 }
 
+// Two-way Google Calendar sync while an account is connected. Google is called between transactions, never inside one.
+function createGoogleSync(deps: CoreDeps, transaction: TransactionQueue, account: GoogleAccountService): SyncRunner {
+	const api = createGoogleCalendarApi({
+		accessToken: async () => {
+			const token = await account.accessToken();
+			if (token.ok) return token.value;
+			const [issue] = token.error.issues;
+			if (issue?.key === 'google.offline') throw new GoogleOfflineError(issue.detail);
+			if (issue?.key === 'google.reconnectRequired') throw new GoogleAuthError(issue.detail);
+			throw new Error(issue?.detail ?? 'No Google access token');
+		},
+		fetch: (url, init) => net.fetch(url, init),
+	});
+	const transact = async <T>(work: (syncDeps: SyncDeps) => Promise<T>): Promise<T> => {
+		const result = await transaction(async () => ok(await work(deps)));
+		if (!result.ok) throw new Error(result.error.issues.map(issue => issue.detail).join('; '));
+		return result.value;
+	};
+	return createSyncRunner({
+		now: () => new Date(),
+		onStatus: (status, summary) => {
+			for (const window of BrowserWindow.getAllWindows()) window.webContents.send(PUSH_CHANNELS.google.syncStatus, status);
+			if (summary !== null && summary.pulled > 0) void reminders?.reschedule();
+		},
+		setTimer: (callback, ms) => {
+			const timer = setTimeout(callback, ms);
+			return () => clearTimeout(timer);
+		},
+		sync: () => syncGoogle({ api, transact }),
+	});
+}
+
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
@@ -373,12 +411,18 @@ if (!gotLock) {
 		database = openAppDatabase();
 		const transaction = createTransactionQueue(database);
 		const deps: CoreDeps = { ...createRepositories(database), avatars: createFileAvatarStore(avatarsDir), clock: systemClock, ids: uuidv7Ids };
+		const account = googleAccount();
+		const sync = createGoogleSync(deps, transaction, account);
+		googleSync = sync;
 		registerIpc(
 			{ ipc: ipcMain, isTrusted: isTrustedUrl, transaction },
 			deps,
-			{ data: dataIo(database, deps, transaction, avatarsDir), google: googleAccount(), ical: icalIo() },
+			{ data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo() },
 			{
-				eventsChanged: () => void reminders?.reschedule(),
+				eventsChanged: () => {
+					void reminders?.reschedule();
+					googleSync?.schedule();
+				},
 				settingsSaved: applySettings,
 				showEvent: showInMainWindow,
 			}
@@ -386,11 +430,16 @@ if (!gotLock) {
 		await loadSettings(deps, transaction);
 		createWindow();
 		reminders = startReminders(deps, transaction);
+		if ((await account.account()) !== null) sync.start();
+		// Edits made offline go out once the computer is back, and timers stall while it sleeps.
+		powerMonitor.on('resume', () => void googleSync?.syncNow());
 	});
 
 	app.on('before-quit', () => {
 		reminders?.stop();
 		reminders = null;
+		void googleSync?.stop();
+		googleSync = null;
 		database?.close();
 		database = null;
 	});

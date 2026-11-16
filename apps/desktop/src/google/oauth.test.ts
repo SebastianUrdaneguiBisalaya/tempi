@@ -1,5 +1,17 @@
 import { describe, expect, test } from 'bun:test';
-import { authorizationUrl, exchangeCode, type Fetch, oauthClientFrom, pkceChallenge, randomToken, revokeToken } from './oauth';
+import {
+	authorizationUrl,
+	exchangeCode,
+	type Fetch,
+	GrantRevokedError,
+	hasCalendarScopes,
+	OAuthNetworkError,
+	oauthClientFrom,
+	pkceChallenge,
+	randomToken,
+	refreshAccessToken,
+	revokeToken,
+} from './oauth';
 
 const client = { id: 'client-id.apps.googleusercontent.com', secret: 'client-secret' };
 const NOW = new Date('2026-11-16T10:00:00.000Z');
@@ -53,7 +65,7 @@ describe('PKCE', () => {
 			code_challenge_method: 'S256',
 			redirect_uri: 'http://127.0.0.1:5000',
 			response_type: 'code',
-			scope: 'openid email',
+			scope: 'openid email https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events',
 			state: 'state-1',
 		});
 		expect(url.toString()).not.toContain('verifier-1');
@@ -85,14 +97,14 @@ describe('code exchange', () => {
 		});
 	});
 
-	test('fails when Google refuses the code', () => {
-		expect(exchangeCode(fakeFetch(400, { error: 'invalid_grant' }).fetch, client, grant)).rejects.toThrow('invalid_grant');
+	test('fails when Google refuses the code', async () => {
+		await expect(exchangeCode(fakeFetch(400, { error: 'invalid_grant' }).fetch, client, grant)).rejects.toThrow('invalid_grant');
 	});
 
-	test('fails without a refresh token, or with an id token for another client', () => {
+	test('fails without a refresh token, or with an id token for another client', async () => {
 		const { refresh_token: _, ...withoutRefresh } = tokenBody();
-		expect(exchangeCode(fakeFetch(200, withoutRefresh).fetch, client, grant)).rejects.toThrow('Unexpected token response');
-		expect(exchangeCode(fakeFetch(200, tokenBody({ aud: 'someone-else', email: 'ada@example.com', sub: '42' })).fetch, client, grant)).rejects.toThrow('another client');
+		await expect(exchangeCode(fakeFetch(200, withoutRefresh).fetch, client, grant)).rejects.toThrow('Unexpected token response');
+		await expect(exchangeCode(fakeFetch(200, tokenBody({ aud: 'someone-else', email: 'ada@example.com', sub: '42' })).fetch, client, grant)).rejects.toThrow('another client');
 	});
 });
 
@@ -105,6 +117,25 @@ describe('revoking', () => {
 
 	test('a token Google no longer knows counts as revoked; a server error does not', async () => {
 		await revokeToken(fakeFetch(400, { error: 'invalid_token' }).fetch, 'gone');
-		expect(revokeToken(fakeFetch(503, {}).fetch, '1//refresh')).rejects.toThrow('503');
+		await expect(revokeToken(fakeFetch(503, {}).fetch, '1//refresh')).rejects.toThrow('503');
+	});
+});
+
+describe('refreshing', () => {
+	test('trades the refresh token for a new access token', async () => {
+		const { fetch, requests } = fakeFetch(200, { access_token: 'ya29.new', expires_in: 3600, scope: 'openid' });
+		expect(await refreshAccessToken(fetch, client, { now: NOW, refreshToken: '1//refresh' })).toEqual({ accessToken: 'ya29.new', expiresAt: '2026-11-16T11:00:00.000Z', scope: 'openid' });
+		expect(Object.fromEntries(requests[0]?.body ?? [])).toMatchObject({ grant_type: 'refresh_token', refresh_token: '1//refresh' });
+	});
+
+	test('tells a revoked grant from other failures and from no connection', async () => {
+		await expect(refreshAccessToken(fakeFetch(400, { error: 'invalid_grant' }).fetch, client, { now: NOW, refreshToken: 'r' })).rejects.toBeInstanceOf(GrantRevokedError);
+		await expect(refreshAccessToken(fakeFetch(500, {}).fetch, client, { now: NOW, refreshToken: 'r' })).rejects.not.toBeInstanceOf(GrantRevokedError);
+		await expect(refreshAccessToken(() => Promise.reject(new Error('down')), client, { now: NOW, refreshToken: 'r' })).rejects.toBeInstanceOf(OAuthNetworkError);
+	});
+
+	test('calendar access needs both calendar scopes', () => {
+		expect(hasCalendarScopes('openid email')).toBe(false);
+		expect(hasCalendarScopes('email https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.calendarlist.readonly')).toBe(true);
 	});
 });

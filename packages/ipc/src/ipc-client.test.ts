@@ -25,7 +25,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 		calendars: { create: answer, delete: answer, export: answer, import: answer, list: answer, update: answer },
 		data: { backup: answer, restore: answer },
 		events: { create: answer, delete: answer, deleteOccurrence: answer, duplicate: answer, list: answer, restore: answer, search: answer, update: answer, updateOccurrence: answer },
-		google: { account: answer, connect: answer, disconnect: answer },
+		google: { account: answer, calendars: answer, connect: answer, disconnect: answer, onSyncStatus: () => () => undefined, selectCalendars: answer, sync: answer, syncStatus: answer },
 		onboarding: { complete: answer },
 		profile: { get: answer, update: answer },
 		settings: { get: answer, save: answer },

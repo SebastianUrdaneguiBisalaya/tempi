@@ -48,7 +48,7 @@ describe('token store', () => {
 
 	test('refuses to write when encryption is unavailable', async () => {
 		const store = createTokenStore(file, cipher(false));
-		expect(store.write(account)).rejects.toThrow('encryption is unavailable');
+		await expect(store.write(account)).rejects.toThrow('encryption is unavailable');
 		expect(await Bun.file(file).exists()).toBe(false);
 	});
 

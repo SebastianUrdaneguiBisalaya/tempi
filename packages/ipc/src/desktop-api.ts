@@ -1,4 +1,4 @@
-import type { Result } from '@tempi/core';
+import type { GoogleSyncStatus, Result } from '@tempi/core';
 import type { Channel } from './channels';
 import type { ChannelInput, ChannelValue, OccurrenceRef } from './schemas';
 
@@ -38,8 +38,14 @@ type Api<Raw extends boolean> = {
 	};
 	google: {
 		account: CallWithoutInput<'google:account', Raw>;
+		calendars: CallWithoutInput<'google:calendars', Raw>;
 		connect: CallWithoutInput<'google:connect', Raw>;
 		disconnect: CallWithoutInput<'google:disconnect', Raw>;
+		selectCalendars: Call<'google:selectCalendars', Raw>;
+		sync: CallWithoutInput<'google:sync', Raw>;
+		syncStatus: CallWithoutInput<'google:syncStatus', Raw>;
+		/** Calls `listener` with each new sync status the main process pushes; returns the unsubscribe function. */
+		onSyncStatus: (listener: (status: Raw extends true ? unknown : GoogleSyncStatus) => void) => () => void;
 	};
 	onboarding: {
 		complete: Call<'onboarding:complete', Raw>;
