@@ -16,6 +16,8 @@ export type { WeekSegment } from './domain/month-layout';
 export { belongsInAllDayLane, fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './domain/month-layout';
 export type { OnboardingInput } from './domain/onboarding';
 export { onboardingInputSchema } from './domain/onboarding';
+export type { TimeRange } from './domain/reschedule';
+export { moveRange, resizeRange, SNAP_MINUTES, sweepRange, wallTime } from './domain/reschedule';
 export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';
 export { DOMAIN_ERROR_CODES, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
 export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, WeekStart } from './domain/settings';
