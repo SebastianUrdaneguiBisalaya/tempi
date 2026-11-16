@@ -10,6 +10,7 @@ export const CHANNELS = {
 		create: 'events:create',
 		delete: 'events:delete',
 		deleteOccurrence: 'events:deleteOccurrence',
+		duplicate: 'events:duplicate',
 		list: 'events:list',
 		restore: 'events:restore',
 		update: 'events:update',
