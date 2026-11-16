@@ -1,18 +1,18 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { type CoreDeps, getProfile, getSettings, initializeSettings, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
-import { createRepositories, createTransactionQueue, type TransactionQueue } from '@tempi/db';
+import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
 import { app, BrowserWindow, type BrowserWindowConstructorOptions, dialog, globalShortcut, ipcMain, nativeImage, nativeTheme, powerMonitor, protocol, shell } from 'electron';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
-import { createFileAvatarStore } from './avatar-store.js';
-import { openAppDatabase } from './database.js';
+import { avatarPath, createFileAvatarStore } from './avatar-store.js';
+import { appDatabasePath, openAppDatabase } from './database.js';
 import { openExternalUrl } from './external-links.js';
 import { createIcalWorker } from './ical-worker-client.js';
-import { type IcalIo, registerIpc } from './ipc/register-ipc.js';
+import { type DataIo, type IcalIo, registerIpc } from './ipc/register-ipc.js';
 import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
 import { fileReminderCheckpoint } from './reminder-checkpoint.js';
 import { createReminderNotifier } from './reminder-notifier.js';
@@ -257,6 +257,69 @@ function icalIo(): IcalIo {
 	};
 }
 
+const BACKUP_FILTERS = [{ extensions: ['db'], name: 'Tempi backup' }];
+
+// Backups are the database file plus the profile photo; a restore swaps the file in and relaunches on it.
+function dataIo(db: DatabaseSync, deps: CoreDeps, transaction: TransactionQueue, avatarsDir: string): DataIo {
+	const parent = () => BrowserWindow.getFocusedWindow() ?? mainWindow;
+	return {
+		backup: target =>
+			// Between transactions: VACUUM INTO can't run inside one.
+			transaction.exclusive(async () => {
+				const profile = await deps.profile.get();
+				const photo = profile?.avatar == null ? null : avatarPath(avatarsDir, profile.avatar);
+				const files: BackupFile[] = [];
+				if (profile?.avatar != null && photo !== null) {
+					const bytes = await readFile(photo).catch(() => null);
+					if (bytes !== null) files.push({ bytes, name: profile.avatar });
+				}
+				writeBackup(db, target, files);
+			}),
+		chooseBackupPath: async defaultName => {
+			const options = { defaultPath: path.join(app.getPath('documents'), defaultName), filters: BACKUP_FILTERS };
+			const window = parent();
+			const { canceled, filePath } = await (window === null ? dialog.showSaveDialog(options) : dialog.showSaveDialog(window, options));
+			return canceled || filePath === undefined || filePath === '' ? null : filePath;
+		},
+		chooseRestoreFile: async () => {
+			const options = { filters: BACKUP_FILTERS, properties: ['openFile' as const] };
+			const window = parent();
+			const { canceled, filePaths } = await (window === null ? dialog.showOpenDialog(options) : dialog.showOpenDialog(window, options));
+			const [file] = filePaths;
+			return canceled || file === undefined ? null : file;
+		},
+		now: () => new Date(),
+		restore: async source => {
+			const live = appDatabasePath();
+			// Everything that can fail on a bad file happens on a staged copy, before the current data is touched.
+			const prepared = await prepareRestore(source, `${live}.restoring`);
+			if (!prepared.ok) return prepared;
+			try {
+				await transaction.exclusive(async () => {
+					reminders?.stop();
+					reminders = null;
+					db.close();
+					database = null;
+					swapInRestore(`${live}.restoring`, live);
+					for (const file of prepared.value.files) {
+						const target = avatarPath(avatarsDir, file.name);
+						if (target === null) continue;
+						await mkdir(avatarsDir, { recursive: true });
+						await writeFile(target, file.bytes);
+					}
+				});
+			} finally {
+				// Restored or not, the database is closed now: start again on whichever file is in place. The delay lets the answer reach the window.
+				setTimeout(() => {
+					app.relaunch();
+					app.exit(0);
+				}, 300);
+			}
+			return ok(null);
+		},
+	};
+}
+
 const gotLock = app.requestSingleInstanceLock();
 
 if (!gotLock) {
@@ -278,11 +341,16 @@ if (!gotLock) {
 		database = openAppDatabase();
 		const transaction = createTransactionQueue(database);
 		const deps: CoreDeps = { ...createRepositories(database), avatars: createFileAvatarStore(avatarsDir), clock: systemClock, ids: uuidv7Ids };
-		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl, transaction }, deps, icalIo(), {
-			eventsChanged: () => void reminders?.reschedule(),
-			settingsSaved: applySettings,
-			showEvent: showInMainWindow,
-		});
+		registerIpc(
+			{ ipc: ipcMain, isTrusted: isTrustedUrl, transaction },
+			deps,
+			{ data: dataIo(database, deps, transaction, avatarsDir), ical: icalIo() },
+			{
+				eventsChanged: () => void reminders?.reschedule(),
+				settingsSaved: applySettings,
+				showEvent: showInMainWindow,
+			}
+		);
 		await loadSettings(deps, transaction);
 		createWindow();
 		reminders = startReminders(deps, transaction);

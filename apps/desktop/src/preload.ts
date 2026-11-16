@@ -36,6 +36,10 @@ const desktop: DesktopApi = {
 		list: () => ipcRenderer.invoke(CHANNELS.calendars.list),
 		update: input => ipcRenderer.invoke(CHANNELS.calendars.update, input),
 	},
+	data: {
+		backup: () => ipcRenderer.invoke(CHANNELS.data.backup),
+		restore: () => ipcRenderer.invoke(CHANNELS.data.restore),
+	},
 	events: {
 		create: input => ipcRenderer.invoke(CHANNELS.events.create, input),
 		delete: id => ipcRenderer.invoke(CHANNELS.events.delete, id),

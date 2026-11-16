@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import type { DatabaseSync } from 'node:sqlite';
-import { type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, type Settings, type UserProfile, uuidv7Ids } from '@tempi/core';
+import { type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, fail, ok, type Settings, type UserProfile, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, openDatabase } from '@tempi/db';
 import { parseIcs, serializeIcs } from '@tempi/ical';
 import { CHANNELS, type Channel } from '@tempi/ipc';
 import type { IpcSender } from './handle';
-import { type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
+import { type DataIo, type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
 
 const TRUSTED = 'app://tempi';
 const T0 = '2026-11-15T10:00:00.000Z';
@@ -20,6 +20,25 @@ let avatars: Map<string, AvatarImage>;
 let importText: string | null;
 let exportPath: string | null;
 let written: { path: string; text: string }[];
+
+/** What the fake backup and restore dialogs return (null: canceled), and what they were asked to do. */
+let backupPath: string | null;
+let restoreSource: string | null;
+let dataCalls: string[];
+
+const dataIo: DataIo = {
+	backup: target => {
+		dataCalls.push(`backup ${target}`);
+		return Promise.resolve();
+	},
+	chooseBackupPath: name => Promise.resolve(backupPath === null ? null : `${backupPath}/${name}`),
+	chooseRestoreFile: () => Promise.resolve(restoreSource),
+	now: () => new Date(T0),
+	restore: source => {
+		dataCalls.push(`restore ${source}`);
+		return Promise.resolve(source.endsWith('.db') ? ok(null) : fail('validation', 'backup.invalidFile'));
+	},
+};
 
 const icalIo: IcalIo = {
 	chooseExportPath: name => Promise.resolve(exportPath === null ? null : `${exportPath}/${name}`),
@@ -39,6 +58,9 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	handlers = new Map();
 	avatars = new Map();
 	importText = null;
+	backupPath = '/backups';
+	restoreSource = null;
+	dataCalls = [];
 	exportPath = '/exports';
 	written = [];
 	const avatarStore = {
@@ -49,7 +71,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
-		icalIo,
+		{ data: dataIo, ical: icalIo },
 		listeners
 	);
 };
@@ -453,5 +475,32 @@ describe('.ics import and export', () => {
 	test('exporting every calendar names the file after the app', async () => {
 		await invoke(CHANNELS.calendars.export, { calendarId: null });
 		expect(written[0]?.path).toBe('/exports/Tempi.ics');
+	});
+});
+
+describe('backup and restore', () => {
+	beforeEach(() => setup());
+
+	test('backs up to the chosen path, named with the date', async () => {
+		expect(await invoke(CHANNELS.data.backup)).toEqual({ ok: true, value: { status: 'saved' } });
+		expect(dataCalls).toEqual(['backup /backups/Tempi backup 2026-11-15.db']);
+	});
+
+	test('restores the chosen file, then reports the restart', async () => {
+		restoreSource = '/backups/tempi.db';
+		expect(await invoke(CHANNELS.data.restore)).toEqual({ ok: true, value: { status: 'restarting' } });
+		expect(dataCalls).toEqual(['restore /backups/tempi.db']);
+	});
+
+	test('reports an invalid backup as an error', async () => {
+		restoreSource = '/downloads/photo.png';
+		expect(await invoke(CHANNELS.data.restore)).toMatchObject({ error: { issues: [{ key: 'backup.invalidFile' }] }, ok: false });
+	});
+
+	test('canceling a dialog does nothing', async () => {
+		backupPath = null;
+		expect(await invoke(CHANNELS.data.backup)).toEqual({ ok: true, value: { status: 'canceled' } });
+		expect(await invoke(CHANNELS.data.restore)).toEqual({ ok: true, value: { status: 'canceled' } });
+		expect(dataCalls).toEqual([]);
 	});
 });
