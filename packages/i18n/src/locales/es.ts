@@ -234,6 +234,26 @@ export const es = {
 			results: 'Resultados de búsqueda',
 		},
 		settings: {
+			about: {
+				availableToast: 'Tempi {{version}} está disponible.',
+				check: 'Buscar actualizaciones',
+				download: 'Descargar {{version}}',
+				lastChecked: 'Última comprobación: {{time}}',
+				readyToast: 'Tempi {{version}} está listo para instalarse.',
+				restart: 'Reiniciar para actualizar',
+				status: {
+					available: 'La versión {{version}} está disponible. Descárgala e instálala sobre esta.',
+					checking: 'Buscando actualizaciones…',
+					downloading: 'Descargando la versión {{version}}…',
+					error: 'No se pudo buscar actualizaciones. Inténtalo más tarde.',
+					idle: 'Tempi busca actualizaciones automáticamente.',
+					ready: 'La versión {{version}} está lista. Reinicia Tempi para instalarla.',
+					unsupported: 'Las actualizaciones solo están disponibles en las versiones instaladas.',
+					upToDate: 'Tempi está actualizado.',
+				},
+				title: 'Tempi',
+				version: 'Versión {{version}}',
+			},
 			appearance: {
 				language: 'Idioma',
 				theme: 'Tema',
@@ -299,6 +319,7 @@ export const es = {
 			},
 			open: 'Ajustes',
 			tabs: {
+				about: 'Acerca de',
 				appearance: 'Apariencia',
 				calendar: 'Calendario',
 				data: 'Datos',

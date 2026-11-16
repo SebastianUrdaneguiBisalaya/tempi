@@ -232,6 +232,26 @@ export const en = {
 			results: 'Search results',
 		},
 		settings: {
+			about: {
+				availableToast: 'Tempi {{version}} is available.',
+				check: 'Check for updates',
+				download: 'Download {{version}}',
+				lastChecked: 'Last checked {{time}}',
+				readyToast: 'Tempi {{version}} is ready to install.',
+				restart: 'Restart to update',
+				status: {
+					available: 'Version {{version}} is available. Download it and install it over this one.',
+					checking: 'Checking for updates…',
+					downloading: 'Downloading version {{version}}…',
+					error: 'Couldn’t check for updates. Try again later.',
+					idle: 'Tempi checks for updates automatically.',
+					ready: 'Version {{version}} is ready. Restart Tempi to install it.',
+					unsupported: 'Updates are only available in installed builds.',
+					upToDate: 'Tempi is up to date.',
+				},
+				title: 'Tempi',
+				version: 'Version {{version}}',
+			},
 			appearance: {
 				language: 'Language',
 				theme: 'Theme',
@@ -297,6 +317,7 @@ export const en = {
 			},
 			open: 'Settings',
 			tabs: {
+				about: 'About',
 				appearance: 'Appearance',
 				calendar: 'Calendar',
 				data: 'Data',

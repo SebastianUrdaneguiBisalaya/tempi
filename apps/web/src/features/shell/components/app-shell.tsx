@@ -19,6 +19,7 @@ import { ShowEventRequests } from '@/features/events/components/show-event-reque
 import { UpcomingEvent } from '@/features/events/components/upcoming-event';
 import { GoogleSyncWatcher } from '@/features/settings/components/google-sync-watcher';
 import { SettingsDialogProvider } from '@/features/settings/components/settings-dialog-provider';
+import { UpdateWatcher } from '@/features/settings/components/update-watcher';
 import { CommandMenu } from '@/features/shortcuts/components/command-menu';
 import { ShortcutsDialog } from '@/features/shortcuts/components/shortcuts-dialog';
 import { ShortcutsHint } from '@/features/shortcuts/components/shortcuts-hint';
@@ -41,6 +42,7 @@ export function AppShell() {
 						<EventShortcuts />
 						<ShowEventRequests />
 						<GoogleSyncWatcher />
+						<UpdateWatcher />
 						<ShellLayout />
 						<ShortcutsDialog />
 						<CommandMenu />

@@ -25,4 +25,5 @@ export const queryKeys = {
 	google: { account: ['google', 'account'], calendars: ['google', 'calendars'], syncStatus: ['google', 'syncStatus'] },
 	profile: { all: ['profile'] },
 	settings: { all: ['settings'] },
+	updates: { status: ['updates', 'status'] },
 } as const;
