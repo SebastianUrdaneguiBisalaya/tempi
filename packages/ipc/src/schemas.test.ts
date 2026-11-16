@@ -29,6 +29,8 @@ describe('payloadSchemas', () => {
 		['calendars:export', { calendarId: null }],
 		['calendars:import', { calendarId: '01890a5d-ac96-774b-bcce-b302099a8057' }],
 		['calendars:list', undefined],
+		['data:backup', undefined],
+		['data:restore', undefined],
 		['calendars:update', { id: 'cal-1', isVisible: false }],
 		['events:create', newEvent],
 		['events:delete', 'evt-1'],

@@ -21,6 +21,10 @@ type Api<Raw extends boolean> = {
 		list: CallWithoutInput<'calendars:list', Raw>;
 		update: Call<'calendars:update', Raw>;
 	};
+	data: {
+		backup: CallWithoutInput<'data:backup', Raw>;
+		restore: CallWithoutInput<'data:restore', Raw>;
+	};
 	events: {
 		create: Call<'events:create', Raw>;
 		delete: Call<'events:delete', Raw>;

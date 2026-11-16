@@ -48,6 +48,10 @@ export const exportResultSchema = z.discriminatedUnion('status', [z.object({ sta
 
 export type ExportResult = z.output<typeof exportResultSchema>;
 
+/** Backup and restore pick their file in a native dialog, which the user can cancel. A restore relaunches the app. */
+export const backupResultSchema = z.discriminatedUnion('status', [z.object({ status: z.literal('canceled') }), z.object({ status: z.literal('saved') })]);
+export const restoreResultSchema = z.discriminatedUnion('status', [z.object({ status: z.literal('canceled') }), z.object({ status: z.literal('restarting') })]);
+
 export const payloadSchemas = {
 	'app:showEvent': occurrenceRefSchema,
 	'calendars:create': newCalendarInputSchema,
@@ -56,6 +60,8 @@ export const payloadSchemas = {
 	'calendars:import': z.object({ calendarId: idSchema }),
 	'calendars:list': noPayload,
 	'calendars:update': calendarPatchSchema.extend({ id: idSchema }),
+	'data:backup': noPayload,
+	'data:restore': noPayload,
 	'events:create': newEventInputSchema,
 	'events:delete': idSchema,
 	'events:deleteOccurrence': occurrenceTargetSchema,
@@ -81,6 +87,8 @@ export const responseValueSchemas = {
 	'calendars:import': importResultSchema,
 	'calendars:list': z.array(calendarSchema),
 	'calendars:update': calendarSchema,
+	'data:backup': backupResultSchema,
+	'data:restore': restoreResultSchema,
 	'events:create': calendarEventSchema,
 	'events:delete': z.null(),
 	'events:deleteOccurrence': z.null(),

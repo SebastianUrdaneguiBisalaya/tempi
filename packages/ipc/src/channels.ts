@@ -14,6 +14,12 @@ export const CHANNELS = {
 		list: 'calendars:list',
 		update: 'calendars:update',
 	},
+	data: {
+		/** Asks where to save, then writes a backup of the whole database. */
+		backup: 'data:backup',
+		/** Asks for a backup, replaces every piece of data with it, then relaunches the app. */
+		restore: 'data:restore',
+	},
 	events: {
 		create: 'events:create',
 		delete: 'events:delete',
