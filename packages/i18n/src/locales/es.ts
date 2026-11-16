@@ -60,7 +60,9 @@ export const es = {
 				title: '¿Eliminar “{{name}}”?',
 			},
 			edit: 'Editar calendario',
+			export: 'Exportar .ics…',
 			hide: 'Ocultar {{name}}',
+			import: 'Importar .ics…',
 			makeDefault: 'Hacer predeterminado',
 			name: 'Nombre',
 			show: 'Mostrar {{name}}',
@@ -69,12 +71,15 @@ export const es = {
 		commandMenu: {
 			description: 'Escribe un comando o busca eventos.',
 			empty: 'No se encontraron comandos.',
+			exportAll: 'Exportar todos los calendarios (.ics)…',
 			groups: {
 				actions: 'Acciones',
 				appearance: 'Apariencia',
 				events: 'Eventos',
 			},
+			importIcs: 'Importar .ics en…',
 			placeholders: {
+				import: 'Elige un calendario…',
 				language: 'Elige un idioma…',
 				root: 'Escribe un comando o busca…',
 				search: 'Buscar eventos…',
@@ -322,6 +327,10 @@ export const es = {
 			eventDuplicated: 'Evento duplicado.',
 			eventRestored: 'Evento restaurado.',
 			eventUpdated: 'Evento actualizado.',
+			exported: 'Eventos exportados: {{count}}.',
+			exporting: 'Exportando eventos…',
+			imported: 'Importación lista: {{created}} nuevos, {{updated}} actualizados, {{skipped}} omitidos.',
+			importing: 'Importando eventos…',
 			onboardingCompleted: 'Todo listo.',
 			profileUpdated: 'Perfil guardado.',
 			settingsSaved: 'Configuración guardada.',
@@ -358,6 +367,9 @@ export const es = {
 			endBeforeStart: 'El fin debe ser posterior al inicio.',
 			notFound: 'Este evento ya no existe.',
 			rrule: 'La regla de repetición no es válida.',
+		},
+		ical: {
+			invalidFile: 'Este archivo no es un calendario (.ics) válido.',
 		},
 		profile: {
 			country: 'Elige un país válido.',

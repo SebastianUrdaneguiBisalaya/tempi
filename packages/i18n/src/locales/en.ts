@@ -58,7 +58,9 @@ export const en = {
 				title: 'Delete “{{name}}”?',
 			},
 			edit: 'Edit calendar',
+			export: 'Export .ics…',
 			hide: 'Hide {{name}}',
+			import: 'Import .ics…',
 			makeDefault: 'Make default',
 			name: 'Name',
 			show: 'Show {{name}}',
@@ -67,12 +69,15 @@ export const en = {
 		commandMenu: {
 			description: 'Type a command or search for events.',
 			empty: 'No commands found.',
+			exportAll: 'Export all calendars (.ics)…',
 			groups: {
 				actions: 'Actions',
 				appearance: 'Appearance',
 				events: 'Events',
 			},
+			importIcs: 'Import .ics into…',
 			placeholders: {
+				import: 'Choose a calendar…',
 				language: 'Choose a language…',
 				root: 'Type a command or search…',
 				search: 'Search events…',
@@ -320,6 +325,10 @@ export const en = {
 			eventDuplicated: 'Event duplicated.',
 			eventRestored: 'Event restored.',
 			eventUpdated: 'Event updated.',
+			exported: 'Events exported: {{count}}.',
+			exporting: 'Exporting events…',
+			imported: 'Import done: {{created}} new, {{updated}} updated, {{skipped}} skipped.',
+			importing: 'Importing events…',
 			onboardingCompleted: 'You’re all set.',
 			profileUpdated: 'Profile saved.',
 			settingsSaved: 'Settings saved.',
@@ -357,6 +366,9 @@ export const en = {
 			endBeforeStart: 'The end must be after the start.',
 			notFound: 'This event no longer exists.',
 			rrule: 'The repeat rule isn’t valid.',
+		},
+		ical: {
+			invalidFile: 'This file isn’t a valid calendar (.ics) file.',
 		},
 		profile: {
 			country: 'Pick a valid country.',
