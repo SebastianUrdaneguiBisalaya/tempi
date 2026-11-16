@@ -237,8 +237,18 @@ export const es = {
 			about: {
 				availableToast: 'Tempi {{version}} está disponible.',
 				check: 'Buscar actualizaciones',
+				description: 'Un calendario de escritorio local-first. Tus calendarios viven en esta computadora, sin cuenta ni nube; la sincronización con Google Calendar es opcional.',
 				download: 'Descargar {{version}}',
 				lastChecked: 'Última comprobación: {{time}}',
+				license: '© {{year}} {{name}}. Código abierto bajo la licencia ISC.',
+				links: {
+					issue: 'Reportar un problema',
+					releases: 'Notas de versión',
+					source: 'Código fuente',
+					website: 'Sitio web',
+				},
+				linksTitle: 'Enlaces',
+				madeBy: 'Hecho por',
 				readyToast: 'Tempi {{version}} está listo para instalarse.',
 				restart: 'Reiniciar para actualizar',
 				status: {
@@ -252,6 +262,7 @@ export const es = {
 					upToDate: 'Tempi está actualizado.',
 				},
 				title: 'Tempi',
+				updatesTitle: 'Actualizaciones',
 				version: 'Versión {{version}}',
 			},
 			appearance: {
