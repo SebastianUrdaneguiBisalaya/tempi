@@ -4,8 +4,10 @@ import { belongsInAllDayLane, type CalendarEvent, type DaySegment, DEFAULT_SETTI
 import { type FocusEvent, type KeyboardEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
+import { useEventPanel } from '@/features/events/components/event-panel-provider';
 import { useSetAllDayCollapsed, useSettings } from '@/features/settings/hooks/use-settings';
 import { formatDate, formatTime, formatTimeRange, formatWeekday } from '@/lib/date-format';
+import { draftAt } from '@/lib/event-draft';
 import { toUtcDate } from '@/lib/plain-date';
 import { cn } from '@/lib/utils';
 import { useCalendars } from '../../hooks/use-calendars';
@@ -13,7 +15,7 @@ import { useEvents } from '../../hooks/use-events';
 import { AllDayLane, AllDayToggle } from './all-day-lane';
 import { CurrentTimeLine } from './current-time-line';
 import { type DayEvents, focusKey, type GridFocus, nextFocus } from './grid-focus';
-import { ALL_DAY_LANE_REM, DAY_HEADER_REM, gridStyle, MIN_EVENT_MINUTES, SLOT_MINUTES, SLOTS_PER_DAY, scrollToCurrentHour } from './grid-geometry';
+import { ALL_DAY_LANE_REM, boxStyle, DAY_HEADER_REM, gridStyle, MIN_EVENT_MINUTES, SLOT_MINUTES, SLOTS_PER_DAY, scrollToCurrentHour } from './grid-geometry';
 import { TimeGridEvent } from './time-grid-event';
 
 const SLOTS = Array.from({ length: SLOTS_PER_DAY }, (_, slot) => slot);
@@ -36,7 +38,8 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 	const { i18n, t } = useTranslation();
 	const language = resolveLanguage([i18n.language]);
 	const { data: settings } = useSettings();
-	const { allDayCollapsed, timeFormat } = settings ?? DEFAULT_SETTINGS;
+	const { allDayCollapsed, defaultEventDuration, timeFormat } = settings ?? DEFAULT_SETTINGS;
+	const { newEvent, openEvent, selection } = useEventPanel();
 	const setAllDayCollapsed = useSetAllDayCollapsed();
 	const { data: calendars } = useCalendars();
 	const first = days[0];
@@ -83,7 +86,24 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 		setFocus({ day: Number(day), eventId: eventId ?? null, slot: Number(slot) });
 	};
 
+	// A new event at a slot: clicked, or Enter on the focused slot.
+	const createAt = (dayIndex: number, slot: number) => {
+		const day = days[dayIndex];
+		if (day !== undefined) newEvent(draftAt(day, slot * SLOT_MINUTES, timeZone, defaultEventDuration));
+	};
+
+	// The new event's form is open: preview it where it will go.
+	const draft = selection?.kind === 'new' && !selection.draft.allDay ? { ...selection.draft, id: 'draft' } : null;
+	const draftSegments = draft === null ? [] : days.flatMap((day, dayIndex) => layoutDay([draft], day, timeZone, MIN_EVENT_MINUTES).map(segment => ({ dayIndex, segment })));
+	const selectedId = selection?.kind === 'event' ? selection.event.id : null;
+
 	const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+		if (event.key === 'Enter' && event.target instanceof HTMLElement && event.target.getAttribute('role') === 'gridcell') {
+			event.preventDefault();
+			const current = focusValid ? focus : fallbackFocus;
+			createAt(current.day, current.slot);
+			return;
+		}
 		const next = nextFocus(focusValid ? focus : fallbackFocus, event.key, event.ctrlKey || event.metaKey, dayEvents, days.length);
 		if (next === null) return;
 		event.preventDefault();
@@ -127,7 +147,15 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 						);
 					})}
 					{lanes > 0 && (
-						<AllDayLane colorOf={colorOf} days={days} hiddenByColumn={lane.hiddenByColumn} lanes={lanes} onExpand={() => setAllDayCollapsed.mutate(false)} segments={lane.shown} />
+						<AllDayLane
+							colorOf={colorOf}
+							days={days}
+							hiddenByColumn={lane.hiddenByColumn}
+							lanes={lanes}
+							onExpand={() => setAllDayCollapsed.mutate(false)}
+							onOpen={openEvent}
+							segments={lane.shown}
+						/>
 					)}
 				</div>
 				{SLOTS.map(slot => {
@@ -146,6 +174,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 										className={cn('border-l outline-none focus-visible:bg-accent', onHour ? 'border-t' : 'border-t border-t-border/40 border-dashed')}
 										data-focus-key={key}
 										key={day.toString()}
+										onClick={() => createAt(dayIndex, slot)}
 										role='gridcell'
 										tabIndex={key === activeKey ? 0 : -1}
 									>
@@ -160,7 +189,9 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 														dayIndex={dayIndex}
 														focusKey={eventKey}
 														isActive={eventKey === activeKey}
+														isSelected={segment.item.id === selectedId}
 														key={segment.item.id}
+														onOpen={() => openEvent(segment.item)}
 														segment={segment}
 														timeLabel={formatTimeRange(segment.item.startAt, segment.item.endAt, { language, timeFormat, timeZone })}
 													/>
@@ -172,6 +203,14 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 						</div>
 					);
 				})}
+				{draftSegments.map(({ dayIndex, segment }) => (
+					<div
+						aria-hidden
+						className='pointer-events-none absolute z-[5] rounded-md border-2 border-dashed border-primary bg-primary/10'
+						key={dayIndex}
+						style={boxStyle(dayIndex, days.length, segment.startMinute, Math.max(segment.endMinute, segment.startMinute + MIN_EVENT_MINUTES))}
+					/>
+				))}
 				{todayIndex !== -1 && <CurrentTimeLine dayCount={days.length} dayIndex={todayIndex} timeZone={timeZone} />}
 			</div>
 		</div>

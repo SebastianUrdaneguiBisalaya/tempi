@@ -6,6 +6,7 @@ import { issueTranslation, type LeafPaths, type Translations } from '@tempi/i18n
 import { type ReactNode, useState } from 'react';
 import { toast } from '@/components/ui/toast';
 import { i18n } from '@/lib/i18n';
+import { offerUndo, runUndo, withdrawUndo } from '@/lib/undo';
 
 /** A translation key in `common.toasts`. */
 export type ToastMessageKey = `toasts.${LeafPaths<Translations['common']['toasts']>}`;
@@ -22,6 +23,8 @@ declare module '@tanstack/react-query' {
 		mutationMeta: ErrorFeedbackMeta & {
 			/** Shown as a success toast after the mutation succeeds. */
 			successMessage?: ToastMessageKey;
+			/** Reverts a successful mutation from its variables. Adds Undo to the success toast and makes it the ⌘Z action. */
+			undo?: (variables: unknown) => void;
 		};
 		queryMeta: ErrorFeedbackMeta;
 	}
@@ -65,9 +68,25 @@ const createQueryClient = () =>
 		// Feedback lives here, once, so data hooks only declare `meta` and never call `toast` themselves.
 		mutationCache: new MutationCache({
 			onError: (error, _variables, _context, mutation) => showError(error, mutation.meta),
-			onSuccess: (_data, _variables, _context, mutation) => {
+			onSuccess: (_data, variables, _context, mutation) => {
 				const message = mutation.meta?.successMessage;
-				if (message !== undefined) toast.add({ title: i18n.t(message), type: 'success' });
+				if (message === undefined) return;
+				const undo = mutation.meta?.undo;
+				if (undo === undefined) {
+					toast.add({ title: i18n.t(message), type: 'success' });
+					return;
+				}
+				let toastId = '';
+				const undoId = offerUndo(() => {
+					toast.close(toastId);
+					undo(variables);
+				});
+				toastId = toast.add({
+					actionProps: { children: i18n.t('actions.undo'), onClick: () => runUndo() },
+					onClose: () => withdrawUndo(undoId),
+					title: i18n.t(message),
+					type: 'success',
+				});
 			},
 		}),
 		queryCache: new QueryCache({

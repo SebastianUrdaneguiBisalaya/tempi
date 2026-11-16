@@ -14,6 +14,7 @@ type AllDayLaneProps = {
 	/** Rows drawn: every lane when expanded, at most two when collapsed. */
 	lanes: number;
 	onExpand: () => void;
+	onOpen: (event: CalendarEvent) => void;
 	segments: readonly WeekSegment<CalendarEvent>[];
 };
 
@@ -21,7 +22,7 @@ type AllDayLaneProps = {
  * Bars for all-day and multi-day events, under the day headers. It spans every day column, so an event over three
  * days is one continuous bar. Screen readers get the same events from each day's column header.
  */
-export function AllDayLane({ colorOf, days, hiddenByColumn, lanes, onExpand, segments }: AllDayLaneProps) {
+export function AllDayLane({ colorOf, days, hiddenByColumn, lanes, onExpand, onOpen, segments }: AllDayLaneProps) {
 	const { t } = useTranslation();
 	const percent = (columns: number) => `${(columns / days.length) * 100}%`;
 	const top = (lane: number) => `${DAY_HEADER_REM + lane * ALL_DAY_LANE_REM}rem`;
@@ -30,9 +31,17 @@ export function AllDayLane({ colorOf, days, hiddenByColumn, lanes, onExpand, seg
 	return (
 		<div className='pointer-events-none sticky top-0 z-[21]' role='presentation' style={{ gridColumn: '2 / -1', gridRow: 1 }}>
 			{segments.map(segment => (
-				<div aria-hidden className='absolute px-0.5' key={segment.item.id} style={{ height, left: percent(segment.firstColumn), top: top(segment.lane), width: percent(segment.span) }}>
+				<button
+					className='pointer-events-auto absolute px-0.5 text-left'
+					key={segment.item.id}
+					onClick={() => onOpen(segment.item)}
+					style={{ height, left: percent(segment.firstColumn), top: top(segment.lane), width: percent(segment.span) }}
+					// Screen readers get these events from the day headers.
+					tabIndex={-1}
+					type='button'
+				>
 					<EventChip bar color={colorOf(segment.item)} segment={segment} time='' />
-				</div>
+				</button>
 			))}
 			{days.map((day, column) => {
 				const hidden = hiddenByColumn[column] ?? 0;
