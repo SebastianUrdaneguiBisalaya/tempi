@@ -55,6 +55,18 @@ export const occurrenceStarts = (series: SeriesRule & Pick<CalendarEvent, 'endAt
 };
 
 /**
+ * Start (UTC) of the occurrence in progress or next to come at `now`; once the series has ended, of its last
+ * occurrence. Null only when every occurrence is excluded.
+ */
+export const upcomingOccurrenceStart = (series: SeriesRule & Pick<CalendarEvent, 'endAt'>, now: string): string | null => {
+	const duration = Temporal.Instant.from(series.startAt).until(Temporal.Instant.from(series.endAt));
+	const rule = ruleOf(series);
+	// An occurrence still in progress started less than its duration ago.
+	const upcoming = rule.next(Temporal.Instant.from(now).subtract(duration).toZonedDateTimeISO(series.timeZone), false) ?? rule.previous(zoned(now, series.timeZone), true);
+	return upcoming === null ? null : instantToUtc(upcoming.toInstant());
+};
+
+/**
  * Splits a rule at an occurrence: the head ends right before `splitAt` and the tail is the same rule for the
  * occurrences from `splitAt` on. A `COUNT` is shared between the two so the series keeps its total.
  */

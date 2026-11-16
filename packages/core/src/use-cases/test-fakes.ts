@@ -33,6 +33,9 @@ export const sequentialIds = (): IdGenerator => {
 	return { next: () => `id-${++n}` };
 };
 
+/** Lowercase without accents, like SQLite's `unicode61 remove_diacritics` tokenizer. */
+const fold = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
 export class InMemoryEventRepository implements EventRepository {
 	readonly rows = new Map<string, CalendarEvent>();
 	findById(id: string) {
@@ -46,6 +49,16 @@ export class InMemoryEventRepository implements EventRepository {
 	}
 	listSeries(before: string) {
 		return Promise.resolve([...this.rows.values()].filter(event => event.deletedAt === null && event.rrule !== null && event.startAt < before));
+	}
+	search(text: string, limit: number) {
+		const words = (value: string | null) => fold(value ?? '').split(/[^\p{L}\p{N}]+/u);
+		const terms = words(text).filter(term => term !== '');
+		const matches = (event: CalendarEvent) => {
+			const eventWords = [event.title, event.location, event.description].flatMap(words);
+			return terms.length > 0 && terms.every(term => eventWords.some(word => word.startsWith(term)));
+		};
+		const found = [...this.rows.values()].filter(event => event.deletedAt === null && matches(event)).sort((a, b) => b.startAt.localeCompare(a.startAt));
+		return Promise.resolve(found.slice(0, limit));
 	}
 	save(event: CalendarEvent) {
 		this.rows.set(event.id, event);

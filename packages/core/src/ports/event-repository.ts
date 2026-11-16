@@ -10,6 +10,11 @@ export type EventRepository = {
 	listBySeries(seriesId: string): Promise<CalendarEvent[]>;
 	/** Non-deleted recurring series that start before `before`; expanding them tells which occur in a range. */
 	listSeries(before: string): Promise<CalendarEvent[]>;
+	/**
+	 * Up to `limit` non-deleted events (single events, series and edited occurrences) whose title, location or
+	 * description has a word starting with every word of `text`, ignoring case and accents. Latest start first.
+	 */
+	search(text: string, limit: number): Promise<CalendarEvent[]>;
 	/** Inserts or replaces the event by id. */
 	save(event: CalendarEvent): Promise<void>;
 	/** Soft-deletes every non-deleted event of a calendar, stamping `deletedAt` and `updatedAt`. */
