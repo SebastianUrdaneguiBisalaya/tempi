@@ -13,6 +13,7 @@ import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { useDayPickerOptions } from '@/features/calendar/hooks/use-day-picker-options';
 import { useEvents } from '@/features/calendar/hooks/use-events';
 import { useMinute } from '@/features/calendar/hooks/use-minute';
+import { useGoogleSyncUpdates } from '@/features/settings/hooks/use-google-sync';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { formatDate, formatTimeRange } from '@/lib/date-format';
 import { fromLocalDate, toLocalDate } from '@/lib/plain-date';
@@ -25,6 +26,8 @@ export function TrayAgenda() {
 	const { t } = useTranslation();
 	const hasStorage = useApi() !== null;
 	const { data: settings, isError } = useSettings();
+	// Events synced from Google show here too, without the main window's toasts.
+	useGoogleSyncUpdates();
 
 	// Settings are local and load almost instantly; rendering nothing avoids a flash of the wrong content.
 	if (hasStorage && settings === undefined && !isError) return null;

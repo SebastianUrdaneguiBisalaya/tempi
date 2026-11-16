@@ -3,18 +3,22 @@
 import { createContext, type ReactNode, use, useState } from 'react';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { useAppearancePreview } from '@/providers/appearance-preview-provider';
-import { SettingsDialog } from './settings-dialog';
+import { SettingsDialog, type SettingsTab } from './settings-dialog';
 
-type SettingsDialogControls = { openSettings: () => void };
+type SettingsDialogControls = { openSettings: (tab?: SettingsTab) => void };
 
 const SettingsDialogContext = createContext<SettingsDialogControls | null>(null);
 
 /** Owns the settings dialog: the header (avatar, gear button), ⌘, and later the command menu open it. */
 export function SettingsDialogProvider({ children }: { children: ReactNode }) {
 	const [open, setOpen] = useState(false);
+	const [tab, setTab] = useState<SettingsTab | undefined>(undefined);
 	const { setPreview } = useAppearancePreview();
-	const openSettings = () => setOpen(true);
-	useShortcut('openSettings', openSettings);
+	const openSettings = (next?: SettingsTab) => {
+		setTab(next);
+		setOpen(true);
+	};
+	useShortcut('openSettings', () => openSettings());
 
 	const changeOpen = (next: boolean) => {
 		setOpen(next);
@@ -25,7 +29,7 @@ export function SettingsDialogProvider({ children }: { children: ReactNode }) {
 	return (
 		<SettingsDialogContext value={{ openSettings }}>
 			{children}
-			<SettingsDialog onOpenChange={changeOpen} open={open} />
+			<SettingsDialog initialTab={tab} onOpenChange={changeOpen} open={open} />
 		</SettingsDialogContext>
 	);
 }

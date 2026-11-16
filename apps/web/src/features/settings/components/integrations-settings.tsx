@@ -7,8 +7,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useConnectGoogle, useDisconnectGoogle, useGoogleAccount } from '../hooks/use-google-account';
+import { GoogleSyncSettings } from './google-sync-settings';
 
-/** Connects one Google account through the system browser, or disconnects it after confirming. */
+/** Connects one Google account through the system browser, syncs its calendars, or disconnects it after confirming. */
 export function IntegrationsSettings() {
 	const { t } = useTranslation();
 	const googleId = useId();
@@ -40,6 +41,7 @@ export function IntegrationsSettings() {
 							<LogOutIcon data-icon='inline-start' />
 							{t('settings.integrations.disconnect')}
 						</Button>
+						<GoogleSyncSettings />
 					</>
 				)}
 			</section>

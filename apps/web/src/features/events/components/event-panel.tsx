@@ -22,7 +22,9 @@ export function EventPanel() {
 	}
 
 	const { draft } = selection;
-	const defaultCalendar = calendars.find(calendar => calendar.isDefault && calendar.isVisible) ?? calendars.find(calendar => calendar.isDefault) ?? calendars[0];
+	// A new event can only go where events may be created: never a read-only (synced) calendar.
+	const writable = calendars.filter(calendar => !calendar.readOnly);
+	const defaultCalendar = writable.find(calendar => calendar.isDefault && calendar.isVisible) ?? writable.find(calendar => calendar.isDefault) ?? writable[0];
 	const defaultValues: EventFormValues = {
 		...recurrenceFormValues(null, draft.startAt, timeZone),
 		allDay: draft.allDay,

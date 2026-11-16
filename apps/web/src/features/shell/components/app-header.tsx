@@ -37,7 +37,7 @@ export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHead
 						{t('shell.sidebar.toggle')} <ShortcutKeys keys={[SHORTCUTS.toggleSidebar.keys]} />
 					</TooltipContent>
 				</Tooltip>
-				<UserAvatarButton label={t('settings.open')} onClick={openSettings} />
+				<UserAvatarButton label={t('settings.open')} onClick={() => openSettings()} />
 				<nav aria-label={t('shell.header.label')} className='flex items-center gap-1'>
 					<Button onClick={goToToday} variant='outline'>
 						{t('shell.header.today')}
@@ -70,7 +70,7 @@ export function AppHeader({ onOpenPanel, onToggleSidebar, sidebarOpen }: AppHead
 					))}
 				</ToggleGroup>
 				<Tooltip>
-					<TooltipTrigger render={<Button aria-label={t('settings.open')} onClick={openSettings} size='icon' variant='ghost' />}>
+					<TooltipTrigger render={<Button aria-label={t('settings.open')} onClick={() => openSettings()} size='icon' variant='ghost' />}>
 						<SettingsIcon />
 					</TooltipTrigger>
 					<TooltipContent>

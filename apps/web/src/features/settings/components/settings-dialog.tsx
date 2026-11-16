@@ -16,13 +16,20 @@ import { ProfileSettings } from './profile-settings';
 
 const TABS = ['profile', 'appearance', 'calendar', 'integrations', 'data'] as const;
 
+export type SettingsTab = (typeof TABS)[number];
+
 // Tailwind's `md`: below it the tabs sit on top instead of on the side.
 const SIDE_TABS_QUERY = '(min-width: 48rem)';
 
-type SettingsDialogProps = { onOpenChange: (open: boolean) => void; open: boolean };
+type SettingsDialogProps = {
+	/** The tab shown on open; the first one when omitted. */
+	initialTab?: SettingsTab;
+	onOpenChange: (open: boolean) => void;
+	open: boolean;
+};
 
 /** Profile and preferences after onboarding, one tab per area, each saved with its own button. */
-export function SettingsDialog({ onOpenChange, open }: SettingsDialogProps) {
+export function SettingsDialog({ initialTab, onOpenChange, open }: SettingsDialogProps) {
 	const { t } = useTranslation();
 	const { data: profile } = useProfile();
 	const { data: settings } = useSettings();
@@ -38,7 +45,7 @@ export function SettingsDialog({ onOpenChange, open }: SettingsDialogProps) {
 				</DialogHeader>
 				{/* Forms mount on open, so each starts from the stored values and drops unsaved edits when closed. */}
 				{open && profile != null && settings !== undefined && (
-					<Tabs className='min-h-0 flex-1 gap-4' defaultValue={TABS[0]} orientation={sideTabs ? 'vertical' : 'horizontal'}>
+					<Tabs className='min-h-0 flex-1 gap-4' defaultValue={initialTab ?? TABS[0]} orientation={sideTabs ? 'vertical' : 'horizontal'}>
 						<TabsList aria-label={t('settings.title')} className={sideTabs ? 'w-40 shrink-0' : 'w-full'}>
 							{TABS.map(tab => (
 								<TabsTrigger key={tab} value={tab}>
