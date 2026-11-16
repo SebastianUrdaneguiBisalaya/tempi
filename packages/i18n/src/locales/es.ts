@@ -66,6 +66,25 @@ export const es = {
 			show: 'Mostrar {{name}}',
 			title: 'Calendarios',
 		},
+		commandMenu: {
+			description: 'Escribe un comando o busca eventos.',
+			empty: 'No se encontraron comandos.',
+			groups: {
+				actions: 'Acciones',
+				appearance: 'Apariencia',
+				events: 'Eventos',
+			},
+			placeholders: {
+				language: 'Elige un idioma…',
+				root: 'Escribe un comando o busca…',
+				search: 'Buscar eventos…',
+				theme: 'Elige un tema…',
+			},
+			searchEvents: 'Buscar eventos con «{{query}}»',
+			setLanguage: 'Cambiar idioma a',
+			setTheme: 'Cambiar tema a',
+			title: 'Menú de comandos',
+		},
 		events: {
 			delete: {
 				description: 'Se eliminará «{{title}}». Podrás deshacerlo justo después.',
@@ -275,6 +294,7 @@ export const es = {
 				goToDate: 'Ir a una fecha',
 				goToToday: 'Ir a hoy',
 				monthView: 'Vista de mes',
+				openCommandMenu: 'Abrir menú de comandos',
 				openSettings: 'Abrir ajustes',
 				newEvent: 'Nuevo evento',
 				next: 'Periodo siguiente',

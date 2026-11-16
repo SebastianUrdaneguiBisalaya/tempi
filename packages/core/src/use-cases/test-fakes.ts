@@ -98,6 +98,10 @@ export class InMemoryAvatarStore implements AvatarStore {
 		this.files.set(fileName, image);
 		return Promise.resolve();
 	}
+	remove(fileName: string) {
+		this.files.delete(fileName);
+		return Promise.resolve();
+	}
 }
 
 export class InMemorySingleton<T> {

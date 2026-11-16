@@ -42,13 +42,23 @@ export function SearchablePanel({ children }: { children: ReactNode }) {
 					/>
 				}
 			>
-				{searching ? <SearchResults query={searched} /> : children}
+				{searching ? (
+					<CommandList aria-label={t('search.results')} className='max-h-none'>
+						<EventSearchItems query={searched} />
+					</CommandList>
+				) : (
+					children
+				)}
 			</RightPanel>
 		</Command>
 	);
 }
 
-function SearchResults({ query }: { query: string }) {
+/**
+ * The events matching `query` as items of the surrounding `Command` (the right panel's or the command menu's), with an
+ * empty state. Selecting one shows it in the calendar, then calls `onShown`.
+ */
+export function EventSearchItems({ onShown, query }: { onShown?: () => void; query: string }) {
 	const { t } = useTranslation();
 	const { data: events, isPending } = useEventSearch(query);
 	const { data: calendars } = useCalendars();
@@ -58,10 +68,18 @@ function SearchResults({ query }: { query: string }) {
 	const shown = (events ?? []).filter(event => calendarById.get(event.calendarId)?.isVisible !== false);
 
 	return (
-		<CommandList aria-label={t('search.results')} className='max-h-none'>
+		<>
 			{!isPending && <CommandEmpty>{t('search.empty')}</CommandEmpty>}
 			{shown.map(event => (
-				<CommandItem className='items-start' key={event.key} onSelect={() => showEvent(event)} value={event.key}>
+				<CommandItem
+					className='items-start'
+					key={event.key}
+					onSelect={() => {
+						showEvent(event);
+						onShown?.();
+					}}
+					value={event.key}
+				>
 					<span aria-hidden='true' className='mt-1.5 size-2 shrink-0 rounded-full' style={{ backgroundColor: calendarById.get(event.calendarId)?.color }} />
 					<span className='flex min-w-0 flex-col'>
 						<span className='truncate font-medium'>{event.title}</span>
@@ -69,7 +87,7 @@ function SearchResults({ query }: { query: string }) {
 					</span>
 				</CommandItem>
 			))}
-		</CommandList>
+		</>
 	);
 }
 

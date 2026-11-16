@@ -48,7 +48,7 @@ describe('updateProfile', () => {
 		await saveProfile(deps, { ...fields, avatar: 'old.png' });
 
 		const result = await updateProfile(deps, { ...fields, avatar: image, firstName: 'Ana María' });
-		expect(result).toMatchObject({ ok: true, value: { avatar: 'id-1.png', firstName: 'Ana María' } });
+		expect(result).toMatchObject({ ok: true, value: { profile: { avatar: 'id-1.png', firstName: 'Ana María' }, replacedAvatar: 'old.png' } });
 		expect(deps.avatars.files.get('id-1.png')).toEqual(image);
 		expect(await getProfile(deps)).toMatchObject({ avatar: 'id-1.png', createdAt: T0 });
 	});
@@ -57,9 +57,16 @@ describe('updateProfile', () => {
 		const deps = makeDeps();
 		await saveProfile(deps, { ...fields, avatar: 'me.png' });
 
-		expect(await updateProfile(deps, { ...fields, lastName: 'Mamani' })).toMatchObject({ ok: true, value: { avatar: 'me.png', lastName: 'Mamani' } });
-		expect(await updateProfile(deps, { ...fields, avatar: null })).toMatchObject({ ok: true, value: { avatar: null } });
+		expect(await updateProfile(deps, { ...fields, lastName: 'Mamani' })).toMatchObject({ ok: true, value: { profile: { avatar: 'me.png', lastName: 'Mamani' }, replacedAvatar: null } });
+		expect(await updateProfile(deps, { ...fields, avatar: null })).toMatchObject({ ok: true, value: { profile: { avatar: null }, replacedAvatar: 'me.png' } });
 		expect(deps.avatars.files.size).toBe(0);
+	});
+
+	test('replaces nothing on a first photo or when there was none', async () => {
+		const deps = makeDeps();
+		await saveProfile(deps, { ...fields, avatar: null });
+
+		expect(await updateProfile(deps, { ...fields, avatar: image })).toMatchObject({ ok: true, value: { replacedAvatar: null } });
 	});
 
 	test('reports every invalid field and stores nothing', async () => {

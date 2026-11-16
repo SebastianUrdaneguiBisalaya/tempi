@@ -64,6 +64,25 @@ export const en = {
 			show: 'Show {{name}}',
 			title: 'Calendars',
 		},
+		commandMenu: {
+			description: 'Type a command or search for events.',
+			empty: 'No commands found.',
+			groups: {
+				actions: 'Actions',
+				appearance: 'Appearance',
+				events: 'Events',
+			},
+			placeholders: {
+				language: 'Choose a language…',
+				root: 'Type a command or search…',
+				search: 'Search events…',
+				theme: 'Choose a theme…',
+			},
+			searchEvents: 'Search events for “{{query}}”',
+			setLanguage: 'Set language to',
+			setTheme: 'Set theme to',
+			title: 'Command menu',
+		},
 		events: {
 			delete: {
 				description: '“{{title}}” will be deleted. You can undo it right after.',
@@ -273,6 +292,7 @@ export const en = {
 				goToDate: 'Go to date',
 				goToToday: 'Go to today',
 				monthView: 'Month view',
+				openCommandMenu: 'Open command menu',
 				openSettings: 'Open settings',
 				newEvent: 'New event',
 				next: 'Next period',
