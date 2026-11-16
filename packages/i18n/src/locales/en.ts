@@ -49,6 +49,48 @@ export const en = {
 				titlePlaceholder: 'Add a title',
 			},
 			newEvent: 'New event',
+			repeat: {
+				count: 'After',
+				custom: 'Custom…',
+				daily: 'Every day',
+				end: 'Ends',
+				every: 'Repeat every',
+				label: 'Repeat',
+				monthly: 'Every month on day {{day}}',
+				monthlyMode: {
+					dayOfMonth: 'On day {{day}}',
+					weekdayOfMonth: 'On the {{nth}} {{weekday}}',
+				},
+				never: 'Never',
+				none: 'Does not repeat',
+				nth: {
+					first: 'first',
+					fourth: 'fourth',
+					last: 'last',
+					second: 'second',
+					third: 'third',
+				},
+				on: 'Repeat on',
+				times: 'times',
+				units: {
+					day: 'days',
+					month: 'months',
+					week: 'weeks',
+					year: 'years',
+				},
+				until: 'On',
+				weekly: 'Every week on {{weekday}}',
+				yearly: 'Every year on {{date}}',
+			},
+			scope: {
+				all: 'All events',
+				deleteDescription: 'Choose which events of “{{title}}” to delete.',
+				deleteTitle: 'Delete recurring event',
+				editDescription: 'Choose which events of “{{title}}” to change.',
+				editTitle: 'Edit recurring event',
+				following: 'This and following events',
+				this: 'This event',
+			},
 			reminders: {
 				atStart: 'At start time',
 				day: '1 day before',
@@ -165,6 +207,9 @@ export const en = {
 		},
 		profile: {
 			country: 'Pick a valid country.',
+		},
+		recurrence: {
+			untilBeforeStart: 'The repeat must end on or after the event’s first day.',
 		},
 		range: {
 			endBeforeStart: 'The end of the range must be after its start.',
