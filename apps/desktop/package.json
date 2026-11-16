@@ -11,18 +11,25 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc && (tsc -w --preserveWatchOutput & electron .)",
+    "build": "bun run build:main && bun run build:preload",
+    "build:main": "bun build src/main.ts --target=node --format=esm --external electron --outfile dist/main.js",
+    "build:preload": "bun build src/preload.ts --target=node --format=cjs --external electron --outfile dist/preload.cjs",
+    "dev": "bun run build && (bun run build:main --watch & bun run build:preload --watch & electron .)",
     "dist:linux": "bun run build && electron-builder --linux",
     "dist:mac": "bun run build && electron-builder --mac",
     "dist:win": "bun run build && electron-builder --win",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@tempi/core": "workspace:*",
+    "@tempi/db": "workspace:*",
+    "@tempi/ipc": "workspace:*",
     "@types/node": "catalog:",
     "electron": "45.2.1",
     "electron-builder": "26.18.0",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "zod": "catalog:"
   },
   "build": {
     "appId": "com.sebastianurdanegui.tempi",

@@ -1,7 +1,11 @@
 import path from 'node:path';
+import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { app, BrowserWindow, nativeImage, shell } from 'electron';
+import { createRepositories } from '@tempi/db';
+import { app, BrowserWindow, ipcMain, nativeImage, shell } from 'electron';
 import { APP_ORIGIN, handleAppProtocol, registerAppScheme } from './app-protocol.js';
+import { openAppDatabase } from './database.js';
+import { registerIpc } from './ipc/register-ipc.js';
 import { loadWindowState, trackWindowState, windowOptions } from './window-state.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,6 +27,7 @@ const ICON_MAC_PNG = path.join(PUBLIC_DIR, 'tempi-icon-mac.png');
 registerAppScheme();
 
 let mainWindow: BrowserWindow | null = null;
+let database: DatabaseSync | null = null;
 
 function isTrustedUrl(url: string) {
 	return url === WEB_URL || url.startsWith(`${WEB_URL}/`);
@@ -119,7 +124,14 @@ if (!gotLock) {
 			if (!dockIcon.isEmpty()) app.dock?.setIcon(dockIcon);
 		}
 		if (app.isPackaged) handleAppProtocol(WEB_DIR);
+		database = openAppDatabase();
+		registerIpc({ ipc: ipcMain, isTrusted: isTrustedUrl }, createRepositories(database));
 		createWindow();
+	});
+
+	app.on('before-quit', () => {
+		database?.close();
+		database = null;
 	});
 
 	app.on('window-all-closed', () => {

@@ -15,10 +15,14 @@
       "name": "@tempi/desktop",
       "version": "0.1.0",
       "devDependencies": {
+        "@tempi/core": "workspace:*",
+        "@tempi/db": "workspace:*",
+        "@tempi/ipc": "workspace:*",
         "@types/node": "catalog:",
         "electron": "45.2.1",
         "electron-builder": "26.18.0",
         "typescript": "catalog:",
+        "zod": "catalog:",
       },
     },
     "apps/web": {
@@ -29,6 +33,7 @@
         "@shadcn/react": "^0.3.1",
         "@tempi/core": "workspace:*",
         "@tempi/i18n": "workspace:*",
+        "@tempi/ipc": "workspace:*",
         "@usehotkeys/core": "0.1.0",
         "@usehotkeys/react": "0.1.0",
         "class-variance-authority": "0.7.1",
@@ -104,6 +109,17 @@
       "version": "0.1.0",
       "dependencies": {
         "@tempi/core": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "catalog:",
+      },
+    },
+    "packages/ipc": {
+      "name": "@tempi/ipc",
+      "version": "0.1.0",
+      "dependencies": {
+        "@tempi/core": "workspace:*",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "typescript": "catalog:",
@@ -438,6 +454,8 @@
     "@tempi/desktop": ["@tempi/desktop@workspace:apps/desktop"],
 
     "@tempi/i18n": ["@tempi/i18n@workspace:packages/i18n"],
+
+    "@tempi/ipc": ["@tempi/ipc@workspace:packages/ipc"],
 
     "@tempi/web": ["@tempi/web@workspace:apps/web"],
 
