@@ -12,6 +12,8 @@ export type { ErrorKey } from './domain/error-keys';
 export { ERROR_KEYS, isErrorKey } from './domain/error-keys';
 export type { CalendarEvent, EventFields, EventPatch, EventStatus, NewEventInput } from './domain/event';
 export { calendarEventSchema, EVENT_STATUSES, eventFieldsSchema, eventPatchSchema, newEventInputSchema } from './domain/event';
+export type { WeekSegment } from './domain/month-layout';
+export { fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './domain/month-layout';
 export type { OnboardingInput } from './domain/onboarding';
 export { onboardingInputSchema } from './domain/onboarding';
 export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';

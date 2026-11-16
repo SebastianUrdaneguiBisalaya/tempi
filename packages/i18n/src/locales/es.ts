@@ -14,6 +14,11 @@ export const es = {
 		},
 		calendar: {
 			grid: 'Agenda',
+			month: {
+				more: '+{{count}} más',
+				week: 'Semana {{number}}',
+				weekNumber: 'Semana',
+			},
 		},
 		onboarding: {
 			actions: {

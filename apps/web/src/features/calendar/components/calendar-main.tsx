@@ -3,15 +3,17 @@
 import { DEFAULT_SETTINGS, isWeekend } from '@tempi/core';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { useCalendarNavigation } from './calendar-navigation-provider';
+import { MonthGrid } from './month-grid/month-grid';
 import { TimeGrid } from './time-grid/time-grid';
 
-/** The calendar body for the current view. The month grid comes later. */
+/** The calendar body for the current view. */
 export function CalendarMain() {
-	const { days, timeZone, today, view } = useCalendarNavigation();
+	const { date, days, timeZone, today, view } = useCalendarNavigation();
 	const { data: settings } = useSettings();
 
 	// Today is unknown while prerendering.
-	if (days === null || today === null || view === 'month') return null;
+	if (date === null || days === null || today === null) return null;
+	if (view === 'month') return <MonthGrid date={date} timeZone={timeZone} today={today} />;
 
 	const showWeekends = settings?.showWeekends ?? DEFAULT_SETTINGS.showWeekends;
 	// The day view always shows the picked day, weekend or not.
