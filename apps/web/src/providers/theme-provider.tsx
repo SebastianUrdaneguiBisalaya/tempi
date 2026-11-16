@@ -26,6 +26,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		const root = document.documentElement;
 		root.classList.toggle('dark', dark);
+		// Marks the theme as resolved either way, which ends the pre-hydration fallback in globals.css.
+		root.classList.toggle('light', !dark);
 		// Native form controls and scrollbars follow the theme too.
 		root.style.colorScheme = dark ? 'dark' : 'light';
 	}, [dark]);

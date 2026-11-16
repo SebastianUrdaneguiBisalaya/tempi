@@ -128,3 +128,14 @@
 		@apply font-sans;
 	}
 }
+
+/*
+ * Until ThemeProvider sets `.dark` or `.light` (the first paint after a load or reload), follow the OS scheme, which inside
+ * Electron mirrors the saved theme through `nativeTheme.themeSource`. Without this a dark app flashes white on reload.
+ * Same value as `.dark`'s --background.
+ */
+@media (prefers-color-scheme: dark) {
+	html:not(.light, .dark) body {
+		background-color: oklch(0.145 0 0);
+	}
+}
