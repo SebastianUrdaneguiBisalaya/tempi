@@ -20,6 +20,7 @@
         "@tempi/i18n": "workspace:*",
         "@tempi/ical": "workspace:*",
         "@tempi/ipc": "workspace:*",
+        "@tempi/sync-google": "workspace:*",
         "@types/node": "catalog:",
         "electron": "45.2.1",
         "electron-builder": "26.18.0",
@@ -138,6 +139,18 @@
         "zod": "catalog:",
       },
       "devDependencies": {
+        "typescript": "catalog:",
+      },
+    },
+    "packages/sync-google": {
+      "name": "@tempi/sync-google",
+      "version": "0.1.0",
+      "dependencies": {
+        "@tempi/core": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@tempi/db": "workspace:*",
         "typescript": "catalog:",
       },
     },
@@ -482,6 +495,8 @@
     "@tempi/ical": ["@tempi/ical@workspace:packages/ical"],
 
     "@tempi/ipc": ["@tempi/ipc@workspace:packages/ipc"],
+
+    "@tempi/sync-google": ["@tempi/sync-google@workspace:packages/sync-google"],
 
     "@tempi/web": ["@tempi/web@workspace:apps/web"],
 
