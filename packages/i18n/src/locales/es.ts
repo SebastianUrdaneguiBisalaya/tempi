@@ -201,6 +201,39 @@ export const es = {
 			placeholder: 'Buscar eventos',
 			results: 'Resultados de búsqueda',
 		},
+		settings: {
+			appearance: {
+				language: 'Idioma',
+				theme: 'Tema',
+			},
+			calendar: {
+				defaultEventDuration: 'Duración predeterminada de los eventos',
+				menuBarEnabled: 'Calendario en la barra de menús',
+				menuBarEnabledDescription: 'Muestra un calendario pequeño en la barra de menús.',
+				minutes: 'minutos',
+				showWeekends: 'Mostrar fines de semana',
+				showWeekNumbers: 'Mostrar números de semana',
+				timeFormat: 'Formato de hora',
+				timeFormats: {
+					'12h': '12 horas (1:00 p. m.)',
+					'24h': '24 horas (13:00)',
+				},
+				weekStart: 'La semana empieza el',
+				weekStarts: {
+					monday: 'Lunes',
+					saturday: 'Sábado',
+					sunday: 'Domingo',
+				},
+			},
+			description: 'Cambia tu perfil y tus preferencias.',
+			open: 'Ajustes',
+			tabs: {
+				appearance: 'Apariencia',
+				calendar: 'Calendario',
+				profile: 'Perfil',
+			},
+			title: 'Ajustes',
+		},
 		shell: {
 			header: {
 				label: 'Navegación del calendario',
@@ -242,6 +275,7 @@ export const es = {
 				goToDate: 'Ir a una fecha',
 				goToToday: 'Ir a hoy',
 				monthView: 'Vista de mes',
+				openSettings: 'Abrir ajustes',
 				newEvent: 'Nuevo evento',
 				next: 'Periodo siguiente',
 				previous: 'Periodo anterior',
@@ -269,6 +303,7 @@ export const es = {
 			eventRestored: 'Evento restaurado.',
 			eventUpdated: 'Evento actualizado.',
 			onboardingCompleted: 'Todo listo.',
+			profileUpdated: 'Perfil guardado.',
 			settingsSaved: 'Configuración guardada.',
 		},
 	},
