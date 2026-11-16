@@ -1,11 +1,12 @@
 'use client';
 
+import { XIcon } from 'lucide-react';
 import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useController, useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormFieldError } from '@/components/form-field-error';
+import { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, AttachmentMedia, AttachmentTitle, AttachmentTrigger } from '@/components/ui/attachment';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field';
 import { initials, toAvatarImage } from '@/lib/avatar-image';
 import type { ProfileFormFields } from './profile-fields';
@@ -34,6 +35,8 @@ export function AvatarField({ currentUrl = null, onUnreadableChange }: AvatarFie
 
 	// The form value is also cleared or reset elsewhere (Skip, a reset after saving), so the preview follows it.
 	const shownUrl = field.value === undefined ? currentUrl : field.value === null ? null : previewUrl;
+	const state = unreadable ? 'error' : shownUrl === null ? 'idle' : 'done';
+	const pickLabel = shownUrl === null ? t('onboarding.avatar.choose') : t('onboarding.avatar.change');
 
 	const markUnreadable = (value: boolean) => {
 		setUnreadable(value);
@@ -63,24 +66,28 @@ export function AvatarField({ currentUrl = null, onUnreadableChange }: AvatarFie
 
 	return (
 		<div className='flex flex-col gap-2'>
-			<div className='flex flex-col items-center gap-4 sm:flex-row'>
-				<Avatar className='size-20'>
-					{shownUrl !== null && <AvatarImage alt='' src={shownUrl} />}
-					<AvatarFallback className='text-xl font-medium'>{initials(firstName, lastName)}</AvatarFallback>
-				</Avatar>
-				<div className='flex flex-wrap justify-center gap-2'>
-					<Button onClick={() => fileInput.current?.click()} ref={field.ref} type='button' variant='outline'>
-						{shownUrl === null ? t('onboarding.avatar.choose') : t('onboarding.avatar.change')}
-					</Button>
-					{shownUrl !== null && (
-						<Button onClick={remove} type='button' variant='ghost'>
-							{t('onboarding.avatar.remove')}
-						</Button>
-					)}
-				</div>
-				{/* Opened by the button above, which is the accessible control. */}
+			<Attachment className='w-full max-w-sm' state={state}>
+				<AttachmentMedia className='w-14 rounded-full bg-transparent'>
+					<Avatar className='size-full'>
+						{shownUrl !== null && <AvatarImage alt='' src={shownUrl} />}
+						<AvatarFallback className='text-base font-medium'>{initials(firstName, lastName)}</AvatarFallback>
+					</Avatar>
+				</AttachmentMedia>
+				<AttachmentContent>
+					<AttachmentTitle>{pickLabel}</AttachmentTitle>
+				</AttachmentContent>
+				{/* Covers the whole card so clicking anywhere opens the picker; it's the accessible control. */}
+				<AttachmentTrigger aria-label={pickLabel} onClick={() => fileInput.current?.click()} ref={field.ref} />
+				{shownUrl !== null && (
+					<AttachmentActions>
+						<AttachmentAction aria-label={t('onboarding.avatar.remove')} onClick={remove}>
+							<XIcon />
+						</AttachmentAction>
+					</AttachmentActions>
+				)}
+				{/* Opened by the trigger above. */}
 				<input accept={ACCEPTED_TYPES} aria-hidden='true' className='sr-only' onChange={onFile} ref={fileInput} tabIndex={-1} type='file' />
-			</div>
+			</Attachment>
 			{unreadable && <FieldError>{t('onboarding.avatar.invalid')}</FieldError>}
 			<FormFieldError error={fieldState.error} />
 		</div>
