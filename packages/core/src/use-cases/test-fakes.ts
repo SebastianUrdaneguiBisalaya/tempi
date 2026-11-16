@@ -1,10 +1,12 @@
 import { expect } from 'bun:test';
+import type { AvatarImage } from '../domain/avatar';
 import type { Calendar } from '../domain/calendar';
 import { overlapsRange } from '../domain/date-range';
 import type { CalendarEvent } from '../domain/event';
 import type { DomainErrorCode } from '../domain/result';
 import type { Settings } from '../domain/settings';
 import type { UserProfile } from '../domain/user-profile';
+import type { AvatarStore } from '../ports/avatar-store';
 import type { CalendarRepository } from '../ports/calendar-repository';
 import type { Clock } from '../ports/clock';
 import type { EventRepository } from '../ports/event-repository';
@@ -65,6 +67,14 @@ export class InMemoryCalendarRepository implements CalendarRepository {
 	}
 }
 
+export class InMemoryAvatarStore implements AvatarStore {
+	readonly files = new Map<string, AvatarImage>();
+	save(fileName: string, image: AvatarImage) {
+		this.files.set(fileName, image);
+		return Promise.resolve();
+	}
+}
+
 export class InMemorySingleton<T> {
 	value: T | null = null;
 	get() {
@@ -80,6 +90,7 @@ export const T0 = '2026-11-15T10:00:00.000Z';
 
 export const makeDeps = () => {
 	const deps = {
+		avatars: new InMemoryAvatarStore(),
 		calendars: new InMemoryCalendarRepository(),
 		clock: new FakeClock(new Date(T0)),
 		events: new InMemoryEventRepository(),

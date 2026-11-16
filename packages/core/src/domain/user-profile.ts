@@ -1,10 +1,11 @@
 import { z } from 'zod';
+import { avatarFileNameSchema } from './avatar';
 import { singletonTimestampsSchema } from './timestamps';
-import { optionalTextSchema, requiredTextSchema, timeZoneSchema } from './values';
+import { requiredTextSchema, timeZoneSchema } from './values';
 
 export const profileInputSchema = z.object({
-	/** Local file path of the avatar image, or null. */
-	avatar: optionalTextSchema,
+	/** File name of the stored avatar image (resolved by the avatar store), or null for the initials. */
+	avatar: avatarFileNameSchema.nullish().transform(value => value ?? null),
 	/** ISO 3166-1 alpha-2 code, stored uppercase. */
 	country: z
 		.string()
