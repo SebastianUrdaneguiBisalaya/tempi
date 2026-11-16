@@ -199,6 +199,39 @@ export const en = {
 			placeholder: 'Search events',
 			results: 'Search results',
 		},
+		settings: {
+			appearance: {
+				language: 'Language',
+				theme: 'Theme',
+			},
+			calendar: {
+				defaultEventDuration: 'Default event duration',
+				menuBarEnabled: 'Menu bar calendar',
+				menuBarEnabledDescription: 'Show a small calendar in the menu bar.',
+				minutes: 'minutes',
+				showWeekends: 'Show weekends',
+				showWeekNumbers: 'Show week numbers',
+				timeFormat: 'Time format',
+				timeFormats: {
+					'12h': '12-hour (1:00 PM)',
+					'24h': '24-hour (13:00)',
+				},
+				weekStart: 'Week starts on',
+				weekStarts: {
+					monday: 'Monday',
+					saturday: 'Saturday',
+					sunday: 'Sunday',
+				},
+			},
+			description: 'Change your profile and preferences.',
+			open: 'Settings',
+			tabs: {
+				appearance: 'Appearance',
+				calendar: 'Calendar',
+				profile: 'Profile',
+			},
+			title: 'Settings',
+		},
 		shell: {
 			header: {
 				label: 'Calendar navigation',
@@ -240,6 +273,7 @@ export const en = {
 				goToDate: 'Go to date',
 				goToToday: 'Go to today',
 				monthView: 'Month view',
+				openSettings: 'Open settings',
 				newEvent: 'New event',
 				next: 'Next period',
 				previous: 'Previous period',
@@ -267,6 +301,7 @@ export const en = {
 			eventRestored: 'Event restored.',
 			eventUpdated: 'Event updated.',
 			onboardingCompleted: 'You’re all set.',
+			profileUpdated: 'Profile saved.',
 			settingsSaved: 'Settings saved.',
 		},
 	},

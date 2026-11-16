@@ -166,6 +166,26 @@ describe('onboarding:complete', () => {
 	});
 });
 
+describe('profile:update', () => {
+	const onboarding = { avatar: null, country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', theme: 'dark', timeZone: 'America/Lima' };
+
+	test('stores a new avatar and keeps it on later updates without one', async () => {
+		setup();
+		await invoke(CHANNELS.onboarding.complete, onboarding);
+		const avatar: AvatarImage = { bytes: new Uint8Array([4, 5, 6]), type: 'image/webp' };
+
+		expect(await invoke(CHANNELS.profile.update, { country: 'PE', firstName: 'Ana María', lastName: 'Quispe', timeZone: 'America/Lima', avatar })).toMatchObject({
+			ok: true,
+			value: { avatar: expect.stringMatching(/\.webp$/), firstName: 'Ana María' },
+		});
+		expect([...avatars.values()]).toEqual([avatar]);
+		expect(await invoke(CHANNELS.profile.update, { country: 'PE', firstName: 'Ana', lastName: 'Quispe', timeZone: 'America/Lima' })).toMatchObject({
+			ok: true,
+			value: { avatar: [...avatars.keys()][0], firstName: 'Ana' },
+		});
+	});
+});
+
 describe('a use case that fails halfway', () => {
 	test('creating a default calendar leaves no new calendar and the old default intact', async () => {
 		// Call 1 saves the new calendar; call 2 (unsetting the previous default) fails.

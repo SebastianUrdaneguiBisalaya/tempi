@@ -30,7 +30,7 @@ type Api<Raw extends boolean> = {
 	};
 	profile: {
 		get: CallWithoutInput<'profile:get', Raw>;
-		save: Call<'profile:save', Raw>;
+		update: Call<'profile:update', Raw>;
 	};
 	settings: {
 		get: CallWithoutInput<'settings:get', Raw>;

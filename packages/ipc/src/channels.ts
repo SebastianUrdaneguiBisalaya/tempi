@@ -22,7 +22,7 @@ export const CHANNELS = {
 	},
 	profile: {
 		get: 'profile:get',
-		save: 'profile:save',
+		update: 'profile:update',
 	},
 	settings: {
 		get: 'settings:get',

@@ -39,7 +39,9 @@ describe('payloadSchemas', () => {
 		['onboarding:complete', onboarding],
 		['onboarding:complete', { ...onboarding, avatar: null }],
 		['profile:get', undefined],
-		['profile:save', profile],
+		['profile:update', profile],
+		['profile:update', { ...profile, avatar: null }],
+		['profile:update', { ...profile, avatar: { bytes: new Uint8Array([1]), type: 'image/png' } }],
 		['settings:get', undefined],
 		['settings:save', { theme: 'dark' }],
 	] as const)('%s accepts a valid payload', (channel, payload) => {
@@ -60,7 +62,7 @@ describe('payloadSchemas', () => {
 		['events:updateOccurrence', { originalStartAt: 'soon', scope: 'some', seriesId: 'evt-1', title: '' }, ['originalStartAt', 'scope', 'title']],
 		['events:deleteOccurrence', { originalStartAt: '2026-11-20T14:00:00Z', scope: 'this' }, ['seriesId']],
 		['onboarding:complete', { ...onboarding, avatar: { bytes: 'abc', type: 'image/gif' }, firstName: '', language: 'fr' }, ['avatar.bytes', 'avatar.type', 'firstName', 'language']],
-		['profile:save', { ...profile, avatar: '../../secrets.png', country: 'Peru' }, ['avatar', 'country']],
+		['profile:update', { ...profile, avatar: '../../secrets.png', country: 'Peru' }, ['avatar', 'country']],
 		['settings:save', { defaultEventDuration: 0, theme: 'neon' }, ['defaultEventDuration', 'theme']],
 	] as const)('%s rejects an invalid payload, reporting every issue at form field paths', (channel, payload, fields) => {
 		const result = parseWith(payloadSchemas[channel], payload);

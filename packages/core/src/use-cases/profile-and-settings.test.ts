@@ -7,6 +7,7 @@ import { initializeSettings } from './initialize-settings';
 import { saveProfile } from './save-profile';
 import { saveSettings } from './save-settings';
 import { failure, makeDeps, T0 } from './test-fakes';
+import { updateProfile } from './update-profile';
 
 const profileInput: ProfileInput = { avatar: null, country: 'pe', firstName: ' Ana ', lastName: 'Quispe', timeZone: 'America/Lima' };
 
@@ -35,6 +36,41 @@ describe('profile', () => {
 		const result = await saveProfile(deps, { ...profileInput, ...override });
 		expect(result).toEqual(failure('validation', field));
 		expect(await getProfile(deps)).toBeNull();
+	});
+});
+
+describe('updateProfile', () => {
+	const image = { bytes: new Uint8Array([1, 2, 3]), type: 'image/png' } as const;
+	const fields = { country: 'PE', firstName: 'Ana', lastName: 'Quispe', timeZone: 'America/Lima' };
+
+	test('stores a new avatar image and points the profile at it', async () => {
+		const deps = makeDeps();
+		await saveProfile(deps, { ...fields, avatar: 'old.png' });
+
+		const result = await updateProfile(deps, { ...fields, avatar: image, firstName: 'Ana María' });
+		expect(result).toMatchObject({ ok: true, value: { avatar: 'id-1.png', firstName: 'Ana María' } });
+		expect(deps.avatars.files.get('id-1.png')).toEqual(image);
+		expect(await getProfile(deps)).toMatchObject({ avatar: 'id-1.png', createdAt: T0 });
+	});
+
+	test('keeps the current avatar when none is sent, and removes it with null', async () => {
+		const deps = makeDeps();
+		await saveProfile(deps, { ...fields, avatar: 'me.png' });
+
+		expect(await updateProfile(deps, { ...fields, lastName: 'Mamani' })).toMatchObject({ ok: true, value: { avatar: 'me.png', lastName: 'Mamani' } });
+		expect(await updateProfile(deps, { ...fields, avatar: null })).toMatchObject({ ok: true, value: { avatar: null } });
+		expect(deps.avatars.files.size).toBe(0);
+	});
+
+	test('reports every invalid field and stores nothing', async () => {
+		const deps = makeDeps();
+		await saveProfile(deps, { ...fields, avatar: null });
+
+		const result = await updateProfile(deps, { ...fields, avatar: { bytes: new Uint8Array(), type: 'image/png' }, country: 'Peru', firstName: '' });
+		expect(result).toEqual(failure('validation'));
+		expect(!result.ok && result.error.issues.map(issue => issue.field).sort()).toEqual(['avatar.bytes', 'country', 'firstName']);
+		expect(deps.avatars.files.size).toBe(0);
+		expect(await getProfile(deps)).toMatchObject({ firstName: 'Ana' });
 	});
 });
 

@@ -17,7 +17,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 		calendars: { create: answer, delete: answer, list: answer, update: answer },
 		events: { create: answer, delete: answer, deleteOccurrence: answer, duplicate: answer, list: answer, restore: answer, search: answer, update: answer, updateOccurrence: answer },
 		onboarding: { complete: answer },
-		profile: { get: answer, save: answer },
+		profile: { get: answer, update: answer },
 		settings: { get: answer, save: answer },
 		version: 'test',
 	};

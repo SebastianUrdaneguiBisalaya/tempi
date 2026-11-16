@@ -15,7 +15,7 @@ import {
 	newEventInputSchema,
 	occurrenceTargetSchema,
 	onboardingInputSchema,
-	profileInputSchema,
+	profileUpdateInputSchema,
 	settingsPatchSchema,
 	settingsSchema,
 	userProfileSchema,
@@ -45,7 +45,7 @@ export const payloadSchemas = {
 	'events:updateOccurrence': eventPatchSchema.extend(occurrenceTargetSchema.shape),
 	'onboarding:complete': onboardingInputSchema,
 	'profile:get': noPayload,
-	'profile:save': profileInputSchema,
+	'profile:update': profileUpdateInputSchema,
 	'settings:get': noPayload,
 	'settings:save': settingsPatchSchema,
 } as const satisfies Record<Channel, z.ZodType>;
@@ -67,7 +67,7 @@ export const responseValueSchemas = {
 	'events:updateOccurrence': eventOccurrenceSchema,
 	'onboarding:complete': z.object({ profile: userProfileSchema, settings: settingsSchema }),
 	'profile:get': userProfileSchema.nullable(),
-	'profile:save': userProfileSchema,
+	'profile:update': userProfileSchema,
 	'settings:get': settingsSchema,
 	'settings:save': settingsSchema,
 } as const satisfies Record<Channel, z.ZodType>;

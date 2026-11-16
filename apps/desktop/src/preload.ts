@@ -27,7 +27,7 @@ const desktop: DesktopApi = {
 	},
 	profile: {
 		get: () => ipcRenderer.invoke(CHANNELS.profile.get),
-		save: input => ipcRenderer.invoke(CHANNELS.profile.save, input),
+		update: input => ipcRenderer.invoke(CHANNELS.profile.update, input),
 	},
 	settings: {
 		get: () => ipcRenderer.invoke(CHANNELS.settings.get),
