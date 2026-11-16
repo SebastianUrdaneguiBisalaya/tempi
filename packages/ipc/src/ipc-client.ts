@@ -23,7 +23,7 @@ const call = async <C extends Channel>(channel: C, invoke: () => Promise<unknown
 export const createIpcClient = (api: DesktopApi): TempiApi => ({
 	calendars: {
 		create: input => call(CHANNELS.calendars.create, () => api.calendars.create(input)),
-		delete: id => call(CHANNELS.calendars.delete, () => api.calendars.delete(id)),
+		delete: input => call(CHANNELS.calendars.delete, () => api.calendars.delete(input)),
 		list: () => call(CHANNELS.calendars.list, () => api.calendars.list()),
 		update: input => call(CHANNELS.calendars.update, () => api.calendars.update(input)),
 	},

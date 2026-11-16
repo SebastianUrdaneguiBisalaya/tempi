@@ -114,7 +114,10 @@ describe('registerIpc', () => {
 	});
 
 	test('returns domain failures from the use case', async () => {
-		expect(await invoke(CHANNELS.calendars.delete, seededCalendarId())).toMatchObject({ error: { code: 'conflict', issues: [{ key: 'calendar.defaultNotDeletable' }] }, ok: false });
+		expect(await invoke(CHANNELS.calendars.delete, { id: seededCalendarId(), moveEventsTo: null })).toMatchObject({
+			error: { code: 'conflict', issues: [{ key: 'calendar.defaultNotDeletable' }] },
+			ok: false,
+		});
 	});
 
 	test('refuses senders from another origin', async () => {
@@ -181,7 +184,7 @@ describe('a use case that fails halfway', () => {
 		await invoke(CHANNELS.events.create, newEvent(calendarId));
 
 		// deleteCalendar soft-deletes the events first, then saves the calendar (call 2, which fails).
-		expect(await invoke(CHANNELS.calendars.delete, calendarId)).toMatchObject({ ok: false });
+		expect(await invoke(CHANNELS.calendars.delete, { id: calendarId, moveEventsTo: null })).toMatchObject({ ok: false });
 		expect(rows('SELECT deleted_at FROM events')).toEqual([expect.objectContaining({ deleted_at: null })]);
 		expect(rows(`SELECT deleted_at FROM calendars WHERE name = 'Work'`)).toEqual([expect.objectContaining({ deleted_at: null })]);
 	});

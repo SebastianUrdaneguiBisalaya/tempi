@@ -4,6 +4,7 @@ import {
 	calendarSchema,
 	DOMAIN_ERROR_CODES,
 	dateRangeSchema,
+	deleteCalendarInputSchema,
 	type ErrorKey,
 	eventOccurrenceSchema,
 	eventPatchSchema,
@@ -29,7 +30,7 @@ const noPayload = z.undefined();
  */
 export const payloadSchemas = {
 	'calendars:create': newCalendarInputSchema,
-	'calendars:delete': idSchema,
+	'calendars:delete': deleteCalendarInputSchema,
 	'calendars:list': noPayload,
 	'calendars:update': calendarPatchSchema.extend({ id: idSchema }),
 	'events:create': newEventInputSchema,
