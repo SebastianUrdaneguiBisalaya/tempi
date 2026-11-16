@@ -14,7 +14,8 @@ import { EventPanel } from '@/features/events/components/event-panel';
 import { EventPanelProvider, useEventPanel } from '@/features/events/components/event-panel-provider';
 import { SearchablePanel } from '@/features/events/components/event-search';
 import { EventShortcuts } from '@/features/events/components/event-shortcuts';
-import { ReminderClicks } from '@/features/events/components/reminder-clicks';
+import { ShowEventRequests } from '@/features/events/components/show-event-requests';
+
 import { UpcomingEvent } from '@/features/events/components/upcoming-event';
 import { SettingsDialogProvider } from '@/features/settings/components/settings-dialog-provider';
 import { CommandMenu } from '@/features/shortcuts/components/command-menu';
@@ -37,7 +38,7 @@ export function AppShell() {
 					<GoToDateProvider>
 						<CalendarShortcuts />
 						<EventShortcuts />
-						<ReminderClicks />
+						<ShowEventRequests />
 						<ShellLayout />
 						<ShortcutsDialog />
 						<CommandMenu />

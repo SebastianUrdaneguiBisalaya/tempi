@@ -304,3 +304,14 @@ describe('eventsChanged listener', () => {
 		expect(changes).toBe(1);
 	});
 });
+
+describe('showEvent listener', () => {
+	test('receives the validated occurrence', async () => {
+		const shown: unknown[] = [];
+		setup(undefined, { showEvent: ref => shown.push(ref) });
+		expect(await invoke(CHANNELS.app.showEvent, { key: 'event-1', startAt: '2026-11-20T09:00:00-05:00' })).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.app.showEvent, { key: '' })).toMatchObject({ ok: false });
+		expect(await invoke(CHANNELS.app.showEvent, { key: 'event-1', startAt: '2026-11-20T14:00:00Z' }, 'https://evil.example/')).toMatchObject({ ok: false });
+		expect(shown).toEqual([{ key: 'event-1', startAt: '2026-11-20T14:00:00.000Z' }]);
+	});
+});

@@ -226,7 +226,7 @@ export const en = {
 			calendar: {
 				defaultEventDuration: 'Default event duration',
 				menuBarEnabled: 'Menu bar calendar',
-				menuBarEnabledDescription: 'Show a small calendar in the menu bar.',
+				menuBarEnabledDescription: 'Show today’s agenda in the menu bar or tray. Open it with ⌥⌘K (Alt+Ctrl+K).',
 				minutes: 'minutes',
 				showWeekends: 'Show weekends',
 				showWeekNumbers: 'Show week numbers',
@@ -323,6 +323,15 @@ export const en = {
 			onboardingCompleted: 'You’re all set.',
 			profileUpdated: 'Profile saved.',
 			settingsSaved: 'Settings saved.',
+		},
+		tray: {
+			allDay: 'All day',
+			empty: 'No events.',
+			events: 'Events',
+			openApp: 'Open Tempi',
+			quit: 'Quit Tempi',
+			setup: 'Finish setting up Tempi in its main window.',
+			showAgenda: 'Show agenda',
 		},
 		upcoming: {
 			empty: 'No upcoming event',
