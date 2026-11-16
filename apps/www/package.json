@@ -12,7 +12,7 @@
     "build": "next build",
     "dev": "next dev --port 3001",
     "start": "next start --port 3001",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit --incremental false"
   },
   "dependencies": {
     "next": "catalog:",
