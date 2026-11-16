@@ -1,3 +1,5 @@
+export type { AppUpdateState, AppUpdateStatus } from './domain/app-update';
+export { APP_UPDATE_STATES, appUpdateStatusSchema, compareVersions, isNewerVersion } from './domain/app-update';
 export type { AvatarImage, AvatarType } from './domain/avatar';
 export { AVATAR_TYPES, avatarFileNameSchema, avatarImageSchema, MAX_AVATAR_BYTES } from './domain/avatar';
 export type { Calendar, CalendarFields, CalendarPatch, CalendarSource, DeleteCalendarInput, NewCalendarInput } from './domain/calendar';
