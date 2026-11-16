@@ -1,26 +1,43 @@
-import type { Calendar, CalendarEvent, DateRange, Result, Settings, UserProfile } from '@tempi/core';
+import type { Result } from '@tempi/core';
+import type { Channel } from './channels';
+import type { ChannelInput, ChannelValue } from './schemas';
 
-/** The bridge the preload exposes as `window.desktop`. Every call resolves to a `Result`; none throws. */
-export type DesktopApi = {
+// `Raw` answers are what crosses the bridge, still unvalidated; checked answers are parsed `Result`s.
+type Answer<C extends Channel, Raw extends boolean> = Raw extends true ? unknown : Result<ChannelValue<C>>;
+type Call<C extends Channel, Raw extends boolean> = (input: ChannelInput<C>) => Promise<Answer<C, Raw>>;
+type CallWithoutInput<C extends Channel, Raw extends boolean> = () => Promise<Answer<C, Raw>>;
+
+type Api<Raw extends boolean> = {
 	calendars: {
-		get(id: string): Promise<Result<Calendar | null>>;
-		list(): Promise<Result<Calendar[]>>;
-		save(calendar: Calendar): Promise<Result<null>>;
+		create: Call<'calendars:create', Raw>;
+		delete: Call<'calendars:delete', Raw>;
+		list: CallWithoutInput<'calendars:list', Raw>;
+		update: Call<'calendars:update', Raw>;
 	};
 	events: {
-		deleteByCalendar(payload: { calendarId: string; deletedAt: string }): Promise<Result<null>>;
-		get(id: string): Promise<Result<CalendarEvent | null>>;
-		list(range: DateRange): Promise<Result<CalendarEvent[]>>;
-		save(event: CalendarEvent): Promise<Result<null>>;
+		create: Call<'events:create', Raw>;
+		delete: Call<'events:delete', Raw>;
+		list: Call<'events:list', Raw>;
+		update: Call<'events:update', Raw>;
 	};
 	profile: {
-		get(): Promise<Result<UserProfile | null>>;
-		save(profile: UserProfile): Promise<Result<null>>;
+		get: CallWithoutInput<'profile:get', Raw>;
+		save: Call<'profile:save', Raw>;
 	};
 	settings: {
-		get(): Promise<Result<Settings | null>>;
-		save(settings: Settings): Promise<Result<null>>;
+		get: CallWithoutInput<'settings:get', Raw>;
+		save: Call<'settings:save', Raw>;
 	};
+};
+
+/**
+ * The app's use cases, independent of transport. Every call resolves to a `Result` and never rejects.
+ * Each call runs as one unit: it either completes or changes nothing.
+ */
+export type TempiApi = Api<false>;
+
+/** The bridge the preload exposes as `window.desktop`. Its answers are unvalidated; use it through `createIpcClient`. */
+export type DesktopApi = Api<true> & {
 	/** Electron version, for diagnostics. */
 	version: string;
 };

@@ -1,39 +1,63 @@
-import { calendarEventSchema, calendarSchema, DOMAIN_ERROR_CODES, dateRangeSchema, type ErrorKey, idSchema, isErrorKey, settingsSchema, userProfileSchema, utcInstantSchema } from '@tempi/core';
+import {
+	calendarEventSchema,
+	calendarPatchSchema,
+	calendarSchema,
+	DOMAIN_ERROR_CODES,
+	dateRangeSchema,
+	type ErrorKey,
+	eventPatchSchema,
+	idSchema,
+	isErrorKey,
+	newCalendarInputSchema,
+	newEventInputSchema,
+	profileInputSchema,
+	settingsPatchSchema,
+	settingsSchema,
+	userProfileSchema,
+} from '@tempi/core';
 import { z } from 'zod';
 import type { Channel } from './channels';
 
 const noPayload = z.undefined();
 
-/** What the renderer sends on each channel. The main process parses every payload with these before touching storage. */
+/**
+ * What the renderer sends on each channel: the core use case input. The main process parses every payload with these.
+ * Updates carry the id next to the patch fields, so field errors keep the same paths the forms use (`title`, not `patch.title`).
+ */
 export const payloadSchemas = {
-	'calendars:get': idSchema,
+	'calendars:create': newCalendarInputSchema,
+	'calendars:delete': idSchema,
 	'calendars:list': noPayload,
-	'calendars:save': calendarSchema,
-	'events:deleteByCalendar': z.object({ calendarId: idSchema, deletedAt: utcInstantSchema }),
-	'events:get': idSchema,
+	'calendars:update': calendarPatchSchema.extend({ id: idSchema }),
+	'events:create': newEventInputSchema,
+	'events:delete': idSchema,
 	'events:list': dateRangeSchema,
-	'events:save': calendarEventSchema,
+	'events:update': eventPatchSchema.extend({ id: idSchema }),
 	'profile:get': noPayload,
-	'profile:save': userProfileSchema,
+	'profile:save': profileInputSchema,
 	'settings:get': noPayload,
-	'settings:save': settingsSchema,
+	'settings:save': settingsPatchSchema,
 } as const satisfies Record<Channel, z.ZodType>;
 
 /** The value inside a successful result on each channel. The renderer parses responses with these. */
 export const responseValueSchemas = {
-	'calendars:get': calendarSchema.nullable(),
+	'calendars:create': calendarSchema,
+	'calendars:delete': z.null(),
 	'calendars:list': z.array(calendarSchema),
-	'calendars:save': z.null(),
-	'events:deleteByCalendar': z.null(),
-	'events:get': calendarEventSchema.nullable(),
+	'calendars:update': calendarSchema,
+	'events:create': calendarEventSchema,
+	'events:delete': z.null(),
 	'events:list': z.array(calendarEventSchema),
-	'events:save': z.null(),
+	'events:update': calendarEventSchema,
 	'profile:get': userProfileSchema.nullable(),
-	'profile:save': z.null(),
-	'settings:get': settingsSchema.nullable(),
-	'settings:save': z.null(),
+	'profile:save': userProfileSchema,
+	'settings:get': settingsSchema,
+	'settings:save': settingsSchema,
 } as const satisfies Record<Channel, z.ZodType>;
 
+/** What a caller passes on a channel. */
+export type ChannelInput<C extends Channel> = z.input<(typeof payloadSchemas)[C]>;
+/** What a handler receives on a channel, once parsed. */
 export type ChannelPayload<C extends Channel> = z.output<(typeof payloadSchemas)[C]>;
 export type ChannelValue<C extends Channel> = z.output<(typeof responseValueSchemas)[C]>;
 
