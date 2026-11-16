@@ -30,16 +30,16 @@ Windows SmartScreen may warn about an unrecognized app. Click **More info → Ru
 
 ## Update
 
-Tempi doesn't update itself yet: automatic updates on macOS require an app signed with an Apple Developer ID, which Tempi doesn't have. To update on any platform:
+Tempi checks GitHub Releases for a newer version shortly after it starts, then every few hours. You can also check by hand in **Settings → About → Check for updates**.
 
-1. Quit Tempi (also from the menu bar or tray).
-2. Download the new installer from [GitHub Releases](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases).
-3. Install it over the current version:
-   - **macOS:** open the `.dmg` and drag Tempi to Applications, choosing **Replace**. Then allow it again as described in [Opening an unsigned build on macOS](#opening-an-unsigned-build-on-macos).
-   - **Windows:** run the new `.exe`; it replaces the installed version.
-   - **Linux:** replace the AppImage file, or install the new `.deb` with `sudo apt install ./Tempi-<version>-linux-amd64.deb`.
+- **Windows and Linux (AppImage):** the update downloads in the background. A notice says when it's ready; click **Restart to update**, or it installs the next time you quit Tempi.
+- **macOS:** automatic installs need an app signed with an Apple Developer ID, which Tempi doesn't have yet. Instead, a notice says a new version is available and links to its download. Then:
+  1. Quit Tempi (also from the menu bar).
+  2. Open the new `.dmg` and drag Tempi to Applications, choosing **Replace**.
+  3. Allow it again as described in [Opening an unsigned build on macOS](#opening-an-unsigned-build-on-macos).
+- **Linux (`.deb`):** the notice links to the download; install it with `sudo apt install ./Tempi-<version>-linux-amd64.deb`.
 
-Your calendars, events and settings live in the app's data folder, not inside the app, so replacing the app keeps them. Make a backup first from **Settings → Data** if you want to be safe.
+Your calendars, events and settings live in the app's data folder, not inside the app, so updating keeps them. Make a backup first from **Settings → Data** if you want to be safe.
 
 ## Development
 

@@ -20,6 +20,12 @@ ipcRenderer.on(PUSH_CHANNELS.google.syncStatus, (_event, status: unknown) => {
 	for (const listener of syncStatusListeners) listener(status);
 });
 
+type UpdateStatusListener = (status: unknown) => void;
+const updateStatusListeners = new Set<UpdateStatusListener>();
+ipcRenderer.on(PUSH_CHANNELS.updates.status, (_event, status: unknown) => {
+	for (const listener of updateStatusListeners) listener(status);
+});
+
 const desktop: DesktopApi = {
 	app: {
 		onShowEvent: listener => {
@@ -82,6 +88,17 @@ const desktop: DesktopApi = {
 	settings: {
 		get: () => ipcRenderer.invoke(CHANNELS.settings.get),
 		save: patch => ipcRenderer.invoke(CHANNELS.settings.save, patch),
+	},
+	updates: {
+		check: () => ipcRenderer.invoke(CHANNELS.updates.check),
+		install: () => ipcRenderer.invoke(CHANNELS.updates.install),
+		onStatus: listener => {
+			updateStatusListeners.add(listener);
+			return () => {
+				updateStatusListeners.delete(listener);
+			};
+		},
+		status: () => ipcRenderer.invoke(CHANNELS.updates.status),
 	},
 	version: process.versions.electron ?? '',
 };

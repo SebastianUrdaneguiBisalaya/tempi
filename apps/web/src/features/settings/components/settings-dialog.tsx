@@ -9,13 +9,14 @@ import { ShortcutList } from '@/features/shortcuts/components/shortcut-list';
 import { useDialogShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useSettings } from '../hooks/use-settings';
+import { AboutSettings } from './about-settings';
 import { AppearanceSettings } from './appearance-settings';
 import { CalendarSettings } from './calendar-settings';
 import { DataSettings } from './data-settings';
 import { IntegrationsSettings } from './integrations-settings';
 import { ProfileSettings } from './profile-settings';
 
-const TABS = ['profile', 'appearance', 'calendar', 'integrations', 'shortcuts', 'data'] as const;
+const TABS = ['profile', 'appearance', 'calendar', 'integrations', 'shortcuts', 'data', 'about'] as const;
 
 export type SettingsTab = (typeof TABS)[number];
 
@@ -73,6 +74,9 @@ export function SettingsDialog({ initialTab, onOpenChange, open }: SettingsDialo
 								</TabsContent>
 								<TabsContent value='data'>
 									<DataSettings />
+								</TabsContent>
+								<TabsContent value='about'>
+									<AboutSettings />
 								</TabsContent>
 							</div>
 						</ScrollArea>

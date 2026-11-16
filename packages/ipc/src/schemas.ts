@@ -1,4 +1,5 @@
 import {
+	appUpdateStatusSchema,
 	calendarEventSchema,
 	calendarPatchSchema,
 	calendarSchema,
@@ -88,6 +89,9 @@ export const payloadSchemas = {
 	'profile:update': profileUpdateInputSchema,
 	'settings:get': noPayload,
 	'settings:save': settingsPatchSchema,
+	'updates:check': noPayload,
+	'updates:install': noPayload,
+	'updates:status': noPayload,
 } as const satisfies Record<Channel, z.ZodType>;
 
 /** The value inside a successful result on each channel. The renderer parses responses with these. */
@@ -122,6 +126,9 @@ export const responseValueSchemas = {
 	'profile:update': userProfileSchema,
 	'settings:get': settingsSchema,
 	'settings:save': settingsSchema,
+	'updates:check': appUpdateStatusSchema,
+	'updates:install': z.null(),
+	'updates:status': appUpdateStatusSchema,
 } as const satisfies Record<Channel, z.ZodType>;
 
 /** What a caller passes on a channel. */

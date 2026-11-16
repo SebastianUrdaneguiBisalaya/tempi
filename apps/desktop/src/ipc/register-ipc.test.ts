@@ -6,6 +6,7 @@ import { parseIcs, serializeIcs } from '@tempi/ical';
 import { CHANNELS, type Channel } from '@tempi/ipc';
 import type { GoogleAccountService } from '../google/google-account';
 import type { SyncRunner } from '../google/sync-runner';
+import { createUpdateService } from '../updates/update-service';
 import type { IpcSender } from './handle';
 import { type DataIo, type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
 
@@ -90,6 +91,16 @@ const icalIo: IcalIo = {
 	},
 };
 
+// A newer release on GitHub, as the macOS check would find it.
+const updates = () =>
+	createUpdateService({
+		currentVersion: '0.1.0',
+		now: () => new Date(T0),
+		onStatus: () => undefined,
+		setTimer: () => () => undefined,
+		strategy: { kind: 'notify', latestRelease: async () => ({ url: 'https://github.com/o/r/releases/tag/v0.2.0', version: '0.2.0' }) },
+	});
+
 /** Registers the handlers over a fresh in-memory database; `override` swaps ports to inject failures. */
 const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), listeners: IpcListeners = {}) => {
 	db = openDatabase(':memory:', { clock });
@@ -111,7 +122,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
-		{ data: dataIo, google: { account: google, sync }, ical: icalIo },
+		{ data: dataIo, google: { account: google, sync }, ical: icalIo, updates: updates() },
 		listeners
 	);
 };
@@ -585,5 +596,22 @@ describe('Google account', () => {
 		expect(await invoke(CHANNELS.google.sync)).toEqual({ ok: true, value: { ...IDLE, lastSyncedAt: T0 } });
 		expect(syncCalls).toEqual(['syncNow', 'syncNow']);
 		expect(await invoke(CHANNELS.google.syncStatus)).toEqual({ ok: true, value: IDLE });
+	});
+});
+
+describe('updates', () => {
+	beforeEach(() => setup());
+
+	test('answers the status, then a check that finds a newer release', async () => {
+		expect(await invoke(CHANNELS.updates.status)).toMatchObject({ ok: true, value: { currentVersion: '0.1.0', state: 'idle' } });
+		expect(await invoke(CHANNELS.updates.check)).toMatchObject({ ok: true, value: { latestVersion: '0.2.0', state: 'available' } });
+	});
+
+	test('install does nothing when no update is downloaded', async () => {
+		expect(await invoke(CHANNELS.updates.install)).toEqual({ ok: true, value: null });
+	});
+
+	test('refuses untrusted senders', async () => {
+		expect(await invoke(CHANNELS.updates.check, undefined, 'https://evil.example/')).toMatchObject({ ok: false });
 	});
 });

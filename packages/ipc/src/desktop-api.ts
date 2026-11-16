@@ -1,4 +1,4 @@
-import type { GoogleSyncStatus, Result } from '@tempi/core';
+import type { AppUpdateStatus, GoogleSyncStatus, Result } from '@tempi/core';
 import type { Channel } from './channels';
 import type { ChannelInput, ChannelValue, OccurrenceRef } from './schemas';
 
@@ -57,6 +57,13 @@ type Api<Raw extends boolean> = {
 	settings: {
 		get: CallWithoutInput<'settings:get', Raw>;
 		save: Call<'settings:save', Raw>;
+	};
+	updates: {
+		check: CallWithoutInput<'updates:check', Raw>;
+		install: CallWithoutInput<'updates:install', Raw>;
+		status: CallWithoutInput<'updates:status', Raw>;
+		/** Calls `listener` with each new update status the main process pushes; returns the unsubscribe function. */
+		onStatus: (listener: (status: Raw extends true ? unknown : AppUpdateStatus) => void) => () => void;
 	};
 };
 
