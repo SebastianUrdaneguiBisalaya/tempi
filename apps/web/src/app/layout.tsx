@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Instrument_Sans, Manrope } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toast';
@@ -23,6 +24,9 @@ const geistMono = Geist_Mono({
 	variable: '--font-geist-mono',
 	subsets: ['latin'],
 });
+
+// The window title on every platform; without it Electron shows the package name in development.
+export const metadata: Metadata = { title: 'Tempi' };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
 	return (
