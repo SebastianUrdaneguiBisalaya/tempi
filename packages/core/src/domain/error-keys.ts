@@ -12,6 +12,7 @@ export const ERROR_KEYS = {
 	'event.endBeforeStart': 'Event end must be after its start',
 	'event.notFound': 'Event not found',
 	'event.rrule': 'Recurrence must be an RFC 5545 RRULE',
+	'recurrence.untilBeforeStart': 'A recurrence must end on or after its first day',
 	'profile.country': 'Country must be an ISO 3166-1 alpha-2 code',
 	'range.endBeforeStart': 'Range end must be after its start',
 	'system.unexpected': 'Unexpected failure; see detail',

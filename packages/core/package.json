@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "rrule-temporal": "2.2.8",
     "zod": "catalog:"
   },
   "devDependencies": {
