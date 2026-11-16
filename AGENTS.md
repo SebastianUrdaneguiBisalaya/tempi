@@ -149,7 +149,7 @@ apps/web/src/
   features/<feature>/        components/, hooks/ (calendar, events, settings)
   components/                shared app components
   components/ui/             generated (shadcn); do not edit by hand
-  providers/                 api provider (injects the use-case client: `useApi()`)
+  providers/                 api (`useApi()`), query client, i18n and theme providers
   lib/                       small framework-free helpers
 ```
 
@@ -219,6 +219,10 @@ apps/web/src/
 
 - With static export there is no runtime server: no server actions, no dynamic route handlers, no middleware, no `headers()`/`cookies()`. Dynamic routes need `generateStaticParams`.
 - Data comes from the client through hooks that wrap `useApi()`. Components never call `window.desktop` directly.
+- Fetch and mutate data with TanStack Query (`@tanstack/react-query`) inside feature hooks (`features/<feature>/hooks/use-*.ts`). Components call those hooks, never `useQuery`/`useMutation` with the API directly.
+  - Query and mutation functions return `unwrap(await api.<domain>.<action>(…))` from `lib/query.ts`, so failures arrive as a typed `DomainError` in `error`.
+  - Take keys only from `queryKeys` in `lib/query.ts`. After a successful mutation, invalidate the domain's root key (`queryKeys.events.all`) or write the returned value with `setQueryData`, so every view updates without repeated code.
+  - Keep the `QueryProvider` defaults (`networkMode: 'always'`, `staleTime: Infinity`, no retries or refetch on focus): data is local and only this app writes it.
 - Derive values during render instead of syncing them into state. Use `useEffect` only to synchronize with external systems.
 - Use `useSyncExternalStore` for external stores. Avoid prop drilling beyond two levels: lift state or use context.
 - Use stable keys from IDs, never array indexes.

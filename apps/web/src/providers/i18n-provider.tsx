@@ -5,7 +5,7 @@ import { DEFAULT_NAMESPACE, FALLBACK_LANGUAGE, NAMESPACES, resources } from '@te
 import i18next from 'i18next';
 import { type ReactNode, useEffect, useSyncExternalStore } from 'react';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
-import { useSettings } from './settings-provider';
+import { useSettings } from '@/features/settings/hooks/use-settings';
 
 const i18n = i18next.createInstance();
 
@@ -30,7 +30,7 @@ const getServerLanguage = (): Language => FALLBACK_LANGUAGE;
 
 /** The language from settings; the system locale until settings load, or when there is no storage (plain browser). */
 const useLanguage = (): Language => {
-	const { settings } = useSettings();
+	const { data: settings } = useSettings();
 	const systemLanguage = useSyncExternalStore(subscribeToSystemLanguage, getSystemLanguage, getServerLanguage);
 	return settings?.language ?? systemLanguage;
 };
