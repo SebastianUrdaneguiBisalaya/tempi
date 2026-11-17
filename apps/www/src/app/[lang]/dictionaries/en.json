@@ -8,6 +8,7 @@
     "navLabel": "Main",
     "nav": {
       "features": "Features",
+      "ai": "AI",
       "faq": "FAQ",
       "download": "Download"
     },
@@ -126,6 +127,65 @@
       }
     }
   },
+  "ai": {
+    "eyebrow": "AI assistant",
+    "title": "Ask your calendar.",
+    "subtitle": "Optional and off by default. Chat or talk with Tempi about your schedule using your own AI provider, and confirm every change before it is saved.",
+    "mockup": {
+      "label": "Animated demo: the assistant is asked for a lunch tomorrow, checks the calendar, proposes a new event that is confirmed and saved, then the Voice tab listens, thinks and answers aloud",
+      "tabs": {
+        "chat": "Chat",
+        "voice": "Voice"
+      },
+      "chat": {
+        "welcome": "Ask about your calendar or describe an event, and I'll prepare it for you to confirm.",
+        "placeholder": "Ask about your calendar or describe an event…",
+        "message": "Lunch with Ana tomorrow at 1 pm",
+        "tool": "Looking at your events",
+        "reply": "You're free tomorrow at 1 pm. Here's the event:",
+        "proposal": {
+          "create": "New event",
+          "title": "Title",
+          "when": "When",
+          "calendar": "Calendar",
+          "confirm": "Confirm",
+          "edit": "Edit",
+          "saved": "Saved",
+          "event": {
+            "title": "Lunch with Ana",
+            "when": "Tomorrow, 1:00 – 2:00 PM",
+            "calendar": "Personal"
+          }
+        }
+      },
+      "voiceStatus": {
+        "idle": "Tap to talk",
+        "listening": "Listening… tap to send",
+        "thinking": "Thinking…",
+        "speaking": "Speaking… tap to stop"
+      }
+    },
+    "points": {
+      "keys": {
+        "title": "Bring your own key.",
+        "body": "Add an API key from the provider you already use. You pay them directly; Tempi charges nothing."
+      },
+      "voice": {
+        "title": "Type or talk.",
+        "body": "Chat in writing, dictate, or speak and hear the answer with ElevenLabs, in English or Spanish."
+      },
+      "confirm": {
+        "title": "Nothing changes without Confirm.",
+        "body": "The assistant reads your events and proposes changes. Each one waits on a card until you confirm, edit or ignore it."
+      },
+      "private": {
+        "title": "Private by default.",
+        "body": "Off until you add a key, which is encrypted on your device. Only while you use it are your messages and the events it reads sent to the provider you picked."
+      }
+    },
+    "providers": "Supported providers",
+    "shortcut": "Open it from anywhere in Tempi with"
+  },
   "keyboard": {
     "eyebrow": "Keyboard first",
     "title": "Your hands never leave the keyboard.",
@@ -164,7 +224,8 @@
       "openCommandMenu": "Open command menu",
       "openSettings": "Open settings",
       "showShortcuts": "Show keyboard shortcuts",
-      "togglePanel": "Toggle details panel"
+      "togglePanel": "Toggle details panel",
+      "toggleAssistant": "Open AI assistant"
     }
   },
   "faq": {
@@ -179,7 +240,7 @@
       },
       "data": {
         "question": "Where are my calendars stored?",
-        "answer": "In a SQLite database in Tempi's data folder on your own computer. Nothing goes to a server unless you connect Google Calendar, and you can make full backups from Settings → Data."
+        "answer": "In a SQLite database in Tempi's data folder on your own computer. Nothing goes to a server unless you connect Google Calendar or use the AI assistant with your own key, and you can make full backups from Settings → Data."
       },
       "account": {
         "question": "Do I need a Google account?",
@@ -187,7 +248,11 @@
       },
       "offline": {
         "question": "Does it work offline?",
-        "answer": "Yes. Your calendars live on your computer, so Tempi works the same with or without a connection. Only Google Calendar sync needs the internet."
+        "answer": "Yes. Your calendars live on your computer, so Tempi works the same with or without a connection. Only Google Calendar sync and the AI assistant need the internet."
+      },
+      "ai": {
+        "question": "Do I need AI? What does it send, and who do I pay?",
+        "answer": "No. The assistant is optional and stays off until you add an API key in Settings → Integrations. While you use it, your messages and the events it looks at go to the provider you chose (OpenAI, Anthropic, Google, xAI or Groq, plus ElevenLabs for voice). You pay that provider directly under your own account; Tempi never sees your key or charges anything."
       },
       "macos": {
         "question": "macOS says Tempi “can't be opened”. What do I do?",

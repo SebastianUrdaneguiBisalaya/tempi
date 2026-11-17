@@ -1,3 +1,4 @@
+import { Ai } from '@/features/ai/components/ai';
 import { Download } from '@/features/download/components/download';
 import { Faq } from '@/features/faq/components/faq';
 import { Features } from '@/features/features/components/features';
@@ -11,6 +12,7 @@ export default function LandingPage() {
 			<Hero />
 			<WhyTempi />
 			<Features />
+			<Ai />
 			<Keyboard />
 			<Faq />
 			<Download />

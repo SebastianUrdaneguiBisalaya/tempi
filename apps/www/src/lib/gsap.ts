@@ -17,16 +17,17 @@ const MOTION_ALLOWED = '(prefers-reduced-motion: no-preference)';
 
 /**
  * Runs `animate` scoped to `scope`, only when the visitor allows motion. Content must be visible without it: animate with
- * `gsap.from`, so with reduced motion (or before hydration) the page shows its final state.
+ * `gsap.from`, so with reduced motion (or before hydration) the page shows its final state. `animate` may return a cleanup.
+ * When `dependencies` change, everything it started is reverted and it runs again.
  */
-export function useMotion(scope: RefObject<HTMLElement | null>, animate: () => void) {
+export function useMotion(scope: RefObject<HTMLElement | null>, animate: () => void | (() => void), dependencies: readonly unknown[] = []) {
 	useGSAP(
 		() => {
 			const media = gsap.matchMedia();
 			media.add(MOTION_ALLOWED, animate);
 			return () => media.revert();
 		},
-		{ scope }
+		{ scope, dependencies: [...dependencies], revertOnUpdate: true }
 	);
 }
 

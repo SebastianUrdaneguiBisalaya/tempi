@@ -8,6 +8,7 @@
     "navLabel": "Principal",
     "nav": {
       "features": "Funciones",
+      "ai": "IA",
       "faq": "Preguntas",
       "download": "Descargar"
     },
@@ -126,6 +127,65 @@
       }
     }
   },
+  "ai": {
+    "eyebrow": "Asistente de IA",
+    "title": "Pregúntale a tu calendario.",
+    "subtitle": "Opcional y desactivado por defecto. Escribe o habla con Tempi sobre tu agenda usando tu propio proveedor de IA, y confirma cada cambio antes de que se guarde.",
+    "mockup": {
+      "label": "Demo animada: se le pide al asistente un almuerzo para mañana, revisa el calendario, propone un evento nuevo que se confirma y se guarda, y luego la pestaña Voz escucha, piensa y responde en voz alta",
+      "tabs": {
+        "chat": "Chat",
+        "voice": "Voz"
+      },
+      "chat": {
+        "welcome": "Pregunta por tu calendario o describe un evento, y lo prepararé para que lo confirmes.",
+        "placeholder": "Pregunta por tu calendario o describe un evento…",
+        "message": "Almuerzo con Ana mañana a la 1 pm",
+        "tool": "Revisando tus eventos",
+        "reply": "Mañana a la 1 pm estás libre. Este es el evento:",
+        "proposal": {
+          "create": "Nuevo evento",
+          "title": "Título",
+          "when": "Cuándo",
+          "calendar": "Calendario",
+          "confirm": "Confirmar",
+          "edit": "Editar",
+          "saved": "Guardado",
+          "event": {
+            "title": "Almuerzo con Ana",
+            "when": "Mañana, 13:00 – 14:00",
+            "calendar": "Personal"
+          }
+        }
+      },
+      "voiceStatus": {
+        "idle": "Toca para hablar",
+        "listening": "Escuchando… toca para enviar",
+        "thinking": "Pensando…",
+        "speaking": "Hablando… toca para detener"
+      }
+    },
+    "points": {
+      "keys": {
+        "title": "Usa tu propia clave.",
+        "body": "Agrega una clave de API del proveedor que ya usas. Le pagas directamente a él; Tempi no cobra nada."
+      },
+      "voice": {
+        "title": "Escribe o habla.",
+        "body": "Chatea por escrito, dicta, o habla y escucha la respuesta con ElevenLabs, en inglés o español."
+      },
+      "confirm": {
+        "title": "Nada cambia sin Confirmar.",
+        "body": "El asistente lee tus eventos y propone cambios. Cada uno espera en una tarjeta hasta que lo confirmes, lo edites o lo ignores."
+      },
+      "private": {
+        "title": "Privado por defecto.",
+        "body": "Desactivado hasta que agregues una clave, que se cifra en tu dispositivo. Solo mientras lo usas, tus mensajes y los eventos que lee se envían al proveedor que elegiste."
+      }
+    },
+    "providers": "Proveedores compatibles",
+    "shortcut": "Ábrelo desde cualquier parte de Tempi con"
+  },
   "keyboard": {
     "eyebrow": "Teclado primero",
     "title": "Tus manos nunca dejan el teclado.",
@@ -164,7 +224,8 @@
       "openCommandMenu": "Abrir menú de comandos",
       "openSettings": "Abrir ajustes",
       "showShortcuts": "Mostrar atajos de teclado",
-      "togglePanel": "Mostrar u ocultar panel de detalles"
+      "togglePanel": "Mostrar u ocultar panel de detalles",
+      "toggleAssistant": "Abrir asistente de IA"
     }
   },
   "faq": {
@@ -179,7 +240,7 @@
       },
       "data": {
         "question": "¿Dónde se guardan mis calendarios?",
-        "answer": "En una base de datos SQLite en la carpeta de datos de Tempi, en tu propia computadora. Nada va a un servidor a menos que conectes Google Calendar, y puedes hacer respaldos completos desde Ajustes → Datos."
+        "answer": "En una base de datos SQLite en la carpeta de datos de Tempi, en tu propia computadora. Nada va a un servidor a menos que conectes Google Calendar o uses el asistente de IA con tu propia clave, y puedes hacer respaldos completos desde Ajustes → Datos."
       },
       "account": {
         "question": "¿Necesito una cuenta de Google?",
@@ -187,7 +248,11 @@
       },
       "offline": {
         "question": "¿Funciona sin conexión?",
-        "answer": "Sí. Tus calendarios viven en tu computadora, así que Tempi funciona igual con o sin conexión. Solo la sincronización con Google Calendar necesita internet."
+        "answer": "Sí. Tus calendarios viven en tu computadora, así que Tempi funciona igual con o sin conexión. Solo la sincronización con Google Calendar y el asistente de IA necesitan internet."
+      },
+      "ai": {
+        "question": "¿Necesito la IA? ¿Qué envía y a quién le pago?",
+        "answer": "No. El asistente es opcional y está desactivado hasta que agregues una clave de API en Ajustes → Integraciones. Mientras lo usas, tus mensajes y los eventos que consulta van al proveedor que elegiste (OpenAI, Anthropic, Google, xAI o Groq, más ElevenLabs para la voz). Le pagas directamente a ese proveedor con tu propia cuenta; Tempi nunca ve tu clave ni cobra nada."
       },
       "macos": {
         "question": "macOS dice que Tempi “no se puede abrir”. ¿Qué hago?",
