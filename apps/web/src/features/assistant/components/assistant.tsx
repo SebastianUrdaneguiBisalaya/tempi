@@ -1,20 +1,17 @@
 'use client';
 
-import { cn } from 'cn';
 import { MinusIcon, SquarePenIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useMediaQuery } from '@/hooks/use-media-query';
+import { ShortcutKeys } from '@/features/shortcuts/components/shortcut-keys';
+import { SHORTCUTS } from '@/features/shortcuts/shortcuts';
 import type { AssistantTab } from '../assistant-store';
 import { useAssistant, useAssistantPanel, useAssistantRequests } from './assistant-provider';
 import { ChatTab } from './chat-tab';
 import { VoiceTab } from './voice-tab';
-
-// Tailwind's `md`: below it the panel opens as a bottom drawer instead of floating.
-const FLOATING_QUERY = '(min-width: 48rem)';
 
 const isTab = (value: unknown): value is AssistantTab => value === 'chat' || value === 'voice';
 
@@ -49,73 +46,112 @@ function AssistantPanel({ onEdit, onMinimize }: { onEdit: () => void; onMinimize
 	);
 }
 
-function LauncherIcon() {
-	// The app's logo, from the static export's public folder.
-	// biome-ignore lint/performance/noImgElement: a static export has no image optimizer; the icon is a local file.
-	return <img alt='' className='size-7 rounded-full' height={28} src='/tempi-icon.png' width={28} />;
+/** The app's logo: a white glyph, shown on a dark tile (a light one, with the glyph inverted, in dark mode). */
+function TempiMark() {
+	return (
+		<span aria-hidden className='flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-foreground shadow-xs'>
+			{/* biome-ignore lint/performance/noImgElement: a static export has no image optimizer; the icon is a local file. */}
+			<img alt='' className='size-12 max-w-none dark:invert' height={48} src='/tempi-icon.png' width={48} />
+		</span>
+	);
 }
 
-const launcherClass = (inset: boolean) =>
-	cn(
-		'fixed bottom-4 z-40 flex size-11 items-center justify-center rounded-full border bg-background shadow-lg transition-[right,transform] outline-none hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring/50 motion-reduce:transition-none motion-reduce:hover:scale-100',
-		// Beside the inline right panel (w-72), never over it.
-		inset ? 'right-[calc(18rem+1rem)]' : 'right-4'
+const ENTRY_CLASS =
+	'group/ask flex w-full items-center gap-2.5 rounded-lg border border-primary/15 bg-linear-to-br from-primary/10 via-sidebar to-sidebar p-2 text-left text-sidebar-foreground shadow-xs outline-none transition-[border-color,background-color,box-shadow] hover:border-primary/30 hover:from-primary/15 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-sidebar-ring aria-expanded:border-primary/30 aria-expanded:from-primary/15 motion-reduce:transition-none';
+
+/** The entry's content: the logo, "Ask Tempi" with a short hint, and the ⌘J keys. */
+function EntryContent() {
+	const { t } = useTranslation();
+	return (
+		<>
+			<TempiMark />
+			<span className='flex min-w-0 flex-1 flex-col'>
+				<span className='truncate font-medium'>{t('assistant.entry.label')}</span>
+				<span className='truncate text-muted-foreground'>{t('assistant.entry.hint')}</span>
+			</span>
+			<ShortcutKeys keys={[SHORTCUTS.toggleAssistant.keys]} />
+		</>
 	);
+}
+
+type AssistantEntryProps = {
+	/**
+	 * True while the entry is on screen in the inline sidebar: the panel floats beside it. Otherwise (narrow windows,
+	 * where the sidebar is a drawer) the entry only opens `AssistantDrawer`.
+	 */
+	anchored: boolean;
+	/** Runs before the drawer opens, e.g. to close the sidebar drawer the entry sits in. */
+	onOpenDrawer?: () => void;
+};
 
 /**
- * The assistant: a launcher in the bottom-right corner and the panel it opens. Wide windows float the panel above the
- * launcher, non-modal so the calendar stays usable; narrow ones use a bottom drawer. Collapsing only hides it.
+ * "Ask Tempi" at the bottom of the left sidebar. In the inline sidebar the panel floats beside it, non-modal so the
+ * calendar stays usable; only the entry, ⌘J, Esc and Minimize close it.
  */
-export function Assistant({ inset }: { inset: boolean }) {
+export function AssistantEntry({ anchored, onOpenDrawer }: AssistantEntryProps) {
 	const { t } = useTranslation();
-	const floating = useMediaQuery(FLOATING_QUERY, true);
 	const { open, setOpen } = useAssistantPanel();
 	const label = t(open ? 'assistant.minimize' : 'assistant.open');
-	const minimize = () => setOpen(false);
-	// The event form opens in the right panel; on narrow windows that is a drawer the assistant's would cover.
-	const onEdit = () => {
-		if (!floating) setOpen(false);
-	};
 
-	if (floating)
+	if (!anchored)
 		return (
-			<Popover
-				modal={false}
-				onOpenChange={(next, details) => {
-					// Clicking the calendar or moving focus to it keeps the panel open: only the launcher, ⌘J, Esc and Minimize collapse it.
-					if (!next && (details.reason === 'outside-press' || details.reason === 'focus-out')) return;
-					setOpen(next);
+			<button
+				aria-expanded={open}
+				aria-label={label}
+				className={ENTRY_CLASS}
+				onClick={() => {
+					onOpenDrawer?.();
+					setOpen(!open);
 				}}
-				open={open}
+				type='button'
 			>
-				<PopoverTrigger aria-label={label} className={launcherClass(inset)} title={label}>
-					<LauncherIcon />
-				</PopoverTrigger>
-				<PopoverContent
-					align='end'
-					aria-label={t('assistant.title')}
-					className='h-[min(38rem,calc(100svh-7rem))] w-[min(26rem,calc(100vw-2rem))] gap-0 overflow-hidden p-0 duration-200 motion-reduce:animate-none'
-					side='top'
-					sideOffset={12}
-				>
-					<AssistantPanel onEdit={onEdit} onMinimize={minimize} />
-				</PopoverContent>
-			</Popover>
+				<EntryContent />
+			</button>
 		);
 
 	return (
-		<>
-			<button aria-expanded={open} aria-label={label} className={launcherClass(false)} onClick={() => setOpen(!open)} title={label} type='button'>
-				<LauncherIcon />
-			</button>
-			<Drawer onOpenChange={setOpen} open={open}>
-				<DrawerContent className='h-[85svh]'>
-					<DrawerHeader className='sr-only'>
-						<DrawerTitle>{t('assistant.title')}</DrawerTitle>
-					</DrawerHeader>
-					<AssistantPanel onEdit={onEdit} onMinimize={minimize} />
-				</DrawerContent>
-			</Drawer>
-		</>
+		<Popover
+			modal={false}
+			onOpenChange={(next, details) => {
+				// Clicking the calendar or moving focus to it keeps the panel open.
+				if (!next && (details.reason === 'outside-press' || details.reason === 'focus-out')) return;
+				setOpen(next);
+			}}
+			open={open}
+		>
+			<PopoverTrigger aria-label={label} className={ENTRY_CLASS}>
+				<EntryContent />
+			</PopoverTrigger>
+			<PopoverContent
+				align='end'
+				aria-label={t('assistant.title')}
+				className='h-[min(38rem,calc(100svh-2rem))] w-[min(26rem,calc(100vw-18rem))] gap-0 overflow-hidden p-0 duration-200 motion-reduce:animate-none'
+				side='right'
+				sideOffset={12}
+			>
+				<AssistantPanel onEdit={() => undefined} onMinimize={() => setOpen(false)} />
+			</PopoverContent>
+		</Popover>
+	);
+}
+
+/**
+ * The panel as a bottom drawer, used whenever the sidebar entry isn't on screen to anchor it: narrow windows and the
+ * collapsed sidebar. ⌘J and the entry open it.
+ */
+export function AssistantDrawer() {
+	const { t } = useTranslation();
+	const { open, setOpen } = useAssistantPanel();
+	const minimize = () => setOpen(false);
+	return (
+		<Drawer onOpenChange={setOpen} open={open}>
+			<DrawerContent className='h-[85svh]'>
+				<DrawerHeader className='sr-only'>
+					<DrawerTitle>{t('assistant.title')}</DrawerTitle>
+				</DrawerHeader>
+				{/* The event form opens in the right panel, which this drawer would cover: make way for it. */}
+				<AssistantPanel onEdit={minimize} onMinimize={minimize} />
+			</DrawerContent>
+		</Drawer>
 	);
 }

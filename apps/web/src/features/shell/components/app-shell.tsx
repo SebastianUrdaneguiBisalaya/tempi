@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Sidebar, SidebarContent, SidebarGroup, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { Assistant } from '@/features/assistant/components/assistant';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { AssistantDrawer, AssistantEntry } from '@/features/assistant/components/assistant';
 import { AssistantProvider } from '@/features/assistant/components/assistant-provider';
 import { CalendarMain } from '@/features/calendar/components/calendar-main';
 import { CalendarNavigationProvider } from '@/features/calendar/components/calendar-navigation-provider';
@@ -80,6 +80,8 @@ function ShellLayout() {
 		else setPanelDrawerOpen(false);
 	};
 	useShortcut('togglePanel', togglePanel);
+	// The assistant floats beside its sidebar entry while that is on screen; otherwise it opens as a bottom drawer.
+	const assistantAnchored = sidebarInline && sidebarExpanded;
 	const panelContent =
 		selection === null ? (
 			<SearchablePanel footer={<ShortcutsHint />}>
@@ -99,6 +101,9 @@ function ShellLayout() {
 						</SidebarGroup>
 						<CalendarList />
 					</SidebarContent>
+					<SidebarFooter>
+						<AssistantEntry anchored={sidebarExpanded} />
+					</SidebarFooter>
 				</Sidebar>
 			) : (
 				<Drawer onOpenChange={setSidebarDrawerOpen} open={sidebarDrawerOpen} swipeDirection='left'>
@@ -112,6 +117,9 @@ function ShellLayout() {
 							</SidebarGroup>
 							<CalendarList />
 						</SidebarContent>
+						<SidebarFooter>
+							<AssistantEntry anchored={false} onOpenDrawer={() => setSidebarDrawerOpen(false)} />
+						</SidebarFooter>
 					</DrawerContent>
 				</Drawer>
 			)}
@@ -147,7 +155,7 @@ function ShellLayout() {
 						</Drawer>
 					)}
 				</div>
-				<Assistant inset={panelInline && panelOpen} />
+				{!assistantAnchored && <AssistantDrawer />}
 			</SidebarInset>
 		</SidebarProvider>
 	);

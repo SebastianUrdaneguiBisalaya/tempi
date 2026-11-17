@@ -17,6 +17,10 @@ export const es = {
 				description: 'Agrega una clave de API de OpenAI, Anthropic, Google, xAI o Groq en Ajustes › Integraciones para conversar con tu calendario.',
 				title: 'Configura un proveedor de IA',
 			},
+			entry: {
+				hint: 'Escribe o habla sobre tu calendario',
+				label: 'Pregúntale a Tempi',
+			},
 			minimize: 'Minimizar el asistente de IA',
 			newChat: 'Nuevo chat',
 			open: 'Abrir el asistente de IA',

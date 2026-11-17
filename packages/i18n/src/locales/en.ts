@@ -15,6 +15,10 @@ export const en = {
 				description: 'Add an API key for OpenAI, Anthropic, Google, xAI or Groq in Settings › Integrations to chat with your calendar.',
 				title: 'Set up an AI provider',
 			},
+			entry: {
+				hint: 'Chat or talk about your calendar',
+				label: 'Ask Tempi',
+			},
 			minimize: 'Minimize AI assistant',
 			newChat: 'New chat',
 			open: 'Open AI assistant',
