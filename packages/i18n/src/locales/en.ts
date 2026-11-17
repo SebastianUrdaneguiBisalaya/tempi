@@ -16,7 +16,6 @@ export const en = {
 				title: 'Set up an AI provider',
 			},
 			entry: {
-				hint: 'Chat or talk about your calendar',
 				label: 'Ask Tempi',
 			},
 			minimize: 'Minimize AI assistant',

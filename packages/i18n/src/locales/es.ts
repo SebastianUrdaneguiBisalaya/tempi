@@ -18,7 +18,6 @@ export const es = {
 				title: 'Configura un proveedor de IA',
 			},
 			entry: {
-				hint: 'Escribe o habla sobre tu calendario',
 				label: 'Pregúntale a Tempi',
 			},
 			minimize: 'Minimizar el asistente de IA',

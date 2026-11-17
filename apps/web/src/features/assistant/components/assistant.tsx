@@ -59,16 +59,13 @@ function TempiMark() {
 const ENTRY_CLASS =
 	'group/ask flex w-full items-center gap-2.5 rounded-lg border border-primary/15 bg-linear-to-br from-primary/10 via-sidebar to-sidebar p-2 text-left text-sidebar-foreground shadow-xs outline-none transition-[border-color,background-color,box-shadow] hover:border-primary/30 hover:from-primary/15 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-sidebar-ring aria-expanded:border-primary/30 aria-expanded:from-primary/15 motion-reduce:transition-none';
 
-/** The entry's content: the logo, "Ask Tempi" with a short hint, and the ⌘J keys. */
+/** The entry's content: the logo, "Ask Tempi" and the ⌘J keys. */
 function EntryContent() {
 	const { t } = useTranslation();
 	return (
 		<>
 			<TempiMark />
-			<span className='flex min-w-0 flex-1 flex-col'>
-				<span className='truncate font-medium'>{t('assistant.entry.label')}</span>
-				<span className='truncate text-muted-foreground'>{t('assistant.entry.hint')}</span>
-			</span>
+			<span className='min-w-0 flex-1 truncate font-medium text-xs'>{t('assistant.entry.label')}</span>
 			<ShortcutKeys keys={[SHORTCUTS.toggleAssistant.keys]} />
 		</>
 	);
