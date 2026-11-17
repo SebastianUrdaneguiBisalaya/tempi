@@ -2,11 +2,12 @@
 
 import { TEXT_PROVIDERS } from '@tempi/core';
 import { issueTranslation } from '@tempi/i18n';
-import { AudioLinesIcon } from 'lucide-react';
+import { AudioLinesIcon, MicOffIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { useAiSettings } from '@/features/settings/hooks/use-ai';
+import { useSettings } from '@/features/settings/hooks/use-settings';
 import type { VoicePhase } from '../voice-store';
 import { useAssistant, useVoice } from './assistant-provider';
 import { ReplyError } from './chat-tab';
@@ -34,6 +35,26 @@ function VoiceSetup() {
 			</div>
 			<Button onClick={() => openSettings('integrations')} size='sm' variant='outline'>
 				{t('assistant.empty.action')}
+			</Button>
+		</div>
+	);
+}
+
+/** Shown under a disabled orb while the microphone is off in Tempi, with the way to turn it on. */
+function MicrophoneOff() {
+	const { t } = useTranslation();
+	const { openSettings } = useSettingsDialog();
+	return (
+		<div className='flex flex-col items-center gap-3 text-center'>
+			<div className='flex flex-col items-center gap-1'>
+				<p className='flex items-center gap-1.5 font-medium'>
+					<MicOffIcon aria-hidden className='size-4 text-muted-foreground' />
+					{t('assistant.voice.microphoneOff.title')}
+				</p>
+				<p className='text-muted-foreground'>{t('assistant.voice.microphoneOff.description')}</p>
+			</div>
+			<Button onClick={() => openSettings('permissions')} size='sm' variant='outline'>
+				{t('assistant.voice.microphoneOff.action')}
 			</Button>
 		</div>
 	);
@@ -94,6 +115,7 @@ function LastReplyProposals({ onEdit }: { onEdit: () => void }) {
 export function VoiceTab({ onEdit }: { onEdit: () => void }) {
 	const { t } = useTranslation();
 	const { data: settings } = useAiSettings();
+	const microphoneEnabled = useSettings().data?.microphoneEnabled !== false;
 	const phase = useVoice(state => state.phase);
 	const tap = useVoice(state => state.tap);
 	const picked = useAssistant(state => state.voiceProvider);
@@ -113,10 +135,14 @@ export function VoiceTab({ onEdit }: { onEdit: () => void }) {
 			</div>
 			<div className='flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto p-4'>
 				<div className='flex flex-1 flex-col items-center justify-center gap-4 py-4'>
-					<VoiceOrb disabled={phase === 'idle' && streaming} label={t(ORB_LABELS[phase])} onTap={() => tap(provider)} phase={phase} />
-					<p aria-live='polite' className='text-center text-muted-foreground'>
-						{t(`assistant.voice.status.${phase}`)}
-					</p>
+					<VoiceOrb disabled={phase === 'idle' && (streaming || !microphoneEnabled)} label={t(ORB_LABELS[phase])} onTap={() => tap(provider)} phase={phase} />
+					{microphoneEnabled ? (
+						<p aria-live='polite' className='text-center text-muted-foreground'>
+							{t(`assistant.voice.status.${phase}`)}
+						</p>
+					) : (
+						<MicrophoneOff />
+					)}
 					<VoiceError />
 					<LastReplyError phase={phase} />
 				</div>

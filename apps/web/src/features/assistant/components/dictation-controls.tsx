@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
+import { useSettings } from '@/features/settings/hooks/use-settings';
 import { type DictationMeter, WAVEFORM_BARS } from '../dictation-store';
 import { useDictation, useDictationStore } from './assistant-provider';
 
@@ -94,26 +95,26 @@ export function DictationError() {
 }
 
 /**
- * The mic button: click to record, click again to stop and transcribe into the prompt. Without an ElevenLabs key it
- * becomes a hint that opens Settings › Integrations.
+ * The mic button: click to record, click again to stop and transcribe into the prompt. With the microphone off in
+ * Tempi, or without an ElevenLabs key, it can't record and becomes a hint that opens the settings tab that fixes it.
  */
 export function DictationButton({ available }: { available: boolean }) {
 	const { t } = useTranslation();
 	const { openSettings } = useSettingsDialog();
+	const { data: settings } = useSettings();
 	const status = useDictation(state => state.status);
 	const start = useDictation(state => state.start);
 	const stop = useDictation(state => state.stop);
 
-	if (!available)
+	const blocker =
+		settings?.microphoneEnabled === false
+			? { hint: t('assistant.dictation.microphoneOff'), tab: 'permissions' as const }
+			: available
+				? null
+				: { hint: t('assistant.dictation.unavailable'), tab: 'integrations' as const };
+	if (blocker !== null)
 		return (
-			<Button
-				aria-label={t('assistant.dictation.unavailable')}
-				onClick={() => openSettings('integrations')}
-				size='icon-sm'
-				title={t('assistant.dictation.unavailable')}
-				type='button'
-				variant='ghost'
-			>
+			<Button aria-label={blocker.hint} onClick={() => openSettings(blocker.tab)} size='icon-sm' title={blocker.hint} type='button' variant='ghost'>
 				<MicOffIcon className='text-muted-foreground' />
 			</Button>
 		);

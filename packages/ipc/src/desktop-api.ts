@@ -66,6 +66,11 @@ type Api<Raw extends boolean> = {
 	onboarding: {
 		complete: Call<'onboarding:complete', Raw>;
 	};
+	permissions: {
+		openSystemSettings: Call<'permissions:openSystemSettings', Raw>;
+		status: CallWithoutInput<'permissions:status', Raw>;
+		testNotification: CallWithoutInput<'permissions:testNotification', Raw>;
+	};
 	profile: {
 		get: CallWithoutInput<'profile:get', Raw>;
 		update: Call<'profile:update', Raw>;

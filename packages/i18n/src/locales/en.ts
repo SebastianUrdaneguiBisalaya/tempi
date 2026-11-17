@@ -7,6 +7,7 @@ export const en = {
 				start: 'Dictate',
 				stop: 'Stop and transcribe',
 				transcribing: 'Transcribing…',
+				microphoneOff: 'The microphone is off in Settings › Permissions',
 				unavailable: 'Add an ElevenLabs key in Settings › Integrations to dictate',
 			},
 			empty: {
@@ -58,6 +59,11 @@ export const en = {
 			},
 			toolsUsed: 'Steps taken: {{count}}',
 			voice: {
+				microphoneOff: {
+					action: 'Open Permissions',
+					description: 'Talking to the assistant needs the microphone. Turn it on in Settings › Permissions.',
+					title: 'The microphone is off',
+				},
 				empty: {
 					description:
 						'Talking to the assistant needs an ElevenLabs key, to hear and speak, and a key for OpenAI, Anthropic, Google, xAI or Groq, to answer. Add them in Settings › Integrations.',
@@ -295,6 +301,17 @@ export const en = {
 				title: 'What’s your name?',
 			},
 			progress: 'Step {{current}} of {{total}}',
+			reminders: {
+				description: 'Tempi can notify you before your events. You can change it later in settings.',
+				options: {
+					off: 'No reminders',
+					on: 'Remind me',
+				},
+				onDescription: 'Sends a test notification now, so your system can ask for permission.',
+				testBody: 'Reminders are on. You’ll see your events here before they start.',
+				testTitle: 'Tempi',
+				title: 'Enable reminders',
+			},
 			theme: {
 				description: 'You can change it later in settings.',
 				options: {
@@ -436,12 +453,29 @@ export const en = {
 				waiting: 'Finish signing in in your browser…',
 			},
 			open: 'Settings',
+			permissions: {
+				description: 'Choose what Tempi may use. Your system has the final say.',
+				microphoneEnabled: 'Microphone',
+				microphoneEnabledDescription: 'For dictation and talking to the assistant.',
+				notificationsEnabled: 'Notifications',
+				notificationsEnabledDescription: 'Show event reminders as system notifications.',
+				openSystemSettings: 'Open system settings',
+				state: {
+					denied: 'Blocked by your system. Allow Tempi in system settings.',
+					granted: 'Allowed by your system.',
+					'not-determined': 'Your system will ask the first time it’s used.',
+					unknown: 'Managed by your system. If you don’t see them, check its settings.',
+					unsupported: 'Your system has no setting for this.',
+				},
+				title: 'Notifications and permissions',
+			},
 			tabs: {
 				about: 'About',
 				appearance: 'Appearance',
 				calendar: 'Calendar',
 				data: 'Data',
 				integrations: 'Integrations',
+				permissions: 'Permissions',
 				profile: 'Profile',
 				shortcuts: 'Shortcuts',
 			},

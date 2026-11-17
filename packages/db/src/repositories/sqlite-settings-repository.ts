@@ -10,6 +10,8 @@ const settingsRowSchema = z
 		default_event_duration: z.number(),
 		language: z.string(),
 		menu_bar_enabled: booleanColumn,
+		microphone_enabled: booleanColumn,
+		notifications_enabled: booleanColumn,
 		onboarding_completed: booleanColumn,
 		show_week_numbers: booleanColumn,
 		show_weekends: booleanColumn,
@@ -25,6 +27,8 @@ const settingsRowSchema = z
 			defaultEventDuration: row.default_event_duration,
 			language: row.language,
 			menuBarEnabled: row.menu_bar_enabled,
+			microphoneEnabled: row.microphone_enabled,
+			notificationsEnabled: row.notifications_enabled,
 			onboardingCompleted: row.onboarding_completed,
 			showWeekends: row.show_weekends,
 			showWeekNumbers: row.show_week_numbers,
@@ -43,18 +47,19 @@ export class SqliteSettingsRepository implements SettingsRepository {
 
 	constructor(db: DatabaseSync) {
 		this.getStatement = db.prepare(
-			`SELECT all_day_collapsed, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends, show_week_numbers,
+			`SELECT all_day_collapsed, default_event_duration, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, show_weekends, show_week_numbers,
 				theme, time_format, week_start, created_at, updated_at
 			FROM settings WHERE id = 1`
 		);
 		this.saveStatement = db.prepare(
-			`INSERT INTO settings (id, all_day_collapsed, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			`INSERT INTO settings (id, all_day_collapsed, default_event_duration, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, show_weekends,
 				show_week_numbers, theme, time_format, week_start, created_at, updated_at)
-			VALUES (1, :all_day_collapsed, :default_event_duration, :language, :menu_bar_enabled, :onboarding_completed, :show_weekends,
+			VALUES (1, :all_day_collapsed, :default_event_duration, :language, :menu_bar_enabled, :microphone_enabled, :notifications_enabled, :onboarding_completed, :show_weekends,
 				:show_week_numbers, :theme, :time_format, :week_start, :created_at, :updated_at)
 			ON CONFLICT (id) DO UPDATE SET
 				all_day_collapsed = excluded.all_day_collapsed, default_event_duration = excluded.default_event_duration, language = excluded.language,
-				menu_bar_enabled = excluded.menu_bar_enabled, onboarding_completed = excluded.onboarding_completed,
+				menu_bar_enabled = excluded.menu_bar_enabled, microphone_enabled = excluded.microphone_enabled,
+				notifications_enabled = excluded.notifications_enabled, onboarding_completed = excluded.onboarding_completed,
 				show_weekends = excluded.show_weekends, show_week_numbers = excluded.show_week_numbers,
 				theme = excluded.theme, time_format = excluded.time_format, week_start = excluded.week_start,
 				created_at = excluded.created_at, updated_at = excluded.updated_at`
@@ -76,6 +81,8 @@ export class SqliteSettingsRepository implements SettingsRepository {
 				default_event_duration: settings.defaultEventDuration,
 				language: settings.language,
 				menu_bar_enabled: toBooleanColumn(settings.menuBarEnabled),
+				microphone_enabled: toBooleanColumn(settings.microphoneEnabled),
+				notifications_enabled: toBooleanColumn(settings.notificationsEnabled),
 				onboarding_completed: toBooleanColumn(settings.onboardingCompleted),
 				show_week_numbers: toBooleanColumn(settings.showWeekNumbers),
 				show_weekends: toBooleanColumn(settings.showWeekends),

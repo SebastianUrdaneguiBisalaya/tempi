@@ -9,6 +9,7 @@ export const es = {
 				start: 'Dictar',
 				stop: 'Detener y transcribir',
 				transcribing: 'Transcribiendo…',
+				microphoneOff: 'El micrófono está desactivado en Ajustes › Permisos',
 				unavailable: 'Agrega una clave de ElevenLabs en Ajustes › Integraciones para dictar',
 			},
 			empty: {
@@ -60,6 +61,11 @@ export const es = {
 			},
 			toolsUsed: 'Pasos realizados: {{count}}',
 			voice: {
+				microphoneOff: {
+					action: 'Abrir Permisos',
+					description: 'Para hablar con el asistente se necesita el micrófono. Actívalo en Ajustes › Permisos.',
+					title: 'El micrófono está desactivado',
+				},
 				empty: {
 					description:
 						'Para hablar con el asistente necesitas una clave de ElevenLabs, para escuchar y hablar, y una de OpenAI, Anthropic, Google, xAI o Groq, para responder. Agrégalas en Ajustes › Integraciones.',
@@ -297,6 +303,17 @@ export const es = {
 				title: '¿Cómo te llamas?',
 			},
 			progress: 'Paso {{current}} de {{total}}',
+			reminders: {
+				description: 'Tempi puede avisarte antes de tus eventos. Puedes cambiarlo luego en la configuración.',
+				options: {
+					off: 'Sin recordatorios',
+					on: 'Recuérdame',
+				},
+				onDescription: 'Envía ahora una notificación de prueba para que tu sistema pida permiso.',
+				testBody: 'Los recordatorios están activados. Verás tus eventos aquí antes de que empiecen.',
+				testTitle: 'Tempi',
+				title: 'Activa los recordatorios',
+			},
 			theme: {
 				description: 'Puedes cambiarlo luego en la configuración.',
 				options: {
@@ -438,12 +455,29 @@ export const es = {
 				waiting: 'Termina de iniciar sesión en tu navegador…',
 			},
 			open: 'Ajustes',
+			permissions: {
+				description: 'Elige qué puede usar Tempi. Tu sistema tiene la última palabra.',
+				microphoneEnabled: 'Micrófono',
+				microphoneEnabledDescription: 'Para dictar y hablar con el asistente.',
+				notificationsEnabled: 'Notificaciones',
+				notificationsEnabledDescription: 'Muestra los recordatorios de eventos como notificaciones del sistema.',
+				openSystemSettings: 'Abrir ajustes del sistema',
+				state: {
+					denied: 'Bloqueado por tu sistema. Permite Tempi en los ajustes del sistema.',
+					granted: 'Permitido por tu sistema.',
+					'not-determined': 'Tu sistema preguntará la primera vez que se use.',
+					unknown: 'Lo gestiona tu sistema. Si no las ves, revisa sus ajustes.',
+					unsupported: 'Tu sistema no tiene un ajuste para esto.',
+				},
+				title: 'Notificaciones y permisos',
+			},
 			tabs: {
 				about: 'Acerca de',
 				appearance: 'Apariencia',
 				calendar: 'Calendario',
 				data: 'Datos',
 				integrations: 'Integraciones',
+				permissions: 'Permisos',
 				profile: 'Perfil',
 				shortcuts: 'Atajos',
 			},

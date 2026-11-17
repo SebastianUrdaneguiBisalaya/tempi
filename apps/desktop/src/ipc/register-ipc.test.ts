@@ -9,7 +9,7 @@ import type { GoogleAccountService } from '../google/google-account';
 import type { SyncRunner } from '../google/sync-runner';
 import { createUpdateService } from '../updates/update-service';
 import type { IpcSender } from './handle';
-import { type AiIo, type DataIo, type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
+import { type AiIo, type DataIo, type IcalIo, type IpcListeners, type PermissionsIo, registerIpc } from './register-ipc';
 
 const TRUSTED = 'app://tempi';
 const T0 = '2026-11-15T10:00:00.000Z';
@@ -128,6 +128,20 @@ const icalIo: IcalIo = {
 	},
 };
 
+/** The fake OS: macOS with the microphone denied. Records which privacy pages were opened and notifications shown. */
+let permissionCalls: string[];
+const permissions: PermissionsIo = {
+	openSystemSettings: permission => {
+		permissionCalls.push(`open ${permission}`);
+		return Promise.resolve(permission === 'microphone');
+	},
+	status: () => ({ microphone: { canOpenSettings: true, state: 'denied' }, notifications: { canOpenSettings: true, state: 'unknown' } }),
+	testNotification: () => {
+		permissionCalls.push('notify');
+		return true;
+	},
+};
+
 // A newer release on GitHub, as the macOS check would find it.
 const updates = () =>
 	createUpdateService({
@@ -147,6 +161,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	backupPath = '/backups';
 	restoreSource = null;
 	dataCalls = [];
+	permissionCalls = [];
 	aiKeys = new Map();
 	chats = [];
 	googleEmail = null;
@@ -161,7 +176,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
-		{ ai, data: dataIo, google: { account: google, sync }, ical: icalIo, updates: updates() },
+		{ ai, data: dataIo, google: { account: google, sync }, ical: icalIo, permissions, updates: updates() },
 		listeners
 	);
 };
@@ -292,7 +307,7 @@ describe('registerIpc', () => {
 });
 
 describe('onboarding:complete', () => {
-	const onboarding = { avatar: null, country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', theme: 'dark', timeZone: 'America/Lima' };
+	const onboarding = { avatar: null, country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', notificationsEnabled: false, theme: 'dark', timeZone: 'America/Lima' };
 
 	test('saves the profile, the avatar and the completed settings', async () => {
 		setup();
@@ -301,7 +316,7 @@ describe('onboarding:complete', () => {
 
 		expect(result).toMatchObject({
 			ok: true,
-			value: { profile: { avatar: expect.stringMatching(/\.png$/), country: 'PE' }, settings: { language: 'es', onboardingCompleted: true, theme: 'dark' } },
+			value: { profile: { avatar: expect.stringMatching(/\.png$/), country: 'PE' }, settings: { language: 'es', notificationsEnabled: false, onboardingCompleted: true, theme: 'dark' } },
 		});
 		expect([...avatars.values()]).toEqual([avatar]);
 		expect(rows('SELECT first_name, avatar FROM profile')).toEqual([expect.objectContaining({ avatar: [...avatars.keys()][0], first_name: 'Ana' })]);
@@ -328,7 +343,7 @@ describe('onboarding:complete', () => {
 });
 
 describe('profile:update', () => {
-	const onboarding = { avatar: null, country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', theme: 'dark', timeZone: 'America/Lima' };
+	const onboarding = { avatar: null, country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', notificationsEnabled: false, theme: 'dark', timeZone: 'America/Lima' };
 
 	test('stores a new avatar and keeps it on later updates without one', async () => {
 		setup();
@@ -348,7 +363,7 @@ describe('profile:update', () => {
 });
 
 describe('profile:update avatar files', () => {
-	const onboarding = { country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', theme: 'dark', timeZone: 'America/Lima' };
+	const onboarding = { country: 'pe', firstName: 'Ana', language: 'es', lastName: 'Quispe', notificationsEnabled: false, theme: 'dark', timeZone: 'America/Lima' };
 	const fields = { country: 'PE', firstName: 'Ana', lastName: 'Quispe', timeZone: 'America/Lima' };
 	const first: AvatarImage = { bytes: new Uint8Array([1]), type: 'image/png' };
 	const second: AvatarImage = { bytes: new Uint8Array([2]), type: 'image/png' };
@@ -671,5 +686,33 @@ describe('updates', () => {
 
 	test('refuses untrusted senders', async () => {
 		expect(await invoke(CHANNELS.updates.check, undefined, 'https://evil.example/')).toMatchObject({ ok: false });
+	});
+});
+
+describe('permissions', () => {
+	beforeEach(() => setup());
+
+	test('answers the OS status', async () => {
+		expect(await invoke(CHANNELS.permissions.status)).toEqual({
+			ok: true,
+			value: { microphone: { canOpenSettings: true, state: 'denied' }, notifications: { canOpenSettings: true, state: 'unknown' } },
+		});
+	});
+
+	test('opens only a known permission’s page, and fails where there is none', async () => {
+		expect(await invoke(CHANNELS.permissions.openSystemSettings, 'microphone')).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.permissions.openSystemSettings, 'notifications')).toMatchObject({ ok: false });
+		expect(await invoke(CHANNELS.permissions.openSystemSettings, 'https://evil.example/')).toMatchObject({ error: { code: 'validation' }, ok: false });
+		expect(permissionCalls).toEqual(['open microphone', 'open notifications']);
+	});
+
+	test('shows a test notification', async () => {
+		expect(await invoke(CHANNELS.permissions.testNotification)).toEqual({ ok: true, value: null });
+		expect(permissionCalls).toEqual(['notify']);
+	});
+
+	test('refuses untrusted senders', async () => {
+		expect(await invoke(CHANNELS.permissions.testNotification, undefined, 'https://evil.example/')).toMatchObject({ ok: false });
+		expect(permissionCalls).toEqual([]);
 	});
 });

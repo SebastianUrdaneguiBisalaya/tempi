@@ -9,16 +9,16 @@ import { storeAvatar } from './store-avatar';
 
 export type OnboardingResult = { profile: UserProfile; settings: Settings };
 
-/** Saves the profile (storing the avatar image, if any) and the chosen preferences, and marks onboarding as completed. */
+/** Saves the profile (storing the avatar image, if any) and the chosen preferences (reminders included), and marks onboarding as completed. */
 export const completeOnboarding = async (deps: Pick<CoreDeps, 'avatars' | 'clock' | 'ids' | 'profile' | 'settings'>, input: OnboardingInput): Promise<Result<OnboardingResult>> => {
 	const parsed = parseWith(onboardingInputSchema, input);
 	if (!parsed.ok) return parsed;
-	const { avatar: image, language, theme, ...fields } = parsed.value;
+	const { avatar: image, language, notificationsEnabled, theme, ...fields } = parsed.value;
 
 	const avatar = image === null ? null : await storeAvatar(deps, image);
 	const profile = await saveProfile(deps, { ...fields, avatar });
 	if (!profile.ok) return profile;
-	const settings = await saveSettings(deps, { language, onboardingCompleted: true, theme });
+	const settings = await saveSettings(deps, { language, notificationsEnabled, onboardingCompleted: true, theme });
 	if (!settings.ok) return settings;
 	return ok({ profile: profile.value, settings: settings.value });
 };

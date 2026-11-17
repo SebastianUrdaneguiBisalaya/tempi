@@ -18,6 +18,10 @@ export const settingsValuesSchema = z.object({
 	defaultEventDuration: z.number().int('validation.integer').min(1, 'validation.min').max(1440, 'validation.max'),
 	language: z.enum(LANGUAGES),
 	menuBarEnabled: z.boolean(),
+	/** Lets dictation and voice use the microphone. The OS may still deny it. */
+	microphoneEnabled: z.boolean(),
+	/** Shows reminders as native notifications. The OS may still block them. */
+	notificationsEnabled: z.boolean(),
 	onboardingCompleted: z.boolean(),
 	showWeekends: z.boolean(),
 	showWeekNumbers: z.boolean(),
@@ -41,6 +45,8 @@ export const DEFAULT_SETTINGS = {
 	defaultEventDuration: 60,
 	language: 'en',
 	menuBarEnabled: false,
+	microphoneEnabled: true,
+	notificationsEnabled: true,
 	onboardingCompleted: false,
 	showWeekends: true,
 	showWeekNumbers: false,

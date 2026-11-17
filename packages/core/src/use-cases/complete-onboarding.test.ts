@@ -6,7 +6,7 @@ import type { UserProfile } from '../domain/user-profile';
 import { completeOnboarding } from './complete-onboarding';
 import { failure, makeDeps, T0 } from './test-fakes';
 
-const input: OnboardingInput = { avatar: null, country: 'pe', firstName: ' Ana ', language: 'es', lastName: 'Quispe', theme: 'dark', timeZone: 'America/Lima' };
+const input: OnboardingInput = { avatar: null, country: 'pe', firstName: ' Ana ', language: 'es', lastName: 'Quispe', notificationsEnabled: true, theme: 'dark', timeZone: 'America/Lima' };
 
 const image = { bytes: new Uint8Array([1, 2, 3]), type: 'image/webp' } as const;
 
@@ -21,6 +21,15 @@ describe('completeOnboarding', () => {
 		expect(deps.profile.value).toEqual(profile);
 		expect(deps.settings.value).toEqual(settings);
 		expect(deps.avatars.files.size).toBe(0);
+	});
+
+	test('saves turning reminders off', async () => {
+		const deps = makeDeps();
+		const result = await completeOnboarding(deps, { ...input, notificationsEnabled: false });
+
+		expect(result.ok && result.value.settings.notificationsEnabled).toBe(false);
+		expect(deps.settings.value?.notificationsEnabled).toBe(false);
+		expect(deps.settings.value?.microphoneEnabled).toBe(true);
 	});
 
 	test('stores the avatar image and references it by file name', async () => {
