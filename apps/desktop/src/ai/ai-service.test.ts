@@ -20,18 +20,23 @@ const none = { anthropic: false, elevenlabs: false, google: false, groq: false, 
 const fakeProviders = () => {
 	const tested: [AiProvider, string][] = [];
 	const transcribed: unknown[] = [];
+	const spoken: unknown[] = [];
 	const providers: AiProviders = {
 		listVoices: key => Promise.resolve(key === 'good-key' ? ok([{ id: 'v1', name: 'Ada' }]) : fail('validation', 'ai.invalidKey')),
 		testKey: (provider, key) => {
 			tested.push([provider, key]);
 			return Promise.resolve(key === 'good-key' ? ok(null) : fail('validation', 'ai.invalidKey', { field: 'key' }));
 		},
+		speak: (key, request) => {
+			spoken.push({ key, ...request });
+			return Promise.resolve(ok(new Uint8Array([73, 68, 51])));
+		},
 		transcribe: (key, request) => {
 			transcribed.push({ key, ...request });
 			return Promise.resolve(ok('crea una reunión con Ana el viernes a las 10'));
 		},
 	};
-	return { providers, tested, transcribed };
+	return { providers, spoken, tested, transcribed };
 };
 
 let dir: string;
@@ -49,7 +54,7 @@ const service = (options: { available?: boolean } = {}) => {
 		providers: fake.providers,
 		settings: createAiSettingsStore(path.join(dir, 'ai-settings.json')),
 	});
-	return { ai, tested: fake.tested, transcribed: fake.transcribed };
+	return { ai, spoken: fake.spoken, tested: fake.tested, transcribed: fake.transcribed };
 };
 
 const keyOf = (result: { ok: boolean; error?: { issues: { key: string }[] } }) => (result.ok ? null : result.error?.issues[0]?.key);
@@ -123,5 +128,33 @@ describe('dictation', () => {
 		await ai.saveSettings({ elevenlabs: { sttModel: 'scribe_v2_turbo' } });
 		expect(await ai.transcribe({ audio, language: 'es', mimeType: 'audio/webm' })).toEqual({ ok: true, value: { text: 'crea una reunión con Ana el viernes a las 10' } });
 		expect(transcribed).toEqual([{ audio, key: 'good-key', language: 'es', mimeType: 'audio/webm', model: 'scribe_v2_turbo' }]);
+	});
+});
+
+describe('text to speech', () => {
+	const mp3 = { audio: new Uint8Array([73, 68, 51]), mimeType: 'audio/mpeg' as const };
+
+	test('needs an ElevenLabs key, and sends nothing without one', async () => {
+		const { ai, spoken } = service();
+		expect(keyOf(await ai.speak({ language: 'en', text: 'Hi' }))).toBe('ai.invalidKey');
+		expect(spoken).toEqual([]);
+	});
+
+	test('reads with the saved key, the text-to-speech model from Settings and the voice for the language', async () => {
+		const { ai, spoken } = service();
+		await ai.saveKey({ key: 'good-key', provider: 'elevenlabs' });
+		await ai.saveSettings({ elevenlabs: { ttsModel: 'eleven_flash_v2_5', voices: { en: 'voice-en', es: 'voice-es' } } });
+		expect(await ai.speak({ language: 'es', text: 'Mañana tienes dentista.' })).toEqual({ ok: true, value: mp3 });
+		expect(spoken).toEqual([{ key: 'good-key', model: 'eleven_flash_v2_5', text: 'Mañana tienes dentista.', voiceId: 'voice-es' }]);
+	});
+
+	test("without a voice for the language, uses the other language's, then the account's first voice", async () => {
+		const { ai, spoken } = service();
+		await ai.saveKey({ key: 'good-key', provider: 'elevenlabs' });
+		await ai.saveSettings({ elevenlabs: { voices: { en: 'voice-en' } } });
+		await ai.speak({ language: 'es', text: 'Hola' });
+		await ai.saveSettings({ elevenlabs: { voices: { en: null } } });
+		await ai.speak({ language: 'es', text: 'Hola' });
+		expect(spoken.map(request => (request as { voiceId: string }).voiceId)).toEqual(['voice-en', 'v1']);
 	});
 });

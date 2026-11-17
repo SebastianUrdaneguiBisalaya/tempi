@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { MAX_DICTATION_BYTES, parseWith } from '@tempi/core';
+import { MAX_DICTATION_BYTES, MAX_SPEECH_LENGTH, parseWith } from '@tempi/core';
 import { CHANNELS } from './channels';
 import { payloadSchemas, responseValueSchemas, resultSchema } from './schemas';
 
@@ -28,6 +28,7 @@ describe('payloadSchemas', () => {
 		['ai:removeKey', 'groq'],
 		['ai:saveKey', { key: 'sk-test', provider: 'anthropic' }],
 		['ai:saveSettings', { elevenlabs: { voices: { es: 'voice-es' } }, models: { openai: 'gpt-5.4-mini' } }],
+		['ai:speak', { language: 'en', text: 'You have the dentist tomorrow at 3 pm.' }],
 		['ai:testKey', 'elevenlabs'],
 		['ai:transcribe', { audio: new Uint8Array([26, 69, 223, 163]), language: 'es', mimeType: 'audio/webm' }],
 		['app:showEvent', { key: 'event-1', startAt: '2026-11-20T09:00:00-05:00' }],
@@ -75,6 +76,8 @@ describe('payloadSchemas', () => {
 		['ai:chat', { messages: [{ role: 'system', text: ' ' }], provider: 'elevenlabs', requestId: 'not-a-uuid' }, ['messages.0.role', 'messages.0.text', 'provider', 'requestId']],
 		['ai:chat', { messages: [], provider: 'openai', requestId: '01890a5d-ac96-774b-bcce-b302099a8057' }, ['messages']],
 		['ai:removeKey', 'mistral', ['']],
+		['ai:speak', { language: 'fr', text: '   ' }, ['language', 'text']],
+		['ai:speak', { language: 'es', text: 'a'.repeat(MAX_SPEECH_LENGTH + 1) }, ['text']],
 		['ai:transcribe', { audio: 'base64audio', language: 'fr', mimeType: 'video/mp4' }, ['audio', 'language', 'mimeType']],
 		['ai:transcribe', { audio: new Uint8Array(), language: 'en', mimeType: 'audio/webm' }, ['audio']],
 		['ai:saveKey', { key: ' ', provider: 'mistral' }, ['key', 'provider']],
@@ -121,6 +124,20 @@ describe('ai:transcribe', () => {
 	test('refuses audio longer than a dictation can be', () => {
 		const result = parseWith(payloadSchemas['ai:transcribe'], { audio: new Uint8Array(MAX_DICTATION_BYTES + 1), language: 'en', mimeType: 'audio/webm' });
 		expect(result.ok ? [] : result.error.issues.map(issue => [issue.field, issue.key])).toEqual([['audio', 'ai.recordingTooLong']]);
+	});
+});
+
+describe('ai:speak answers', () => {
+	const speech = resultSchema(responseValueSchemas['ai:speak']);
+
+	test('accept MP3 audio in memory', () => {
+		expect(speech.safeParse({ ok: true, value: { audio: new Uint8Array([73, 68, 51]), mimeType: 'audio/mpeg' } }).success).toBe(true);
+	});
+
+	test('reject empty audio, audio that is not bytes, and another type', () => {
+		expect(speech.safeParse({ ok: true, value: { audio: new Uint8Array(), mimeType: 'audio/mpeg' } }).success).toBe(false);
+		expect(speech.safeParse({ ok: true, value: { audio: 'blob:app://tempi/1', mimeType: 'audio/mpeg' } }).success).toBe(false);
+		expect(speech.safeParse({ ok: true, value: { audio: new Uint8Array([1]), mimeType: 'text/html' } }).success).toBe(false);
 	});
 });
 

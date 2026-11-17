@@ -12,7 +12,7 @@ import type { TempiApi } from '@tempi/ipc';
 
 export type ToolTrace = { id: string; status: 'done' | 'error' | 'running'; tool: AssistantTool };
 
-export type ProposalStatus = 'confirmed' | 'pending';
+export type ProposalStatus = 'canceled' | 'confirmed' | 'pending';
 
 export type ProposalItem = { id: string; proposal: AssistantProposal; status: ProposalStatus };
 
@@ -41,15 +41,19 @@ export type AssistantState = {
 	requestId: string | null;
 	/** The unsent prompt, kept while the panel is collapsed. */
 	draft: string;
-	/** The provider picked in the panel; null until the user picks one (the first with a key is used). */
+	/** The provider picked in the Chat tab; null until the user picks one (the first with a key is used). */
 	provider: TextProvider | null;
+	/** The provider picked in the Voice tab, independent of the Chat tab's. */
+	voiceProvider: TextProvider | null;
 	tab: AssistantTab;
 };
 
-const INITIAL: AssistantState = { draft: '', provider: null, requestId: null, tab: 'chat', turns: [] };
+const INITIAL: AssistantState = { draft: '', provider: null, requestId: null, tab: 'chat', turns: [], voiceProvider: null };
+
+const STATE_NOTES = { canceled: 'the user canceled it', confirmed: 'the user confirmed it and it is saved', pending: 'not confirmed yet' } as const satisfies Record<ProposalStatus, string>;
 
 const proposalNote = ({ proposal, status }: ProposalItem): string => {
-	const state = status === 'confirmed' ? 'the user confirmed it and it is saved' : 'not confirmed yet';
+	const state = STATE_NOTES[status];
 	if (proposal.kind === 'create') return `[Proposed creating "${proposal.input.title}" at ${proposal.input.startAt}: ${state}.]`;
 	if (proposal.kind === 'update') return `[Proposed editing "${proposal.event.title}" (id ${proposal.id}): ${state}.]`;
 	return `[Proposed deleting "${proposal.event.title}" (id ${proposal.event.id}): ${state}.]`;
@@ -104,18 +108,23 @@ export const createAssistantStore = () => {
 	};
 	const updateTurn = (id: string, update: (turn: AssistantTurn) => AssistantTurn) =>
 		set({ ...state, turns: state.turns.map(turn => (turn.id === id && turn.role === 'assistant' ? update(turn) : turn)) });
+	// Who waits for each reply to end (the Voice tab, to read it aloud).
+	const waiting = new Map<string, (turn: AssistantTurn | null) => void>();
 	const finish = (api: TempiApi, requestId: string) => {
 		api.ai.stopChat(requestId);
 		if (state.requestId === requestId) set({ ...state, requestId: null });
+		const turn = state.turns.find((candidate): candidate is AssistantTurn => candidate.id === requestId && candidate.role === 'assistant');
+		waiting.get(requestId)?.(turn ?? null);
+		waiting.delete(requestId);
 	};
 
 	const stop = (api: TempiApi) => {
 		const { requestId } = state;
 		if (requestId === null) return;
-		finish(api, requestId);
 		updateTurn(requestId, turn =>
 			isEnded(turn.status) ? turn : { ...turn, status: 'stopped', traces: turn.traces.map(trace => (trace.status === 'running' ? { ...trace, status: 'error' } : trace)) }
 		);
+		finish(api, requestId);
 	};
 
 	return {
@@ -133,32 +142,41 @@ export const createAssistantStore = () => {
 			set({ ...state, draft: current === '' ? text : `${current} ${text}` });
 		},
 		setProvider: (provider: TextProvider) => set({ ...state, provider }),
+		setVoiceProvider: (voiceProvider: TextProvider) => set({ ...state, voiceProvider }),
 		setTab: (tab: AssistantTab) => set({ ...state, tab }),
 		setProposalStatus: (turnId: string, proposalId: string, status: ProposalStatus) =>
 			updateTurn(turnId, turn => ({ ...turn, proposals: turn.proposals.map(item => (item.id === proposalId ? { ...item, status } : item)) })),
-		/** Sends `text` and streams the reply. The reply's id is its request id, so its events find it. */
-		send: async (api: TempiApi, provider: TextProvider, text: string) => {
+		/**
+		 * Sends `text` and streams the reply. The reply's id is its request id, so its events find it. Resolves with the
+		 * reply once it ended (done, failed or stopped), or null if nothing was sent. `voice` asks for a reply to be heard.
+		 */
+		send: (api: TempiApi, provider: TextProvider, text: string, { voice = false }: { voice?: boolean } = {}): Promise<AssistantTurn | null> => {
 			const trimmed = text.trim();
-			if (trimmed === '' || state.requestId !== null) return;
+			if (trimmed === '' || state.requestId !== null) return Promise.resolve(null);
 			const requestId = crypto.randomUUID();
 			const user: UserTurn = { id: crypto.randomUUID(), role: 'user', text: trimmed };
 			const reply: AssistantTurn = { error: null, id: requestId, proposals: [], provider, role: 'assistant', status: 'streaming', text: '', traces: [] };
 			const turns = [...state.turns, user];
-			set({ ...state, draft: '', requestId, turns: [...turns, reply] });
-			const started = await api.ai.chat({ messages: toModelMessages(turns), provider, requestId }, event => {
-				updateTurn(requestId, turn => applyStreamEvent(turn, event));
-				if (event.type === 'done' || event.type === 'error') finish(api, requestId);
-			});
-			if (!started.ok) {
-				updateTurn(requestId, turn => applyStreamEvent(turn, { error: started.error, type: 'error' }));
-				finish(api, requestId);
-			}
+			// A spoken message leaves the Chat tab's unsent prompt alone.
+			set({ ...state, draft: voice ? state.draft : '', requestId, turns: [...turns, reply] });
+			const ended = new Promise<AssistantTurn | null>(resolve => waiting.set(requestId, resolve));
+			void api.ai
+				.chat({ messages: toModelMessages(turns), provider, requestId, ...(voice ? { voice } : {}) }, event => {
+					updateTurn(requestId, turn => applyStreamEvent(turn, event));
+					if (event.type === 'done' || event.type === 'error') finish(api, requestId);
+				})
+				.then(started => {
+					if (started.ok) return;
+					updateTurn(requestId, turn => applyStreamEvent(turn, { error: started.error, type: 'error' }));
+					finish(api, requestId);
+				});
+			return ended;
 		},
 		stop,
 		/** Starts over, for both tabs. A reply still streaming is stopped. */
 		clear: (api: TempiApi) => {
 			stop(api);
-			set({ ...INITIAL, provider: state.provider, tab: state.tab });
+			set({ ...INITIAL, provider: state.provider, tab: state.tab, voiceProvider: state.voiceProvider });
 		},
 	};
 };

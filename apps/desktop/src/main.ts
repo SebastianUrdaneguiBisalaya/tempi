@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { listVoices, runAssistant, testKey, textModel, transcribe } from '@tempi/ai';
+import { listVoices, runAssistant, speak, testKey, textModel, transcribe } from '@tempi/ai';
 import { type CoreDeps, getProfile, getSettings, initializeSettings, type Language, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
 import { resources } from '@tempi/i18n';
@@ -402,7 +402,12 @@ function aiIo(deps: CoreDeps, transaction: TransactionQueue): AiIo {
 		openStream: openAssistantStream,
 		service: createAiService({
 			keys,
-			providers: { listVoices: key => listVoices(key), testKey: (provider, key) => testKey(provider, key), transcribe: (key, request) => transcribe(key, request) },
+			providers: {
+				listVoices: key => listVoices(key),
+				speak: (key, request) => speak(key, request),
+				testKey: (provider, key) => testKey(provider, key),
+				transcribe: (key, request) => transcribe(key, request),
+			},
 			settings,
 		}),
 	};

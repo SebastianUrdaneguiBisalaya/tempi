@@ -15,6 +15,8 @@ export const CHANNELS = {
 		/** Tests a provider's key and, only if it works, stores it encrypted in the main process. */
 		saveKey: 'ai:saveKey',
 		saveSettings: 'ai:saveSettings',
+		/** Reads a text aloud with the saved ElevenLabs key and answers with the audio. Nothing is stored. */
+		speak: 'ai:speak',
 		/** Tests the saved key of a provider again. */
 		testKey: 'ai:testKey',
 		/** Transcribes one recorded dictation with the saved ElevenLabs key. The audio is never stored. */

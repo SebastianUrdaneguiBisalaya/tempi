@@ -26,6 +26,8 @@ export const en = {
 			},
 			proposal: {
 				calendar: 'Calendar',
+				cancel: 'Cancel',
+				canceled: 'Canceled',
 				confirm: 'Confirm',
 				create: 'New event',
 				delete: 'Delete event',
@@ -55,7 +57,31 @@ export const en = {
 				updateEvent: 'Preparing changes',
 			},
 			toolsUsed: 'Steps taken: {{count}}',
-			voiceSoon: 'Voice conversations are coming soon.',
+			voice: {
+				empty: {
+					description:
+						'Talking to the assistant needs an ElevenLabs key, to hear and speak, and a key for OpenAI, Anthropic, Google, xAI or Groq, to answer. Add them in Settings › Integrations.',
+					title: 'Set up voice',
+				},
+				orb: {
+					listening: 'Stop and send',
+					speaking: 'Stop speaking',
+					talk: 'Talk to the assistant',
+					thinking: 'Cancel',
+				},
+				proposals: 'Changes to confirm',
+				proposed: {
+					create: 'I’ve prepared “{{title}}”. Confirm or cancel it on screen.',
+					delete: 'I’ve prepared deleting “{{title}}”. Confirm or cancel it on screen.',
+					update: 'I’ve prepared changes to “{{title}}”. Confirm or cancel them on screen.',
+				},
+				status: {
+					idle: 'Tap to talk',
+					listening: 'Listening… tap to send',
+					speaking: 'Speaking… tap to stop',
+					thinking: 'Thinking…',
+				},
+			},
 			welcome: 'Ask me to find, add, change or delete events. Nothing is saved until you confirm it.',
 		},
 		actions: {
@@ -538,6 +564,7 @@ export const en = {
 			providerError: 'The provider returned an error. Try again later.',
 			rateLimited: 'The provider is limiting requests for this key, or its quota is used up. Try again later.',
 			recordingTooLong: 'The recording is too long. Dictations can last up to a minute.',
+			speechFailed: 'Couldn’t read the answer aloud. Check your ElevenLabs voices in Settings › Integrations, or read it in the Chat tab.',
 			transcriptionFailed: 'Couldn’t understand the recording. Try again, speaking a bit closer to the microphone.',
 		},
 		avatar: {

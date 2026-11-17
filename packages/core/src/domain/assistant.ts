@@ -26,6 +26,8 @@ export const assistantChatInputSchema = z.object({
 	messages: z.array(assistantMessageSchema).min(1, 'validation.min').max(MAX_ASSISTANT_MESSAGES, 'validation.max'),
 	provider: z.enum(TEXT_PROVIDERS),
 	requestId: z.uuid(),
+	/** The reply will be read aloud (Voice tab), so it is written to be heard: short, plain sentences, no formatting. */
+	voice: z.boolean().optional(),
 });
 
 export type AssistantChatInput = z.input<typeof assistantChatInputSchema>;

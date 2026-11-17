@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
 import { Message, MessageContent, MessageHeader } from '@/components/ui/message';
 import { MessageScroller, MessageScrollerButton, MessageScrollerContent, MessageScrollerItem, MessageScrollerProvider, MessageScrollerViewport } from '@/components/ui/message-scroller';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Trace, TraceCollapsible, TraceCollapsibleContent, TraceCollapsibleTrigger, TraceIcon, TraceLine, TraceTitle } from '@/components/ui/trace';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
@@ -19,6 +18,7 @@ import type { AssistantTurn, ToolTrace } from '../assistant-store';
 import { useAssistant } from './assistant-provider';
 import { DictationButton, DictationError, DictationWaveform } from './dictation-controls';
 import { ProposalCard } from './proposal-card';
+import { ProviderSelect } from './provider-select';
 
 function TraceRow({ trace }: { trace: ToolTrace }) {
 	const { t } = useTranslation();
@@ -63,7 +63,8 @@ function Traces({ turn }: { turn: AssistantTurn }) {
 	);
 }
 
-function ReplyError({ turn }: { turn: AssistantTurn }) {
+/** Why a reply ended early: stopped by the user, or its translated errors. */
+export function ReplyError({ turn }: { turn: AssistantTurn }) {
 	const { t } = useTranslation();
 	if (turn.status === 'stopped')
 		return (
@@ -145,7 +146,6 @@ function PromptInput({ enabled, provider, settings }: { enabled: TextProvider[];
 	const { draft, requestId, send, setDraft, setProvider, stop } = useAssistant();
 	const streaming = requestId !== null;
 	const canSend = !streaming && assistantMessageSchema.shape.text.safeParse(draft).success;
-	const items = enabled.map(value => ({ label: t(`settings.integrations.ai.providers.${value}.title`), value }));
 
 	const submit = () => {
 		if (canSend) send(provider, draft);
@@ -180,19 +180,7 @@ function PromptInput({ enabled, provider, settings }: { enabled: TextProvider[];
 			<DictationWaveform />
 			<DictationError />
 			<div className='flex items-center gap-2'>
-				<Select items={items} onValueChange={value => value !== null && setProvider(value)} value={provider}>
-					<SelectTrigger aria-label={t('assistant.prompt.provider')} className='min-w-0' size='sm'>
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{items.map(item => (
-							<SelectItem key={item.value} value={item.value}>
-								{item.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<span className='min-w-0 truncate text-muted-foreground'>{settings.models[provider]}</span>
+				<ProviderSelect enabled={enabled} onChange={setProvider} settings={settings} value={provider} />
 				<span className='ml-auto' />
 				<DictationButton available={settings.keys.elevenlabs} />
 				{streaming ? (

@@ -10,6 +10,7 @@ export const ERROR_KEYS = {
 	'ai.providerError': 'The AI provider answered with an unexpected error; see detail',
 	'ai.rateLimited': 'The AI provider is rate limiting this key or its quota is used up',
 	'ai.recordingTooLong': 'The recording is longer or larger than a dictation may be',
+	'ai.speechFailed': 'The text could not be turned into speech (no voice to read it with, or ElevenLabs refused it); see detail',
 	'ai.transcriptionFailed': 'The audio could not be transcribed, or nothing was recognized; see detail',
 	'avatar.fileName': 'Avatar must be a stored file name (id plus jpg, png or webp extension)',
 	'avatar.tooLarge': 'Avatar image exceeds the maximum size',

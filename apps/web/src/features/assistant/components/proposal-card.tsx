@@ -2,7 +2,7 @@
 
 import { type AssistantProposal, asOccurrence, type DomainError } from '@tempi/core';
 import { issueTranslation } from '@tempi/i18n';
-import { CalendarPlusIcon, CheckIcon, PencilIcon, PencilLineIcon, Trash2Icon } from 'lucide-react';
+import { CalendarPlusIcon, CheckIcon, PencilIcon, PencilLineIcon, Trash2Icon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -35,10 +35,12 @@ type ProposalCardProps = {
 	onConfirmed: () => void;
 	/** Called before opening the event form, e.g. to collapse the panel on narrow windows. */
 	onEdit: () => void;
+	/** Records that the user turned it down; offered only where given (the Voice tab). */
+	onCancel?: () => void;
 };
 
 /** A change the assistant suggests. Confirm runs the same mutations as the event form; Edit opens the form prefilled. */
-export function ProposalCard({ item, onConfirmed, onEdit }: ProposalCardProps) {
+export function ProposalCard({ item, onCancel, onConfirmed, onEdit }: ProposalCardProps) {
 	const { t } = useTranslation();
 	const { proposal, status } = item;
 	const { data: calendars } = useCalendars();
@@ -121,6 +123,13 @@ export function ProposalCard({ item, onConfirmed, onEdit }: ProposalCardProps) {
 						</MarkerIcon>
 						<MarkerContent>{t(proposal.kind === 'delete' ? 'assistant.proposal.deleted' : 'assistant.proposal.saved')}</MarkerContent>
 					</Marker>
+				) : status === 'canceled' ? (
+					<Marker>
+						<MarkerIcon>
+							<XIcon />
+						</MarkerIcon>
+						<MarkerContent>{t('assistant.proposal.canceled')}</MarkerContent>
+					</Marker>
 				) : (
 					<>
 						<Button disabled={pending} onClick={confirm} size='sm' variant={proposal.kind === 'delete' ? 'destructive' : 'default'}>
@@ -131,6 +140,11 @@ export function ProposalCard({ item, onConfirmed, onEdit }: ProposalCardProps) {
 							<PencilIcon data-icon='inline-start' />
 							{t(proposal.kind === 'delete' ? 'assistant.proposal.open' : 'assistant.proposal.edit')}
 						</Button>
+						{onCancel !== undefined && (
+							<Button disabled={pending} onClick={onCancel} size='sm' variant='ghost'>
+								{t('assistant.proposal.cancel')}
+							</Button>
+						)}
 					</>
 				)}
 			</CardFooter>

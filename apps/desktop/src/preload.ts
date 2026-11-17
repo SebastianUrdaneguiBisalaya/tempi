@@ -64,6 +64,7 @@ const desktop: DesktopApi = {
 		removeKey: provider => ipcRenderer.invoke(CHANNELS.ai.removeKey, provider),
 		saveKey: input => ipcRenderer.invoke(CHANNELS.ai.saveKey, input),
 		saveSettings: patch => ipcRenderer.invoke(CHANNELS.ai.saveSettings, patch),
+		speak: input => ipcRenderer.invoke(CHANNELS.ai.speak, input),
 		stopChat,
 		testKey: provider => ipcRenderer.invoke(CHANNELS.ai.testKey, provider),
 		transcribe: input => ipcRenderer.invoke(CHANNELS.ai.transcribe, input),

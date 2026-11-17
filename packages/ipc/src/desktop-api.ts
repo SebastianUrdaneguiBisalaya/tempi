@@ -20,6 +20,7 @@ type Api<Raw extends boolean> = {
 		removeKey: Call<'ai:removeKey', Raw>;
 		saveKey: Call<'ai:saveKey', Raw>;
 		saveSettings: Call<'ai:saveSettings', Raw>;
+		speak: Call<'ai:speak', Raw>;
 		testKey: Call<'ai:testKey', Raw>;
 		transcribe: Call<'ai:transcribe', Raw>;
 	};
