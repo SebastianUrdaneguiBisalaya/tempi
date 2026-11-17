@@ -60,7 +60,7 @@ export function FaqContent({ copy }: { copy: FaqCopy }) {
 						const item = copy.items[key];
 						return (
 							<AccordionItem key={key} value={key} data-faq-item>
-								<AccordionTrigger className='px-4 py-4 text-sm font-medium sm:px-5'>{item.question}</AccordionTrigger>
+								<AccordionTrigger className='px-4 py-4 text-sm font-medium hover:no-underline sm:px-5'>{item.question}</AccordionTrigger>
 								<AccordionContent className='px-2 text-sm leading-relaxed text-muted-foreground sm:px-3'>
 									<p>{item.answer}</p>
 									{item.command && (
