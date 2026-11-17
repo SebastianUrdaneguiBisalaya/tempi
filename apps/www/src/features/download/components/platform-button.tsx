@@ -24,7 +24,7 @@ export function PlatformButton({ platform, chooseLabel }: { platform: Platform; 
 
 	if (variants.length === 1) {
 		return (
-			<a href={variants[0].url} className={buttonVariants({ variant: 'outline', className: `${PILL} gap-2` })}>
+			<a href={variants[0].url} className={cn(buttonVariants({ variant: 'outline', className: `${PILL} gap-2` }))}>
 				{ICONS[platform]}
 				{name}
 			</a>
