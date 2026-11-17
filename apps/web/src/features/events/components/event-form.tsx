@@ -125,6 +125,7 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 									autoFocus={event === null}
 									id={`${id}-title`}
 									placeholder={t('events.form.titlePlaceholder')}
+									required
 									{...field}
 								/>
 								<FormFieldError error={fieldState.error} />
@@ -158,6 +159,7 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 											onBlur={field.onBlur}
 											onChange={field.onChange}
 											ref={field.ref}
+											required
 											timeLabel={t(name === 'startAt' ? 'events.form.startTime' : 'events.form.endTime')}
 											value={field.value}
 										/>
@@ -174,7 +176,7 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 						render={({ field, fieldState }) => (
 							<Field data-invalid={fieldState.invalid || undefined}>
 								<FieldLabel htmlFor={`${id}-time-zone`}>{t('events.form.timeZone')}</FieldLabel>
-								<TimeZoneCombobox id={`${id}-time-zone`} invalid={fieldState.invalid} onChange={field.onChange} ref={field.ref} value={field.value} />
+								<TimeZoneCombobox id={`${id}-time-zone`} invalid={fieldState.invalid} onChange={field.onChange} ref={field.ref} required value={field.value} />
 								<FormFieldError error={fieldState.error} />
 							</Field>
 						)}
@@ -185,7 +187,7 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 						render={({ field, fieldState }) => (
 							<Field data-invalid={fieldState.invalid || undefined}>
 								<FieldLabel htmlFor={`${id}-calendar`}>{t('events.form.calendar')}</FieldLabel>
-								<Select items={calendarItems} onValueChange={value => value !== null && field.onChange(value)} value={field.value}>
+								<Select items={calendarItems} onValueChange={value => value !== null && field.onChange(value)} required value={field.value}>
 									<SelectTrigger aria-invalid={fieldState.invalid || undefined} className='w-full' id={`${id}-calendar`} ref={field.ref}>
 										<SelectValue />
 									</SelectTrigger>

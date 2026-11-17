@@ -12,19 +12,20 @@ const COLOR_NAMES = ['red', 'orange', 'amber', 'lime', 'green', 'teal', 'cyan', 
 type ColorFieldProps = {
 	labelledBy: string;
 	onChange: (color: string) => void;
+	required?: boolean;
 	value: string;
 };
 
 const swatchClass = 'flex size-7 items-center justify-center rounded-full outline-none ring-offset-2 ring-offset-popover focus-visible:ring-2 focus-visible:ring-ring';
 
 /** The palette as a radio group, plus a Custom swatch that opens a color picker in a popover. */
-export function ColorField({ labelledBy, onChange, value }: ColorFieldProps) {
+export function ColorField({ labelledBy, onChange, required = false, value }: ColorFieldProps) {
 	const { t } = useTranslation();
 	const current = value.toLowerCase();
 	const isCustom = !CALENDAR_PALETTE.some(color => color === current);
 
 	return (
-		<div aria-labelledby={labelledBy} className='flex flex-wrap gap-2' role='radiogroup'>
+		<div aria-labelledby={labelledBy} aria-required={required || undefined} className='flex flex-wrap gap-2' role='radiogroup'>
 			{CALENDAR_PALETTE.map((color, index) => {
 				const checked = color === current;
 				return (

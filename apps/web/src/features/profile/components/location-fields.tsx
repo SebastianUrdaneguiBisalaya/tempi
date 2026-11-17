@@ -34,13 +34,13 @@ export function LocationFields() {
 		<FieldGroup className='gap-4'>
 			<Field data-invalid={country.fieldState.invalid || undefined}>
 				<FieldLabel htmlFor={`${id}-country`}>{t('onboarding.location.country')}</FieldLabel>
-				<CountryCombobox id={`${id}-country`} invalid={country.fieldState.invalid} onChange={changeCountry} ref={country.field.ref} value={country.field.value} />
+				<CountryCombobox id={`${id}-country`} invalid={country.fieldState.invalid} onChange={changeCountry} ref={country.field.ref} required value={country.field.value} />
 				<FormFieldError error={country.fieldState.error} />
 			</Field>
 			{zoneItems.length > 1 ? (
 				<Field data-invalid={timeZone.fieldState.invalid || undefined}>
 					<FieldLabel htmlFor={`${id}-time-zone`}>{t('onboarding.location.timeZone')}</FieldLabel>
-					<Select items={zoneItems} onValueChange={value => value !== null && timeZone.field.onChange(value)} value={timeZone.field.value}>
+					<Select items={zoneItems} onValueChange={value => value !== null && timeZone.field.onChange(value)} required value={timeZone.field.value}>
 						<SelectTrigger aria-invalid={timeZone.fieldState.invalid || undefined} className='w-full' id={`${id}-time-zone`} ref={timeZone.field.ref}>
 							<SelectValue />
 						</SelectTrigger>

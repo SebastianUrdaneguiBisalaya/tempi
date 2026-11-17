@@ -14,11 +14,12 @@ type TimeZoneComboboxProps = {
 	invalid: boolean;
 	onChange: (timeZone: string) => void;
 	ref: Ref<HTMLButtonElement>;
+	required?: boolean;
 	value: string;
 };
 
 /** Searchable picker over every IANA time zone the platform knows, by name and offset. */
-export function TimeZoneCombobox({ id, invalid, onChange, ref, value }: TimeZoneComboboxProps) {
+export function TimeZoneCombobox({ id, invalid, onChange, ref, required = false, value }: TimeZoneComboboxProps) {
 	const { i18n, t } = useTranslation();
 	const [open, setOpen] = useState(false);
 	const language = resolveLanguage([i18n.language]);
@@ -29,7 +30,16 @@ export function TimeZoneCombobox({ id, invalid, onChange, ref, value }: TimeZone
 		<Popover onOpenChange={setOpen} open={open}>
 			<PopoverTrigger
 				render={
-					<Button aria-expanded={open} aria-invalid={invalid || undefined} className='w-full justify-between font-normal' id={id} ref={ref} role='combobox' variant='outline'>
+					<Button
+						aria-expanded={open}
+						aria-invalid={invalid || undefined}
+						aria-required={required || undefined}
+						className='w-full justify-between font-normal'
+						id={id}
+						ref={ref}
+						role='combobox'
+						variant='outline'
+					>
 						<span className='truncate'>{timeZoneLabel(value, language)}</span>
 						<ChevronsUpDownIcon aria-hidden='true' className='text-muted-foreground' />
 					</Button>

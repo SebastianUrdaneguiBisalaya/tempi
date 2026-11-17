@@ -109,6 +109,7 @@ export function RecurrenceFields({ control, id }: RecurrenceFieldsProps) {
 										onBlur={field.onBlur}
 										onChange={event => field.onChange(event.target.valueAsNumber)}
 										ref={field.ref}
+										required
 										type='number'
 										value={Number.isNaN(field.value) ? '' : field.value}
 									/>
@@ -116,7 +117,7 @@ export function RecurrenceFields({ control, id }: RecurrenceFieldsProps) {
 										control={control}
 										name='recurrence.frequency'
 										render={({ field: unit }) => (
-											<Select items={unitItems} onValueChange={value => value !== null && unit.onChange(value)} value={unit.value}>
+											<Select items={unitItems} onValueChange={value => value !== null && unit.onChange(value)} required value={unit.value}>
 												<SelectTrigger aria-label={t('events.repeat.every')} className='flex-1' ref={unit.ref}>
 													<SelectValue />
 												</SelectTrigger>
@@ -188,7 +189,7 @@ export function RecurrenceFields({ control, id }: RecurrenceFieldsProps) {
 						render={({ field }) => (
 							<Field>
 								<FieldLabel id={`${id}-ends`}>{t('events.repeat.end')}</FieldLabel>
-								<RadioGroup aria-labelledby={`${id}-ends`} className='gap-2' onValueChange={field.onChange} value={field.value}>
+								<RadioGroup aria-labelledby={`${id}-ends`} className='gap-2' onValueChange={field.onChange} required value={field.value}>
 									{RECURRENCE_ENDS.map(value => (
 										<div className='flex min-h-8 items-center gap-2' key={value}>
 											<RadioGroupItem id={`${id}-ends-${value}`} value={value} />

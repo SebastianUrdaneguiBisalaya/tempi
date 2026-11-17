@@ -61,7 +61,7 @@ export function CalendarSettings({ settings }: { settings: Settings }) {
 					render={({ field, fieldState }) => (
 						<Field data-invalid={fieldState.invalid || undefined}>
 							<FieldLabel htmlFor={`${id}-week-start`}>{t('settings.calendar.weekStart')}</FieldLabel>
-							<Select items={weekStartItems} onValueChange={value => value !== null && field.onChange(value)} value={field.value}>
+							<Select items={weekStartItems} onValueChange={value => value !== null && field.onChange(value)} required value={field.value}>
 								<SelectTrigger className='w-full sm:w-56' id={`${id}-week-start`} ref={field.ref}>
 									<SelectValue />
 								</SelectTrigger>
@@ -89,6 +89,7 @@ export function CalendarSettings({ settings }: { settings: Settings }) {
 									const format = TIME_FORMATS.find(option => option === value);
 									if (format !== undefined) field.onChange(format);
 								}}
+								required
 								value={field.value}
 							>
 								{TIME_FORMATS.map(format => (
@@ -123,6 +124,7 @@ export function CalendarSettings({ settings }: { settings: Settings }) {
 									// An empty field is NaN, which the schema reports as invalid.
 									onChange={event => field.onChange(event.target.valueAsNumber)}
 									ref={field.ref}
+									required
 									step={5}
 									type='number'
 									value={Number.isNaN(field.value) ? '' : field.value}
