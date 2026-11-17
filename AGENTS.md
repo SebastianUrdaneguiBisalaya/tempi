@@ -5,7 +5,7 @@ Rules for anyone (human or agent) changing this repo. They are rules, not sugges
 ## Project
 
 - Local-first desktop calendar: no backend, no accounts. Sync may come later.
-- Bun monorepo: `apps/desktop` (Electron), `apps/web` (Next.js, static export, embedded by desktop), `apps/www` (landing), `packages/*` (shared).
+- Bun monorepo: `apps/desktop` (Electron), `apps/web` (Next.js, static export, embedded by desktop), `apps/www` (landing, deployed on its own to Vercel, not static), `packages/*` (shared).
 - Use Bun only: `bun install`, `bun run`, `bunx`. Add shared versions to the root `catalog`.
 - Verify every change with `bun run check`, `bun run typecheck` and `bun run test`.
 - Git hooks (Husky) enforce this: `pre-commit` runs Biome on staged files and the typecheck, and `pre-push` runs the tests. Never bypass them with `--no-verify`.
@@ -151,6 +151,14 @@ apps/web/src/
   components/ui/             generated (shadcn); do not edit by hand
   providers/                 api (`useApi()`), query client, i18n and theme providers
   lib/                       small framework-free helpers
+
+apps/www/src/
+  app/[lang]/                routes under /en and /es (layout.tsx, page.tsx, dictionaries.ts)
+  app/[lang]/dictionaries/   en.json, es.json (same keys)
+  features/<section>/        one folder per landing section
+  components/ui/             generated (shadcn); do not edit by hand
+  lib/                       i18n locales, GSAP setup, helpers
+  proxy.ts                   redirects to the visitor's locale
 ```
 
 - Add a new package only for a distinct responsibility, such as a sync engine. Name it `@tempi/<name>`, and give it a `package.json` with `"exports": { ".": "./src/index.ts" }` and `"test": "bun test"`, plus a `tsconfig.json` that extends `../../tsconfig.base.json`.
@@ -240,6 +248,7 @@ apps/web/src/
 - Build forms with React Hook Form and zod (`zodResolver`), using the `field` and `label` components. Pass the core schema and core's error map to the resolver (`zodResolver(schema, { error: zodErrorKeyMap })`, extending the schema only for form-only fields), and translate field errors from the `errors` namespace.
 - Every screen and component must be responsive.
 - All visible text goes through react-i18next, with English (`en`) and Spanish (`es`) translations. Translations live only in `@tempi/i18n`: add a key to `en.ts` and `es.ts`, never hardcode strings or keep locale files in apps.
+- Exception: `apps/www` (the landing page) doesn't use `@tempi/i18n` or react-i18next. It follows the Next.js internationalization guide: routes under `app/[lang]`, its own `en.json`/`es.json` dictionaries in `app/[lang]/dictionaries/`, loaded on the server with `getDictionary()`. Client Components receive their strings as props. Never hardcode strings there either.
 - Register keyboard shortcuts only through `@usehotkeys/core` / `@usehotkeys/react`.
 
 ## Style
