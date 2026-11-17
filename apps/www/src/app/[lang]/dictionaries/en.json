@@ -70,6 +70,10 @@
       "join": "Join",
       "location": "Online",
       "shortcutsHint": "See all keyboard shortcuts",
+      "assistant": {
+        "label": "Ask Tempi",
+        "hint": "Chat or talk about your calendar"
+      },
       "events": {
         "standup": "Standup",
         "planning": "Sprint planning",

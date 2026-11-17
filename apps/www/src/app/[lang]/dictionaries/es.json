@@ -70,6 +70,10 @@
       "join": "Unirse",
       "location": "En línea",
       "shortcutsHint": "Ver todos los atajos de teclado",
+      "assistant": {
+        "label": "Pregúntale a Tempi",
+        "hint": "Escribe o habla sobre tu calendario"
+      },
       "events": {
         "standup": "Daily",
         "planning": "Planificación",
