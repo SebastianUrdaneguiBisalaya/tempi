@@ -23,5 +23,64 @@
     "downloadForPlatform": "Descargar para {os}",
     "learnMore": "Conocer más",
     "imageAlt": "Dos personas trabajando con sus laptops en una playa al atardecer"
+  },
+  "why": {
+    "eyebrow": "Por qué Tempi",
+    "title": "Tu agenda, bajo tu control.",
+    "subtitle": "La mayoría de los calendarios son un servicio web que alquilas. Tempi devuelve tus datos a tu dispositivo, con la velocidad y la libertad que eso trae.",
+    "pillars": {
+      "local": {
+        "title": "Tus datos, en tu dispositivo.",
+        "body": "Todo se guarda en una base de datos SQLite local. No hay nada en lo que registrarse."
+      },
+      "fast": {
+        "title": "Rápido porque es local.",
+        "body": "Las vistas, la búsqueda y los cambios no esperan a un servidor."
+      },
+      "sync": {
+        "title": "La sincronización es opcional.",
+        "body": "Conecta Google Calendar si quieres sincronizar en ambos sentidos; todo lo demás funciona sin él."
+      },
+      "lasting": {
+        "title": "Hecho para durar.",
+        "body": "Los registros llevan IDs y marcas de tiempo listos para sincronizar, así llegarán nuevos proveedores sin tocar tus datos."
+      }
+    },
+    "mockup": {
+      "label": "Vista semanal de Tempi: calendarios en la barra lateral, eventos en la grilla horaria y el próximo evento en el panel derecho",
+      "today": "Hoy",
+      "calendarsTitle": "Calendarios",
+      "newCalendar": "Nuevo calendario",
+      "default": "Predeterminado",
+      "readOnly": "Solo lectura",
+      "calendars": {
+        "work": "Trabajo",
+        "personal": "Personal",
+        "project": "Proyecto",
+        "holidays": "Feriados"
+      },
+      "views": {
+        "day": "Día",
+        "week": "Semana",
+        "month": "Mes"
+      },
+      "searchPlaceholder": "Buscar eventos",
+      "upcoming": "Próximo {relative}",
+      "join": "Unirse",
+      "location": "En línea",
+      "shortcutsHint": "Ver todos los atajos de teclado",
+      "events": {
+        "standup": "Daily",
+        "planning": "Planificación",
+        "gym": "Gimnasio",
+        "designReview": "Revisión de diseño",
+        "lunch": "Almuerzo",
+        "teamSync": "Sync del equipo",
+        "docs": "Escribir documentación",
+        "dentist": "Dentista",
+        "release": "Lanzar v1.2",
+        "holiday": "Feriado"
+      }
+    }
   }
 }
