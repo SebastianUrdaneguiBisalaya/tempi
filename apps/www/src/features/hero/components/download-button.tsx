@@ -3,7 +3,7 @@
 import { DownloadIcon } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { buttonVariants } from '@/components/ui/button';
-import { DOWNLOAD_URLS } from '@/lib/downloads';
+import { defaultDownloadUrl } from '@/lib/downloads';
 import { detectPlatform, PLATFORM_NAMES } from '@/lib/platform';
 import { SECTION_IDS } from '@/lib/site';
 
@@ -27,7 +27,7 @@ export function DownloadButton({ labelForPlatform, label, className }: DownloadB
 	);
 
 	return (
-		<a href={platform ? DOWNLOAD_URLS[platform] : `#${SECTION_IDS.download}`} className={buttonVariants({ className })}>
+		<a href={platform ? defaultDownloadUrl(platform) : `#${SECTION_IDS.download}`} className={buttonVariants({ className })}>
 			<DownloadIcon data-icon='inline-start' />
 			{platform ? labelForPlatform.replace('{os}', PLATFORM_NAMES[platform]) : label}
 		</a>

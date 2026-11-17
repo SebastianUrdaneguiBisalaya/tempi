@@ -207,5 +207,16 @@
         "answer": "English and Spanish. Tempi picks your system language and you can change it in Settings at any time."
       }
     }
+  },
+  "download": {
+    "title": "Download Tempi",
+    "subtitle": "Get the latest version for your platform. Free, open source and yours to keep.",
+    "choose": "Choose a {os} download",
+    "firstLaunch": "Opening it for the first time on macOS or Windows?",
+    "firstLaunchLink": "See the FAQ."
+  },
+  "footer": {
+    "license": "ISC License",
+    "madeBy": "Made by"
   }
 }

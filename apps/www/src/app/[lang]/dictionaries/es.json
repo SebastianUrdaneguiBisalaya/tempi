@@ -207,5 +207,16 @@
         "answer": "Inglés y español. Tempi usa el idioma de tu sistema y puedes cambiarlo en Ajustes cuando quieras."
       }
     }
+  },
+  "download": {
+    "title": "Descarga Tempi",
+    "subtitle": "Obtén la última versión para tu plataforma. Gratis, de código abierto y tuyo.",
+    "choose": "Elegir una descarga para {os}",
+    "firstLaunch": "¿Lo abres por primera vez en macOS o Windows?",
+    "firstLaunchLink": "Mira las preguntas frecuentes."
+  },
+  "footer": {
+    "license": "Licencia ISC",
+    "madeBy": "Hecho por"
   }
 }
