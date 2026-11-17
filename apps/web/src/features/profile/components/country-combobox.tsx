@@ -23,12 +23,13 @@ type CountryComboboxProps = {
 	invalid: boolean;
 	onChange: (code: string) => void;
 	ref: Ref<HTMLButtonElement>;
+	required?: boolean;
 	/** ISO 3166-1 alpha-2 code, or '' for none. */
 	value: string;
 };
 
 /** Searchable country picker showing each country's flag and its name in the UI language. */
-export function CountryCombobox({ id, invalid, onChange, ref, value }: CountryComboboxProps) {
+export function CountryCombobox({ id, invalid, onChange, ref, required = false, value }: CountryComboboxProps) {
 	const { t, i18n } = useTranslation();
 	const [open, setOpen] = useState(false);
 	const options = countryOptions(resolveLanguage([i18n.language]));
@@ -38,7 +39,16 @@ export function CountryCombobox({ id, invalid, onChange, ref, value }: CountryCo
 		<Popover onOpenChange={setOpen} open={open}>
 			<PopoverTrigger
 				render={
-					<Button aria-expanded={open} aria-invalid={invalid || undefined} className='w-full justify-between font-normal' id={id} ref={ref} role='combobox' variant='outline'>
+					<Button
+						aria-expanded={open}
+						aria-invalid={invalid || undefined}
+						aria-required={required || undefined}
+						className='w-full justify-between font-normal'
+						id={id}
+						ref={ref}
+						role='combobox'
+						variant='outline'
+					>
 						<span className='flex min-w-0 items-center gap-2'>
 							{selected !== undefined && <CountryFlag code={selected.code} />}
 							<span className={selected === undefined ? 'truncate text-muted-foreground' : 'truncate'}>{selected?.name ?? t('onboarding.location.countryPlaceholder')}</span>

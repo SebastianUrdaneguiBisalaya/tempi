@@ -139,6 +139,30 @@
 }
 
 /*
+ * Required fields get a red asterisk after their label, driven by the control itself (`required`, `aria-required`, or
+ * `data-required` for controls whose role can't carry `aria-required`) so the mark never drifts from what the form asks.
+ * The generated components in components/ui stay untouched. The asterisk is decorative: the control already announces
+ * that it's required, so the `/ ''` alt text keeps screen readers from reading it twice.
+ */
+@layer components {
+	[data-slot="field"]:has(:required, [aria-required="true"], [data-required]) > [data-slot="field-label"]::after,
+	[data-slot="field"]:has(:required, [aria-required="true"], [data-required]) > [data-slot="field-content"] > [data-slot="field-label"]::after {
+		content: "*" / "";
+		color: var(--destructive);
+		/* Field labels are flex rows with a 0.5rem gap; pull the asterisk back so it sits right after the text. */
+		margin-inline-start: -0.375rem;
+	}
+
+	[data-slot="field-set"]:has(:required, [aria-required="true"], [data-required]) > [data-slot="field-legend"]::after,
+	/* A step with its own field labels marks those instead, so the asterisk isn't shown twice. */
+	[data-slot="questionnaire-item"][data-required]:not(:has([data-slot="field-label"])) > [data-slot="questionnaire-title"]::after {
+		content: "*" / "";
+		color: var(--destructive);
+		margin-inline-start: 0.125rem;
+	}
+}
+
+/*
  * Until ThemeProvider sets `.dark` or `.light` (the first paint after a load or reload), follow the OS scheme, which inside
  * Electron mirrors the saved theme through `nativeTheme.themeSource`. Without this a dark app flashes white on reload.
  * Same value as `.dark`'s --background.

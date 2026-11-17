@@ -75,7 +75,7 @@ function CalendarForm({ calendar, defaultColor, onDone }: { calendar: Calendar |
 					render={({ field, fieldState }) => (
 						<Field data-invalid={fieldState.invalid || undefined}>
 							<FieldLabel htmlFor={`${id}-name`}>{t('calendars.name')}</FieldLabel>
-							<Input aria-invalid={fieldState.invalid || undefined} autoFocus id={`${id}-name`} {...field} />
+							<Input aria-invalid={fieldState.invalid || undefined} autoFocus id={`${id}-name`} required {...field} />
 							<FormFieldError error={fieldState.error} />
 						</Field>
 					)}
@@ -86,7 +86,7 @@ function CalendarForm({ calendar, defaultColor, onDone }: { calendar: Calendar |
 					render={({ field, fieldState }) => (
 						<Field data-invalid={fieldState.invalid || undefined}>
 							<FieldLabel id={`${id}-color`}>{t('calendars.color')}</FieldLabel>
-							<ColorField labelledBy={`${id}-color`} onChange={field.onChange} value={field.value} />
+							<ColorField labelledBy={`${id}-color`} onChange={field.onChange} required value={field.value} />
 							<FormFieldError error={fieldState.error} />
 						</Field>
 					)}

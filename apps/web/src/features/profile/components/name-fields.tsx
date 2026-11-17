@@ -21,6 +21,7 @@ type NameInputProps = {
 	onBlur: () => void;
 	onChange: (event: { target: { value: string } }) => void;
 	ref: Ref<HTMLInputElement>;
+	required: boolean;
 	value: string;
 };
 
@@ -48,6 +49,7 @@ export function NameFields({ input: NameInput = Input }: { input?: ComponentType
 								onBlur={field.onBlur}
 								onChange={event => field.onChange(event.target.value)}
 								ref={field.ref}
+								required
 								value={field.value}
 							/>
 							<FormFieldError error={fieldState.error} id={`${id}-${name}-error`} />

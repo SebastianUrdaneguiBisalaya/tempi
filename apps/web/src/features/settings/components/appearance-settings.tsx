@@ -56,6 +56,7 @@ export function AppearanceSettings({ settings }: { settings: Settings }) {
 								field.onChange(theme);
 								setPreview({ ...preview, theme });
 							}}
+							required
 							value={field.value}
 						>
 							{THEMES.map(theme => (
@@ -84,6 +85,7 @@ export function AppearanceSettings({ settings }: { settings: Settings }) {
 								field.onChange(language);
 								setPreview({ ...preview, language });
 							}}
+							required
 							value={field.value}
 						>
 							{LANGUAGES.map(language => (

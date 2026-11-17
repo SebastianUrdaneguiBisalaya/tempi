@@ -33,12 +33,14 @@ type DateTimeFieldProps = {
 	/** `YYYY-MM-DD` when all day, `YYYY-MM-DDTHH:mm` otherwise: the form's wall-clock value, unchanged. */
 	onChange: (value: string) => void;
 	ref: Ref<HTMLButtonElement>;
+	/** Marks the field as required; the button gets `data-required` since its role can't carry `aria-required`. */
+	required?: boolean;
 	timeLabel: string;
 	value: string;
 };
 
 /** A day from a calendar popover and, unless all day, a time beside it; together they make the form's value. */
-export function DateTimeField({ allDay, dateLabel, disabled = false, id, invalid, onBlur, onChange, ref, timeLabel, value }: DateTimeFieldProps) {
+export function DateTimeField({ allDay, dateLabel, disabled = false, id, invalid, onBlur, onChange, ref, required = false, timeLabel, value }: DateTimeFieldProps) {
 	const { i18n } = useTranslation();
 	const dayPickerOptions = useDayPickerOptions();
 	const [open, setOpen] = useState(false);
@@ -54,6 +56,7 @@ export function DateTimeField({ allDay, dateLabel, disabled = false, id, invalid
 							aria-invalid={invalid || undefined}
 							aria-label={dateLabel}
 							className='min-w-0 flex-1 justify-between font-normal'
+							data-required={required || undefined}
 							disabled={disabled}
 							id={id}
 							onBlur={onBlur}
@@ -92,6 +95,7 @@ export function DateTimeField({ allDay, dateLabel, disabled = false, id, invalid
 					onChange={event => {
 						if (day !== null && event.target.value !== '') onChange(`${day.toString()}T${event.target.value}`);
 					}}
+					required={required}
 					type='time'
 					value={time}
 				/>
