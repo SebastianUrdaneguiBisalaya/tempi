@@ -8,7 +8,7 @@ import { SHOWN_SHORTCUTS } from '@/lib/hotkeys';
 import { SECTION_IDS } from '@/lib/site';
 import { AssistantMockup, type AssistantMockupCopy, type AssistantTab } from './assistant-mockup';
 import type { ChatStep } from './chat-mockup';
-import { ProviderLogos } from './provider-logos';
+import { ProviderMarquee } from './provider-marquee';
 import type { VoicePhase } from './voice-orb-mockup';
 
 const POINTS = [
@@ -118,11 +118,6 @@ export function AiContent({ copy }: { copy: AiCopy }) {
 									<div className='flex flex-col gap-1'>
 										<h3 className='text-sm font-medium'>{copy.points[key].title}</h3>
 										<p className='text-sm leading-relaxed text-foreground/70'>{copy.points[key].body}</p>
-										{key === 'keys' && (
-											<div className='mt-2'>
-												<ProviderLogos label={copy.providers} />
-											</div>
-										)}
 									</div>
 								</li>
 							))}
@@ -133,6 +128,8 @@ export function AiContent({ copy }: { copy: AiCopy }) {
 						</p>
 					</div>
 				</div>
+
+				<ProviderMarquee label={copy.providers} />
 			</div>
 		</section>
 	);
