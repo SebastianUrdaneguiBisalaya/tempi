@@ -246,7 +246,8 @@ apps/www/src/
   - Feedback is centralized in `QueryProvider`: every failed query or mutation logs each issue's `detail` and shows one translated error toast. Don't call `toast` for errors or successes in data hooks; declare `meta` instead: `successMessage` (a `common.toasts` key) on every create, update and delete mutation, and `handlesFieldErrors: true` on mutations whose form shows field errors.
   - Keep the `QueryProvider` defaults (`networkMode: 'always'`, `staleTime: Infinity`, no retries or refetch on focus): data is local and only this app writes it.
 - Derive values during render instead of syncing them into state. Use `useEffect` only to synchronize with external systems.
-- Use `useSyncExternalStore` for external stores. Avoid prop drilling beyond two levels: lift state or use context.
+- Keep client state that outlives a component (the assistant's conversation, dictation, voice) in Zustand stores: `createStore` from `zustand/vanilla`, framework-free, with their actions in the store. Components read them through `useStore(store, selector)` and select only the fields they render, one value per selector, so a change re-renders only what reads it. Values that change many times a second (audio levels) are followed with `store.subscribe` outside React renders.
+- `useSyncExternalStore` stays for browser APIs (media queries, clocks, theme, i18n). Server data stays in TanStack Query. Avoid prop drilling beyond two levels: lift state or use context.
 - Use stable keys from IDs, never array indexes.
 - Don't add `useMemo`, `useCallback` or `memo` without a measured problem.
 - Keep components small and colocated. Lift state only as far as needed.

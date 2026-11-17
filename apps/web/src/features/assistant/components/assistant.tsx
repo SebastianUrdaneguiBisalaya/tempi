@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import type { AssistantTab } from '../assistant-store';
-import { useAssistant, useAssistantPanel } from './assistant-provider';
+import { useAssistant, useAssistantPanel, useAssistantRequests } from './assistant-provider';
 import { ChatTab } from './chat-tab';
 import { VoiceTab } from './voice-tab';
 
@@ -21,7 +21,10 @@ const isTab = (value: unknown): value is AssistantTab => value === 'chat' || val
 /** The panel's content: Chat and Voice tabs over one conversation, New chat and Minimize. */
 function AssistantPanel({ onEdit, onMinimize }: { onEdit: () => void; onMinimize: () => void }) {
 	const { t } = useTranslation();
-	const { clear, setTab, tab, turns } = useAssistant();
+	const tab = useAssistant(state => state.tab);
+	const setTab = useAssistant(state => state.setTab);
+	const empty = useAssistant(state => state.turns.length === 0);
+	const { clear } = useAssistantRequests();
 	return (
 		<Tabs className='flex h-full min-h-0 flex-col gap-0' onValueChange={value => isTab(value) && setTab(value)} value={tab}>
 			<div className='flex items-center gap-1 border-b px-2 py-1.5'>
@@ -29,7 +32,7 @@ function AssistantPanel({ onEdit, onMinimize }: { onEdit: () => void; onMinimize
 					<TabsTrigger value='chat'>{t('assistant.tabs.chat')}</TabsTrigger>
 					<TabsTrigger value='voice'>{t('assistant.tabs.voice')}</TabsTrigger>
 				</TabsList>
-				<Button aria-label={t('assistant.newChat')} className='ml-auto' disabled={turns.length === 0} onClick={clear} size='icon-sm' title={t('assistant.newChat')} variant='ghost'>
+				<Button aria-label={t('assistant.newChat')} className='ml-auto' disabled={empty} onClick={clear} size='icon-sm' title={t('assistant.newChat')} variant='ghost'>
 					<SquarePenIcon />
 				</Button>
 				<Button aria-label={t('assistant.minimize')} onClick={onMinimize} size='icon-sm' title={t('assistant.minimize')} variant='ghost'>

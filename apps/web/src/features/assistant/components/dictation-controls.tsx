@@ -3,12 +3,13 @@
 import { MAX_DICTATION_SECONDS } from '@tempi/core';
 import { issueTranslation } from '@tempi/i18n';
 import { MicIcon, MicOffIcon, SquareIcon } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
-import { WAVEFORM_BARS } from '../dictation-store';
-import { useDictation, useDictationMeter } from './assistant-provider';
+import { type DictationMeter, WAVEFORM_BARS } from '../dictation-store';
+import { useDictation, useDictationStore } from './assistant-provider';
 
 // Bars are fixed positions in a rolling window of levels, so each position is its own stable key.
 const BARS = Array.from({ length: WAVEFORM_BARS }, (_, position) => ({ id: `bar-${position}`, position }));
@@ -18,11 +19,55 @@ const clock = (ms: number) => {
 	return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 };
 
+const barHeight = (level: number | undefined) => `${Math.max(8, (level ?? 0) * 100)}%`;
+
+const MAX_CLOCK = clock(MAX_DICTATION_SECONDS * 1000);
+
+/**
+ * The bars and the clock follow the meter by writing to the DOM: it changes many times a second, and re-rendering for
+ * each sample would redraw the prompt around it.
+ */
+function RecordingMeter() {
+	const { t } = useTranslation();
+	const store = useDictationStore();
+	const bars = useRef<HTMLDivElement>(null);
+	const elapsed = useRef<HTMLSpanElement>(null);
+	const initial = store.getState().meter;
+
+	useEffect(() => {
+		const draw = ({ elapsedMs, levels }: DictationMeter) => {
+			for (const [position, bar] of Array.from(bars.current?.children ?? []).entries()) if (bar instanceof HTMLElement) bar.style.height = barHeight(levels[position]);
+			if (elapsed.current !== null) elapsed.current.textContent = clock(elapsedMs);
+		};
+		draw(store.getState().meter);
+		return store.subscribe(({ meter }, previous) => {
+			if (meter !== previous.meter) draw(meter);
+		});
+	}, [store]);
+
+	return (
+		<div className='flex items-center gap-3 px-1'>
+			<div aria-hidden className='flex h-8 flex-1 items-center gap-0.5' ref={bars}>
+				{BARS.map(({ id, position }) => (
+					<span
+						className='w-full min-w-0.5 rounded-full bg-primary transition-[height] duration-75 motion-reduce:transition-none'
+						key={id}
+						style={{ height: barHeight(initial.levels[position]) }}
+					/>
+				))}
+			</div>
+			<span className='shrink-0 text-muted-foreground tabular-nums'>
+				<span className='sr-only'>{t('assistant.dictation.recording')} </span>
+				<span ref={elapsed}>{clock(initial.elapsedMs)}</span> / {MAX_CLOCK}
+			</span>
+		</div>
+	);
+}
+
 /** Vertical bars that follow the microphone level while recording, and the time recorded out of the maximum. */
 export function DictationWaveform() {
 	const { t } = useTranslation();
-	const { status } = useDictation();
-	const { elapsedMs, levels } = useDictationMeter();
+	const status = useDictation(state => state.status);
 	if (status === 'idle') return null;
 	if (status === 'transcribing')
 		return (
@@ -31,29 +76,13 @@ export function DictationWaveform() {
 				{t('assistant.dictation.transcribing')}
 			</p>
 		);
-	return (
-		<div className='flex items-center gap-3 px-1'>
-			<div aria-hidden className='flex h-8 flex-1 items-center gap-0.5'>
-				{BARS.map(({ id, position }) => (
-					<span
-						className='w-full min-w-0.5 rounded-full bg-primary transition-[height] duration-75 motion-reduce:transition-none'
-						key={id}
-						style={{ height: `${Math.max(8, (levels[position] ?? 0) * 100)}%` }}
-					/>
-				))}
-			</div>
-			<span className='shrink-0 text-muted-foreground tabular-nums'>
-				<span className='sr-only'>{t('assistant.dictation.recording')} </span>
-				{clock(elapsedMs)} / {clock(MAX_DICTATION_SECONDS * 1000)}
-			</span>
-		</div>
-	);
+	return <RecordingMeter />;
 }
 
 /** Why the microphone couldn't start, translated. */
 export function DictationError() {
 	const { t } = useTranslation();
-	const { error } = useDictation();
+	const error = useDictation(state => state.error);
 	if (error === null) return null;
 	const { key, options } = issueTranslation({ key: error });
 	return (
@@ -71,7 +100,9 @@ export function DictationError() {
 export function DictationButton({ available }: { available: boolean }) {
 	const { t } = useTranslation();
 	const { openSettings } = useSettingsDialog();
-	const { start, status, stop } = useDictation();
+	const status = useDictation(state => state.status);
+	const start = useDictation(state => state.start);
+	const stop = useDictation(state => state.stop);
 
 	if (!available)
 		return (

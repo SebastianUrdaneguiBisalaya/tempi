@@ -42,7 +42,7 @@ function VoiceSetup() {
 /** Why the last exchange stopped short on this side (microphone, playback), translated. */
 function VoiceError() {
 	const { t } = useTranslation();
-	const { error } = useVoice();
+	const error = useVoice(state => state.error);
 	if (error === null) return null;
 	const { key, options } = issueTranslation({ key: error });
 	return (
@@ -53,6 +53,40 @@ function VoiceError() {
 	);
 }
 
+/** The last turn, if it is a reply. Only what reads it re-renders while it streams. */
+const useLastReply = () => {
+	const last = useAssistant(state => state.turns.at(-1));
+	return last?.role === 'assistant' ? last : null;
+};
+
+/** Why the last reply ended early, once the exchange is over. */
+function LastReplyError({ phase }: { phase: VoicePhase }) {
+	const reply = useLastReply();
+	return reply !== null && phase === 'idle' ? <ReplyError turn={reply} /> : null;
+}
+
+/** The changes the last reply proposed, waiting for Confirm. */
+function LastReplyProposals({ onEdit }: { onEdit: () => void }) {
+	const { t } = useTranslation();
+	const reply = useLastReply();
+	const setProposalStatus = useAssistant(state => state.setProposalStatus);
+	const proposals = reply?.proposals.filter(item => item.status !== 'canceled') ?? [];
+	if (reply === null || proposals.length === 0) return null;
+	return (
+		<section aria-label={t('assistant.voice.proposals')} className='flex w-full flex-col gap-2'>
+			{proposals.map(item => (
+				<ProposalCard
+					item={item}
+					key={item.id}
+					onCancel={() => setProposalStatus(reply.id, item.id, 'canceled')}
+					onConfirmed={() => setProposalStatus(reply.id, item.id, 'confirmed')}
+					onEdit={onEdit}
+				/>
+			))}
+		</section>
+	);
+}
+
 /**
  * Talking to the assistant, with no message list: the orb records, sends, cancels and stops; the reply is read aloud.
  * It continues the Chat tab's conversation, and changes still wait for Confirm on the cards under the orb.
@@ -60,19 +94,17 @@ function VoiceError() {
 export function VoiceTab({ onEdit }: { onEdit: () => void }) {
 	const { t } = useTranslation();
 	const { data: settings } = useAiSettings();
-	const { phase, tap } = useVoice();
-	const { requestId, setProposalStatus, setVoiceProvider, turns, voiceProvider: picked } = useAssistant();
+	const phase = useVoice(state => state.phase);
+	const tap = useVoice(state => state.tap);
+	const picked = useAssistant(state => state.voiceProvider);
+	const setVoiceProvider = useAssistant(state => state.setVoiceProvider);
+	// A reply typed in the Chat tab is still streaming: wait for it before talking.
+	const streaming = useAssistant(state => state.requestId !== null);
 	if (settings === undefined) return null;
 	const enabled = TEXT_PROVIDERS.filter(provider => settings.keys[provider]);
 	// Only providers with a key are offered; one whose key was removed falls back to the first left.
 	const provider = picked !== null && enabled.includes(picked) ? picked : enabled[0];
 	if (provider === undefined || !settings.keys.elevenlabs) return <VoiceSetup />;
-
-	const last = turns.at(-1);
-	const reply = last?.role === 'assistant' ? last : null;
-	const proposals = reply?.proposals.filter(item => item.status !== 'canceled') ?? [];
-	// A reply typed in the Chat tab is still streaming: wait for it before talking.
-	const busy = phase === 'idle' && requestId !== null;
 
 	return (
 		<div className='flex min-h-0 flex-1 flex-col'>
@@ -81,26 +113,14 @@ export function VoiceTab({ onEdit }: { onEdit: () => void }) {
 			</div>
 			<div className='flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto p-4'>
 				<div className='flex flex-1 flex-col items-center justify-center gap-4 py-4'>
-					<VoiceOrb disabled={busy} label={t(ORB_LABELS[phase])} onTap={() => tap(provider)} phase={phase} />
+					<VoiceOrb disabled={phase === 'idle' && streaming} label={t(ORB_LABELS[phase])} onTap={() => tap(provider)} phase={phase} />
 					<p aria-live='polite' className='text-center text-muted-foreground'>
 						{t(`assistant.voice.status.${phase}`)}
 					</p>
 					<VoiceError />
-					{reply !== null && phase === 'idle' && <ReplyError turn={reply} />}
+					<LastReplyError phase={phase} />
 				</div>
-				{reply !== null && proposals.length > 0 && (
-					<section aria-label={t('assistant.voice.proposals')} className='flex w-full flex-col gap-2'>
-						{proposals.map(item => (
-							<ProposalCard
-								item={item}
-								key={item.id}
-								onCancel={() => setProposalStatus(reply.id, item.id, 'canceled')}
-								onConfirmed={() => setProposalStatus(reply.id, item.id, 'confirmed')}
-								onEdit={onEdit}
-							/>
-						))}
-					</section>
-				)}
+				<LastReplyProposals onEdit={onEdit} />
 			</div>
 		</div>
 	);

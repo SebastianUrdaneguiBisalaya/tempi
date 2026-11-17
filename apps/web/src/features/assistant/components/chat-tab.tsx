@@ -15,7 +15,7 @@ import { Trace, TraceCollapsible, TraceCollapsibleContent, TraceCollapsibleTrigg
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { useAiSettings } from '@/features/settings/hooks/use-ai';
 import type { AssistantTurn, ToolTrace } from '../assistant-store';
-import { useAssistant } from './assistant-provider';
+import { useAssistant, useAssistantRequests } from './assistant-provider';
 import { DictationButton, DictationError, DictationWaveform } from './dictation-controls';
 import { ProposalCard } from './proposal-card';
 import { ProviderSelect } from './provider-select';
@@ -96,7 +96,7 @@ export function ReplyError({ turn }: { turn: AssistantTurn }) {
 
 function AssistantReply({ onEdit, turn }: { onEdit: () => void; turn: AssistantTurn }) {
 	const { t } = useTranslation();
-	const { setProposalStatus } = useAssistant();
+	const setProposalStatus = useAssistant(state => state.setProposalStatus);
 	const thinking = turn.status === 'streaming' && turn.text === '' && turn.traces.every(trace => trace.status !== 'running');
 	return (
 		<Message>
@@ -143,8 +143,11 @@ function NoProvider() {
 function PromptInput({ enabled, provider, settings }: { enabled: TextProvider[]; provider: TextProvider; settings: AiSettings }) {
 	const { t } = useTranslation();
 	const id = useId();
-	const { draft, requestId, send, setDraft, setProvider, stop } = useAssistant();
-	const streaming = requestId !== null;
+	const draft = useAssistant(state => state.draft);
+	const streaming = useAssistant(state => state.requestId !== null);
+	const setDraft = useAssistant(state => state.setDraft);
+	const setProvider = useAssistant(state => state.setProvider);
+	const { send, stop } = useAssistantRequests();
 	const canSend = !streaming && assistantMessageSchema.shape.text.safeParse(draft).success;
 
 	const submit = () => {
@@ -197,11 +200,47 @@ function PromptInput({ enabled, provider, settings }: { enabled: TextProvider[];
 	);
 }
 
-/** The conversation, streaming replies with their tool calls and proposals, and the prompt. */
-export function ChatTab({ onEdit }: { onEdit: () => void }) {
+/** The messages, streaming replies with their tool calls and proposals. The only part that re-renders per token. */
+function Conversation({ onEdit }: { onEdit: () => void }) {
 	const { t } = useTranslation();
+	const turns = useAssistant(state => state.turns);
+	return (
+		<MessageScrollerProvider>
+			<MessageScroller className='flex-1'>
+				<MessageScrollerViewport aria-label={t('assistant.tabs.chat')}>
+					<MessageScrollerContent className='gap-4 p-3'>
+						{turns.length === 0 && (
+							<Marker>
+								<MarkerContent>{t('assistant.welcome')}</MarkerContent>
+							</Marker>
+						)}
+						{turns.map(turn => (
+							<MessageScrollerItem key={turn.id} messageId={turn.id} scrollAnchor={turn.role === 'user'}>
+								{turn.role === 'user' ? (
+									<Message align='end'>
+										<MessageContent>
+											<Bubble>
+												<BubbleContent className='whitespace-pre-wrap'>{turn.text}</BubbleContent>
+											</Bubble>
+										</MessageContent>
+									</Message>
+								) : (
+									<AssistantReply onEdit={onEdit} turn={turn} />
+								)}
+							</MessageScrollerItem>
+						))}
+					</MessageScrollerContent>
+				</MessageScrollerViewport>
+				<MessageScrollerButton aria-label={t('assistant.scrollToEnd')} />
+			</MessageScroller>
+		</MessageScrollerProvider>
+	);
+}
+
+/** The conversation and the prompt. */
+export function ChatTab({ onEdit }: { onEdit: () => void }) {
 	const { data: settings } = useAiSettings();
-	const { provider: picked, turns } = useAssistant();
+	const picked = useAssistant(state => state.provider);
 	if (settings === undefined) return null;
 	const enabled = TEXT_PROVIDERS.filter(provider => settings.keys[provider]);
 	// Only providers with a key are offered; one whose key was removed falls back to the first left.
@@ -210,35 +249,7 @@ export function ChatTab({ onEdit }: { onEdit: () => void }) {
 
 	return (
 		<div className='flex min-h-0 flex-1 flex-col'>
-			<MessageScrollerProvider>
-				<MessageScroller className='flex-1'>
-					<MessageScrollerViewport aria-label={t('assistant.tabs.chat')}>
-						<MessageScrollerContent className='gap-4 p-3'>
-							{turns.length === 0 && (
-								<Marker>
-									<MarkerContent>{t('assistant.welcome')}</MarkerContent>
-								</Marker>
-							)}
-							{turns.map(turn => (
-								<MessageScrollerItem key={turn.id} messageId={turn.id} scrollAnchor={turn.role === 'user'}>
-									{turn.role === 'user' ? (
-										<Message align='end'>
-											<MessageContent>
-												<Bubble>
-													<BubbleContent className='whitespace-pre-wrap'>{turn.text}</BubbleContent>
-												</Bubble>
-											</MessageContent>
-										</Message>
-									) : (
-										<AssistantReply onEdit={onEdit} turn={turn} />
-									)}
-								</MessageScrollerItem>
-							))}
-						</MessageScrollerContent>
-					</MessageScrollerViewport>
-					<MessageScrollerButton aria-label={t('assistant.scrollToEnd')} />
-				</MessageScroller>
-			</MessageScrollerProvider>
+			<Conversation onEdit={onEdit} />
 			<PromptInput enabled={enabled} provider={provider} settings={settings} />
 		</div>
 	);
