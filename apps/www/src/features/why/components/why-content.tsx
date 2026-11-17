@@ -30,7 +30,7 @@ export function WhyContent({ locale, copy }: { locale: Locale; copy: WhyCopy }) 
 	useMotion(ref, () => {
 		const reveal = { trigger: ref.current, start: 'top 70%' };
 		gsap.from('[data-why-intro]', { y: 24, autoAlpha: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out', scrollTrigger: reveal });
-		gsap.from('[data-why-pillar]', { y: 24, autoAlpha: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out', delay: 0.2, scrollTrigger: reveal });
+		gsap.from('[data-why-pillar]', { y: 24, autoAlpha: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out', delay: 0.2, scrollTrigger: { trigger: '[data-why-pillar]', start: 'top 85%' } });
 		gsap.timeline({ scrollTrigger: { trigger: '[data-why-mockup]', start: 'top 80%' } })
 			.from('[data-why-mockup]', { y: 60, autoAlpha: 0, duration: 1, ease: 'power3.out' })
 			.from('[data-mockup-event]', { x: -12, autoAlpha: 0, duration: 0.5, stagger: 0.18, ease: 'power2.out' }, '-=0.4')
@@ -39,7 +39,7 @@ export function WhyContent({ locale, copy }: { locale: Locale; copy: WhyCopy }) 
 
 	return (
 		<section ref={ref} id={SECTION_IDS.why} className='mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 md:py-32'>
-			<div className='grid items-center gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12'>
+			<div className='grid gap-6 lg:grid-cols-2 lg:items-end lg:gap-12'>
 				<div>
 					<p data-why-intro className='text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase'>
 						{copy.eyebrow}
@@ -47,26 +47,26 @@ export function WhyContent({ locale, copy }: { locale: Locale; copy: WhyCopy }) 
 					<h2 data-why-intro className='mt-4 font-heading text-4xl leading-[1.1] font-medium tracking-tight text-balance sm:text-5xl'>
 						{copy.title}
 					</h2>
-					<p data-why-intro className='mt-5 max-w-md text-base leading-relaxed text-foreground/70'>
-						{copy.subtitle}
-					</p>
-					<ul className='mt-10 flex flex-col gap-6'>
-						{PILLARS.map(({ key, icon: Icon }) => (
-							<li key={key} data-why-pillar className='flex gap-4'>
-								<span className='flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted/30'>
-									<Icon aria-hidden className='size-4.5' />
-								</span>
-								<div>
-									<h3 className='text-sm font-semibold'>{copy.pillars[key].title}</h3>
-									<p className='mt-1 text-sm leading-relaxed text-muted-foreground'>{copy.pillars[key].body}</p>
-								</div>
-							</li>
-						))}
-					</ul>
 				</div>
-				<div data-why-mockup>
-					<AppMockup locale={locale} copy={copy.mockup} />
-				</div>
+				<p data-why-intro className='max-w-md text-base leading-relaxed text-foreground/70 lg:justify-self-end'>
+					{copy.subtitle}
+				</p>
+			</div>
+			<ul className='mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+				{PILLARS.map(({ key, icon: Icon }) => (
+					<li key={key} data-why-pillar className='flex flex-col gap-4 rounded-xl border bg-muted/20 p-5'>
+						<span className='flex size-10 items-center justify-center rounded-lg border bg-muted/40'>
+							<Icon aria-hidden className='size-4.5' />
+						</span>
+						<div>
+							<h3 className='text-sm font-semibold'>{copy.pillars[key].title}</h3>
+							<p className='mt-1.5 text-sm leading-relaxed text-muted-foreground'>{copy.pillars[key].body}</p>
+						</div>
+					</li>
+				))}
+			</ul>
+			<div data-why-mockup className='mt-12'>
+				<AppMockup locale={locale} copy={copy.mockup} />
 			</div>
 		</section>
 	);

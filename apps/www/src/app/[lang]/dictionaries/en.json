@@ -47,26 +47,39 @@
       }
     },
     "mockup": {
-      "label": "Tempi's day view with work, personal and project events",
+      "label": "Tempi's week view: calendars in the sidebar, events in the time grid and the next event in the right panel",
+      "today": "Today",
+      "calendarsTitle": "Calendars",
+      "newCalendar": "New calendar",
+      "default": "Default",
+      "readOnly": "Read-only",
       "calendars": {
         "work": "Work",
         "personal": "Personal",
         "project": "Side project",
         "holidays": "Holidays"
       },
-      "readOnly": "read-only",
-      "addCalendar": "Add calendar",
-      "search": "Search…",
       "views": {
         "day": "Day",
         "week": "Week",
         "month": "Month"
       },
+      "searchPlaceholder": "Search events",
+      "upcoming": "Upcoming {relative}",
+      "join": "Join",
+      "location": "Online",
+      "shortcutsHint": "See all keyboard shortcuts",
       "events": {
-        "teamSync": "Team sync",
+        "standup": "Standup",
+        "planning": "Sprint planning",
+        "gym": "Gym",
         "designReview": "Design review",
         "lunch": "Lunch break",
-        "docs": "Write documentation"
+        "teamSync": "Team sync",
+        "docs": "Write documentation",
+        "dentist": "Dentist",
+        "release": "Ship v1.2",
+        "holiday": "Public holiday"
       }
     }
   }

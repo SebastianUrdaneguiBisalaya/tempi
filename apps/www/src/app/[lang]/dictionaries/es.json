@@ -47,26 +47,39 @@
       }
     },
     "mockup": {
-      "label": "Vista de día de Tempi con eventos de trabajo, personales y de un proyecto",
+      "label": "Vista semanal de Tempi: calendarios en la barra lateral, eventos en la grilla horaria y el próximo evento en el panel derecho",
+      "today": "Hoy",
+      "calendarsTitle": "Calendarios",
+      "newCalendar": "Nuevo calendario",
+      "default": "Predeterminado",
+      "readOnly": "Solo lectura",
       "calendars": {
         "work": "Trabajo",
         "personal": "Personal",
         "project": "Proyecto",
         "holidays": "Feriados"
       },
-      "readOnly": "solo lectura",
-      "addCalendar": "Añadir calendario",
-      "search": "Buscar…",
       "views": {
         "day": "Día",
         "week": "Semana",
         "month": "Mes"
       },
+      "searchPlaceholder": "Buscar eventos",
+      "upcoming": "Próximo {relative}",
+      "join": "Unirse",
+      "location": "En línea",
+      "shortcutsHint": "Ver todos los atajos de teclado",
       "events": {
-        "teamSync": "Sync del equipo",
+        "standup": "Daily",
+        "planning": "Planificación",
+        "gym": "Gimnasio",
         "designReview": "Revisión de diseño",
         "lunch": "Almuerzo",
-        "docs": "Escribir documentación"
+        "teamSync": "Sync del equipo",
+        "docs": "Escribir documentación",
+        "dentist": "Dentista",
+        "release": "Lanzar v1.2",
+        "holiday": "Feriado"
       }
     }
   }
