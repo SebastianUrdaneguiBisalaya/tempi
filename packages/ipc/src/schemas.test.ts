@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { parseWith } from '@tempi/core';
+import { MAX_DICTATION_BYTES, parseWith } from '@tempi/core';
 import { CHANNELS } from './channels';
 import { payloadSchemas, responseValueSchemas, resultSchema } from './schemas';
 
@@ -29,6 +29,7 @@ describe('payloadSchemas', () => {
 		['ai:saveKey', { key: 'sk-test', provider: 'anthropic' }],
 		['ai:saveSettings', { elevenlabs: { voices: { es: 'voice-es' } }, models: { openai: 'gpt-5.4-mini' } }],
 		['ai:testKey', 'elevenlabs'],
+		['ai:transcribe', { audio: new Uint8Array([26, 69, 223, 163]), language: 'es', mimeType: 'audio/webm' }],
 		['app:showEvent', { key: 'event-1', startAt: '2026-11-20T09:00:00-05:00' }],
 		['calendars:create', { color: '#3B82F6', name: 'Work' }],
 		['calendars:delete', { id: 'cal-1', moveEventsTo: null }],
@@ -74,6 +75,8 @@ describe('payloadSchemas', () => {
 		['ai:chat', { messages: [{ role: 'system', text: ' ' }], provider: 'elevenlabs', requestId: 'not-a-uuid' }, ['messages.0.role', 'messages.0.text', 'provider', 'requestId']],
 		['ai:chat', { messages: [], provider: 'openai', requestId: '01890a5d-ac96-774b-bcce-b302099a8057' }, ['messages']],
 		['ai:removeKey', 'mistral', ['']],
+		['ai:transcribe', { audio: 'base64audio', language: 'fr', mimeType: 'video/mp4' }, ['audio', 'language', 'mimeType']],
+		['ai:transcribe', { audio: new Uint8Array(), language: 'en', mimeType: 'audio/webm' }, ['audio']],
 		['ai:saveKey', { key: ' ', provider: 'mistral' }, ['key', 'provider']],
 		['ai:saveSettings', { elevenlabs: { ttsModel: 'eleven_v9' }, models: { anthropic: 'custom-model' } }, ['elevenlabs.ttsModel', 'models.anthropic']],
 		['app:showEvent', { key: '', startAt: 'tomorrow' }, ['key', 'startAt']],
@@ -111,6 +114,13 @@ describe('resultSchema', () => {
 		expect(schema.safeParse({ error: { code: 'not_found', issues: [{ detail: 'gone', key: 'calendar.vanished' }] }, ok: false }).success).toBe(false);
 		expect(schema.safeParse({ error: { code: 'internal', issues: [] }, ok: false }).success).toBe(false);
 		expect(schema.safeParse({ ok: true, value: 42 }).success).toBe(false);
+	});
+});
+
+describe('ai:transcribe', () => {
+	test('refuses audio longer than a dictation can be', () => {
+		const result = parseWith(payloadSchemas['ai:transcribe'], { audio: new Uint8Array(MAX_DICTATION_BYTES + 1), language: 'en', mimeType: 'audio/webm' });
+		expect(result.ok ? [] : result.error.issues.map(issue => [issue.field, issue.key])).toEqual([['audio', 'ai.recordingTooLong']]);
 	});
 });
 

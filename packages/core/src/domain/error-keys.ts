@@ -5,9 +5,12 @@
 export const ERROR_KEYS = {
 	'ai.encryptionUnavailable': 'The OS cannot encrypt AI provider keys (safeStorage unavailable); keys are never stored in clear',
 	'ai.invalidKey': 'The provider rejected the API key, or no key is stored for it',
+	'ai.microphoneDenied': 'The microphone permission was denied by the user or the OS',
 	'ai.network': 'The AI provider could not be reached',
 	'ai.providerError': 'The AI provider answered with an unexpected error; see detail',
 	'ai.rateLimited': 'The AI provider is rate limiting this key or its quota is used up',
+	'ai.recordingTooLong': 'The recording is longer or larger than a dictation may be',
+	'ai.transcriptionFailed': 'The audio could not be transcribed, or nothing was recognized; see detail',
 	'avatar.fileName': 'Avatar must be a stored file name (id plus jpg, png or webp extension)',
 	'avatar.tooLarge': 'Avatar image exceeds the maximum size',
 	'backup.invalidFile': 'The file is not a Tempi database backup',

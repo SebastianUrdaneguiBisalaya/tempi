@@ -38,6 +38,8 @@ export type { DateRange } from './domain/date-range';
 export { dateRangeSchema, overlapsRange } from './domain/date-range';
 export type { DaySegment } from './domain/day-layout';
 export { layoutDay, MINUTES_PER_DAY } from './domain/day-layout';
+export type { DictationAudioType, Transcription, TranscriptionInput } from './domain/dictation';
+export { DICTATION_AUDIO_TYPES, dictationAudioType, MAX_DICTATION_BYTES, MAX_DICTATION_SECONDS, transcriptionInputSchema, transcriptionSchema } from './domain/dictation';
 export type { ErrorKey } from './domain/error-keys';
 export { ERROR_KEYS, isErrorKey } from './domain/error-keys';
 export type { CalendarEvent, EventFields, EventOccurrence, EventPatch, EventStatus, NewEventInput, OccurrenceScope, OccurrenceTarget } from './domain/event';

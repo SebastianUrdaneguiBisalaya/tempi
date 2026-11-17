@@ -64,6 +64,7 @@ const aiService: AiService = {
 	},
 	saveSettings: async () => ok(await aiView()),
 	testKey: async provider => (aiKeys.has(provider) ? ok(null) : fail('not_found', 'ai.invalidKey')),
+	transcribe: () => Promise.resolve(ok({ text: 'hola' })),
 };
 
 /** Assistant replies started, and the streams opened for them. */

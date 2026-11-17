@@ -4,5 +4,7 @@ export type { AssistantContext } from './assistant-context';
 export type { AssistantPorts } from './assistant-tools';
 export { testKey } from './test-key';
 export { textModel } from './text-model';
+export type { TranscriptionRequest } from './transcribe';
+export { transcribe } from './transcribe';
 export type { AiRequestOptions } from './voices';
 export { listVoices } from './voices';

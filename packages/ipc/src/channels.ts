@@ -17,6 +17,8 @@ export const CHANNELS = {
 		saveSettings: 'ai:saveSettings',
 		/** Tests the saved key of a provider again. */
 		testKey: 'ai:testKey',
+		/** Transcribes one recorded dictation with the saved ElevenLabs key. The audio is never stored. */
+		transcribe: 'ai:transcribe',
 	},
 	app: {
 		/** Brings the main window forward on an occurrence, e.g. one picked in the menu bar calendar. */

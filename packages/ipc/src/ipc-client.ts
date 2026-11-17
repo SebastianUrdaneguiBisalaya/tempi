@@ -38,6 +38,7 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 		saveKey: input => call(CHANNELS.ai.saveKey, () => api.ai.saveKey(input)),
 		saveSettings: patch => call(CHANNELS.ai.saveSettings, () => api.ai.saveSettings(patch)),
 		testKey: provider => call(CHANNELS.ai.testKey, () => api.ai.testKey(provider)),
+		transcribe: input => call(CHANNELS.ai.transcribe, () => api.ai.transcribe(input)),
 	},
 	app: {
 		// Pushed payloads are as untrusted as answers: a malformed one is logged and dropped.

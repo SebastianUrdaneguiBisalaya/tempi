@@ -17,6 +17,7 @@ import { useSettingsDialog } from '@/features/settings/components/settings-dialo
 import { useAiSettings } from '@/features/settings/hooks/use-ai';
 import type { AssistantTurn, ToolTrace } from '../assistant-store';
 import { useAssistant } from './assistant-provider';
+import { DictationButton, DictationError, DictationWaveform } from './dictation-controls';
 import { ProposalCard } from './proposal-card';
 
 function TraceRow({ trace }: { trace: ToolTrace }) {
@@ -176,6 +177,8 @@ function PromptInput({ enabled, provider, settings }: { enabled: TextProvider[];
 				placeholder={t('assistant.prompt.placeholder')}
 				value={draft}
 			/>
+			<DictationWaveform />
+			<DictationError />
 			<div className='flex items-center gap-2'>
 				<Select items={items} onValueChange={value => value !== null && setProvider(value)} value={provider}>
 					<SelectTrigger aria-label={t('assistant.prompt.provider')} className='min-w-0' size='sm'>
@@ -190,12 +193,14 @@ function PromptInput({ enabled, provider, settings }: { enabled: TextProvider[];
 					</SelectContent>
 				</Select>
 				<span className='min-w-0 truncate text-muted-foreground'>{settings.models[provider]}</span>
+				<span className='ml-auto' />
+				<DictationButton available={settings.keys.elevenlabs} />
 				{streaming ? (
-					<Button aria-label={t('assistant.prompt.stop')} className='ml-auto' onClick={stop} size='icon-sm' type='button' variant='outline'>
+					<Button aria-label={t('assistant.prompt.stop')} onClick={stop} size='icon-sm' type='button' variant='outline'>
 						<CircleStopIcon />
 					</Button>
 				) : (
-					<Button aria-label={t('assistant.prompt.send')} className='ml-auto' disabled={!canSend} size='icon-sm' type='submit'>
+					<Button aria-label={t('assistant.prompt.send')} disabled={!canSend} size='icon-sm' type='submit'>
 						<ArrowUpIcon />
 					</Button>
 				)}
