@@ -2,11 +2,14 @@
 
 import { cn } from 'cn';
 import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, PanelLeftIcon, PanelRightIcon, PlusIcon, SearchIcon, SettingsIcon, VideoIcon } from 'lucide-react';
+import Image from 'next/image';
 import type { CSSProperties } from 'react';
 import { useSyncExternalStore } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Kbd } from '@/components/ui/kbd';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Hotkey } from '@/features/keyboard/components/hotkey';
+import { SHOWN_SHORTCUTS } from '@/lib/hotkeys';
 import type { Locale } from '@/lib/i18n';
 
 const CALENDARS = {
@@ -68,6 +71,8 @@ export type MockupCopy = {
 	join: string;
 	location: string;
 	shortcutsHint: string;
+	/** The "Ask Tempi" entry at the bottom of the sidebar. */
+	assistant: { label: string; hint: string };
 	events: Record<EventKey, string>;
 };
 
@@ -149,7 +154,25 @@ function Sidebar({ locale, copy, today }: PartProps) {
 					))}
 				</ul>
 			</div>
+			<AssistantEntry copy={copy.assistant} />
 		</aside>
+	);
+}
+
+/** Replica of the app's "Ask Tempi" entry (apps/web `assistant.tsx`), pinned to the bottom of the sidebar. */
+function AssistantEntry({ copy }: { copy: MockupCopy['assistant'] }) {
+	return (
+		<div className='mt-auto flex items-center gap-2.5 rounded-lg border border-primary/15 bg-linear-to-br from-primary/10 via-transparent to-transparent p-2 text-xs shadow-xs'>
+			<span className='flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-foreground shadow-xs'>
+				{/* The icon has wide transparent padding: drawn larger than its tile, the dolphin fills it. */}
+				<Image src='/tempi-icon.png' alt='' width={48} height={48} className='size-12 max-w-none invert' />
+			</span>
+			<span className='flex min-w-0 flex-1 flex-col'>
+				<span className='truncate font-medium'>{copy.label}</span>
+				<span className='truncate text-muted-foreground'>{copy.hint}</span>
+			</span>
+			<Hotkey keys={SHOWN_SHORTCUTS.toggleAssistant} />
+		</div>
 	);
 }
 

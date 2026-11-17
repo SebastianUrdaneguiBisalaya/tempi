@@ -5,6 +5,21 @@
 /* The landing page is dark only: shadcn's `dark:` variants always apply. */
 @custom-variant dark (&:where(:root, :root *));
 
+/* `Marquee` (src/components/marquee.tsx): each copy slides by its own width plus the gap, so the next one takes its place.
+   Inline, so `--duration` resolves on each marquee instead of once on :root. */
+@theme inline {
+	--animate-marquee: marquee var(--duration, 40s) linear infinite;
+
+	@keyframes marquee {
+		from {
+			transform: translateX(0);
+		}
+		to {
+			transform: translateX(calc(-100% - var(--gap, 1rem)));
+		}
+	}
+}
+
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);

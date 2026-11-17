@@ -18,6 +18,7 @@ export const SHOWN_SHORTCUTS = {
 	openSettings: ['mod+,'],
 	showShortcuts: ['?'],
 	togglePanel: ['p'],
+	toggleAssistant: ['mod+j'],
 } as const;
 
 export type ShownShortcut = keyof typeof SHOWN_SHORTCUTS;
