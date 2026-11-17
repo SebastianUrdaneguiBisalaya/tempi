@@ -1,4 +1,9 @@
 import {
+	aiKeyInputSchema,
+	aiProviderSchema,
+	aiSettingsPatchSchema,
+	aiSettingsSchema,
+	aiVoiceSchema,
 	appUpdateStatusSchema,
 	calendarEventSchema,
 	calendarPatchSchema,
@@ -59,6 +64,12 @@ export const backupResultSchema = z.discriminatedUnion('status', [z.object({ sta
 export const restoreResultSchema = z.discriminatedUnion('status', [z.object({ status: z.literal('canceled') }), z.object({ status: z.literal('restarting') })]);
 
 export const payloadSchemas = {
+	'ai:getSettings': noPayload,
+	'ai:listVoices': noPayload,
+	'ai:removeKey': aiProviderSchema,
+	'ai:saveKey': aiKeyInputSchema,
+	'ai:saveSettings': aiSettingsPatchSchema,
+	'ai:testKey': aiProviderSchema,
 	'app:showEvent': occurrenceRefSchema,
 	'calendars:create': newCalendarInputSchema,
 	'calendars:delete': deleteCalendarInputSchema,
@@ -96,6 +107,12 @@ export const payloadSchemas = {
 
 /** The value inside a successful result on each channel. The renderer parses responses with these. */
 export const responseValueSchemas = {
+	'ai:getSettings': aiSettingsSchema,
+	'ai:listVoices': z.array(aiVoiceSchema),
+	'ai:removeKey': aiSettingsSchema,
+	'ai:saveKey': aiSettingsSchema,
+	'ai:saveSettings': aiSettingsSchema,
+	'ai:testKey': z.null(),
 	'app:showEvent': z.null(),
 	'calendars:create': calendarSchema,
 	'calendars:delete': z.null(),

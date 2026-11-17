@@ -5,6 +5,7 @@ Rules for anyone (human or agent) changing this repo. They are rules, not sugges
 ## Project
 
 - Local-first desktop calendar: no backend, no accounts. Sync may come later.
+- AI is optional and uses the user's own provider keys (`@tempi/ai`, desktop main only). Keys are encrypted with `safeStorage` and never reach the renderer, logs or IPC answers. With no key saved, nothing calls a provider.
 - Bun monorepo: `apps/desktop` (Electron), `apps/web` (Next.js, static export, embedded by desktop), `apps/www` (landing, deployed on its own to Vercel, not static), `packages/*` (shared).
 - Use Bun only: `bun install`, `bun run`, `bunx`. Add shared versions to the root `catalog`.
 - Verify every change with `bun run check`, `bun run typecheck` and `bun run test`.
@@ -104,7 +105,7 @@ Anything else is forbidden unless the user asks for that exact command, in parti
 - Adding an `ErrorKey` requires its `en` and `es` translations in `@tempi/i18n`. The typecheck fails otherwise.
 - Adapters implement ports: SQLite in desktop today, a sync or HTTP adapter later. To swap storage, write a new adapter; never change the domain.
 - Prepare for sync now: UUIDv7 text IDs, `created_at`/`updated_at` timestamps, `deleted_at` soft deletes, and no autoincrement IDs.
-- Dependency direction: `apps/*` → `packages/ipc` / `packages/db` / `packages/i18n` → `packages/core`. Core depends only on zod and `rrule-temporal`. Packages never import from apps.
+- Dependency direction: `apps/*` → `packages/ipc` / `packages/db` / `packages/i18n` / `packages/ai` → `packages/core`. Core depends only on zod and `rrule-temporal`. Packages never import from apps. Only `apps/desktop` (main process) imports `@tempi/ai`; web never does, and AI schemas and types for web live in core.
 
 ## Structure
 
@@ -131,6 +132,12 @@ packages/
       desktop-api.ts         DesktopApi type exposed by preload, Window augmentation
       ipc-client.ts          renderer client: calls the use cases through window.desktop, validates answers
       index.ts
+  ai/                        @tempi/ai: optional AI processes over user-owned keys (AI SDK, ElevenLabs); desktop main only
+    src/
+      test-key.ts            checks a provider key without spending tokens
+      voices.ts              ElevenLabs voices
+      text-model.ts          the chosen text model, called with the user's key
+      index.ts
   i18n/                      @tempi/i18n: shared en/es translations for web and desktop (plain data, no i18n runtime)
     src/
       locales/               en.ts (source of keys), es.ts (must match en exactly)
@@ -141,6 +148,7 @@ apps/desktop/src/
   app-protocol.ts            app:// handler for the web export
   window-state.ts
   database.ts                opens @tempi/db in userData
+  ai/                        encrypted key store, AI settings file, AI service behind `ai:*`
   ipc/                       one file per domain (events.ts), register-ipc.ts
   preload.ts                 exposes DesktopApi; no logic (bundled to dist/preload.cjs)
 

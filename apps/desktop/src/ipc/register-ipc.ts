@@ -1,6 +1,8 @@
 import type { CoreDeps, Settings } from '@tempi/core';
 import type { OccurrenceRef } from '@tempi/ipc';
+import type { AiService } from '../ai/ai-service';
 import type { UpdateService } from '../updates/update-service';
+import { registerAiHandlers } from './ai';
 import { registerAppHandlers } from './app';
 import { registerCalendarHandlers } from './calendars';
 import { type DataIo, registerDataHandlers } from './data';
@@ -28,12 +30,13 @@ export type IpcListeners = {
 	showEvent?: (ref: OccurrenceRef) => void;
 };
 
-/** The app's work outside the database behind some channels, injected so tests can stand in for dialogs, files, Google and updates. */
-export type AppIo = { data: DataIo; google: GoogleIo; ical: IcalIo; updates: UpdateService };
+/** The app's work outside the database behind some channels, injected so tests can stand in for dialogs, files, AI providers, Google and updates. */
+export type AppIo = { ai: AiService; data: DataIo; google: GoogleIo; ical: IcalIo; updates: UpdateService };
 
 /** Registers every channel of the `@tempi/ipc` contract, each running its core use case against `deps`. */
 
 export const registerIpc = (context: HandlerContext, deps: CoreDeps, io: AppIo, listeners: IpcListeners = {}): void => {
+	registerAiHandlers(context, io.ai);
 	registerAppHandlers(context, listeners.showEvent);
 	registerCalendarHandlers(context, deps, listeners.eventsChanged);
 	registerEventHandlers(context, deps, listeners.eventsChanged);

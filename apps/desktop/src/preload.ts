@@ -27,6 +27,14 @@ ipcRenderer.on(PUSH_CHANNELS.updates.status, (_event, status: unknown) => {
 });
 
 const desktop: DesktopApi = {
+	ai: {
+		getSettings: () => ipcRenderer.invoke(CHANNELS.ai.getSettings),
+		listVoices: () => ipcRenderer.invoke(CHANNELS.ai.listVoices),
+		removeKey: provider => ipcRenderer.invoke(CHANNELS.ai.removeKey, provider),
+		saveKey: input => ipcRenderer.invoke(CHANNELS.ai.saveKey, input),
+		saveSettings: patch => ipcRenderer.invoke(CHANNELS.ai.saveSettings, patch),
+		testKey: provider => ipcRenderer.invoke(CHANNELS.ai.testKey, provider),
+	},
 	app: {
 		onShowEvent: listener => {
 			showEventListeners.add(listener);

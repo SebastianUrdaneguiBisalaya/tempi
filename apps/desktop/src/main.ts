@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
+import { listVoices, testKey } from '@tempi/ai';
 import { type CoreDeps, getProfile, getSettings, initializeSettings, type Language, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
 import { resources } from '@tempi/i18n';
@@ -9,6 +10,9 @@ import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
 import { createGoogleCalendarApi, GoogleAuthError, GoogleOfflineError, type SyncDeps, syncGoogle } from '@tempi/sync-google';
 import { app, BrowserWindow, type BrowserWindowConstructorOptions, dialog, globalShortcut, ipcMain, nativeImage, nativeTheme, net, powerMonitor, protocol, safeStorage, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import { createAiService } from './ai/ai-service.js';
+import { createAiKeyStore } from './ai/key-store.js';
+import { createAiSettingsStore } from './ai/settings-store.js';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
 import { avatarPath, createFileAvatarStore } from './avatar-store.js';
@@ -362,6 +366,16 @@ function googleAccount(): GoogleAccountService {
 	});
 }
 
+// AI provider keys, encrypted like the Google tokens; the choices beside them in plain JSON.
+function aiService() {
+	const userData = app.getPath('userData');
+	return createAiService({
+		keys: createAiKeyStore(path.join(userData, 'ai-keys.bin'), safeStorageCipher),
+		providers: { listVoices: key => listVoices(key), testKey: (provider, key) => testKey(provider, key) },
+		settings: createAiSettingsStore(path.join(userData, 'ai-settings.json')),
+	});
+}
+
 // Two-way Google Calendar sync while an account is connected. Google is called between transactions, never inside one.
 function createGoogleSync(deps: CoreDeps, transaction: TransactionQueue, account: GoogleAccountService): SyncRunner {
 	const api = createGoogleCalendarApi({
@@ -466,7 +480,7 @@ if (!gotLock) {
 		registerIpc(
 			{ ipc: ipcMain, isTrusted: isTrustedUrl, transaction },
 			deps,
-			{ data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo(), updates },
+			{ ai: aiService(), data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo(), updates },
 			{
 				eventsChanged: () => {
 					void reminders?.reschedule();

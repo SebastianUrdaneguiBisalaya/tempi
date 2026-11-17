@@ -20,6 +20,7 @@ export const STORAGE_UNAVAILABLE: DomainError = {
  * which refreshes every view of that domain at once.
  */
 export const queryKeys = {
+	ai: { all: ['ai'], settings: ['ai', 'settings'], voices: ['ai', 'voices'] },
 	calendars: { all: ['calendars'] },
 	events: { all: ['events'], range: (range: DateRange) => ['events', range.start, range.end], search: (query: string) => ['events', 'search', query] },
 	google: { account: ['google', 'account'], calendars: ['google', 'calendars'], syncStatus: ['google', 'syncStatus'] },

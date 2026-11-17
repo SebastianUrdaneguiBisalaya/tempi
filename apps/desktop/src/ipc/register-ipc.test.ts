@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import type { DatabaseSync } from 'node:sqlite';
-import { type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, fail, ok, type Settings, type UserProfile, uuidv7Ids } from '@tempi/core';
+import { type AiSettings, type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, DEFAULT_AI_SETTINGS, fail, ok, type Settings, type UserProfile, uuidv7Ids } from '@tempi/core';
 import { createRepositories, createTransactionQueue, openDatabase } from '@tempi/db';
 import { parseIcs, serializeIcs } from '@tempi/ical';
 import { CHANNELS, type Channel } from '@tempi/ipc';
+import type { AiService } from '../ai/ai-service';
 import type { GoogleAccountService } from '../google/google-account';
 import type { SyncRunner } from '../google/sync-runner';
 import { createUpdateService } from '../updates/update-service';
@@ -41,6 +42,28 @@ const dataIo: DataIo = {
 		dataCalls.push(`restore ${source}`);
 		return Promise.resolve(source.endsWith('.db') ? ok(null) : fail('validation', 'backup.invalidFile'));
 	},
+};
+
+/** The fake AI service: accepts only `good-key` and records the keys it was given. */
+let aiKeys: Map<string, string>;
+const aiView = async (): Promise<AiSettings> => ({
+	...DEFAULT_AI_SETTINGS,
+	keys: { anthropic: aiKeys.has('anthropic'), elevenlabs: aiKeys.has('elevenlabs'), google: aiKeys.has('google'), groq: aiKeys.has('groq'), openai: aiKeys.has('openai'), xai: aiKeys.has('xai') },
+});
+const ai: AiService = {
+	getSettings: aiView,
+	listVoices: async () => ok([]),
+	removeKey: async provider => {
+		aiKeys.delete(provider);
+		return ok(await aiView());
+	},
+	saveKey: async ({ key, provider }) => {
+		if (key !== 'good-key') return fail('validation', 'ai.invalidKey', { field: 'key' });
+		aiKeys.set(provider, key);
+		return ok(await aiView());
+	},
+	saveSettings: async () => ok(await aiView()),
+	testKey: async provider => (aiKeys.has(provider) ? ok(null) : fail('not_found', 'ai.invalidKey')),
 };
 
 /** The fake Google service: one account at most, like the real one. */
@@ -110,6 +133,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	backupPath = '/backups';
 	restoreSource = null;
 	dataCalls = [];
+	aiKeys = new Map();
 	googleEmail = null;
 	syncCalls = [];
 	exportPath = '/exports';
@@ -122,7 +146,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
-		{ data: dataIo, google: { account: google, sync }, ical: icalIo, updates: updates() },
+		{ ai, data: dataIo, google: { account: google, sync }, ical: icalIo, updates: updates() },
 		listeners
 	);
 };
@@ -164,6 +188,16 @@ describe('registerIpc', () => {
 		expect(await invoke(CHANNELS.events.list, { end: '2026-11-21T00:00:00Z', start: '2026-11-20T00:00:00Z' })).toMatchObject({ ok: true, value: [{ title: 'Standup' }] });
 		expect(await invoke(CHANNELS.events.search, 'STAND')).toMatchObject({ ok: true, value: [{ title: 'Standup' }] });
 		expect(await invoke(CHANNELS.settings.save, { theme: 'dark' })).toMatchObject({ ok: true, value: { theme: 'dark', weekStart: 'monday' } });
+	});
+
+	test('ai: validates the payload, saves a working key and never answers with it', async () => {
+		expect(await invoke(CHANNELS.ai.saveKey, { key: ' ', provider: 'mistral' })).toMatchObject({ error: { code: 'validation' }, ok: false });
+		expect(aiKeys.size).toBe(0);
+		const saved = await invoke(CHANNELS.ai.saveKey, { key: 'good-key', provider: 'openai' });
+		expect(saved).toMatchObject({ ok: true, value: { keys: { openai: true } } });
+		expect(JSON.stringify(saved)).not.toContain('good-key');
+		expect(await invoke(CHANNELS.ai.testKey, 'openai')).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.ai.saveKey, { key: 'bad-key', provider: 'groq' })).toMatchObject({ error: { issues: [{ key: 'ai.invalidKey' }] }, ok: false });
 	});
 
 	test('restores a deleted event', async () => {
