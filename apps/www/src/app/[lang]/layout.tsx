@@ -1,6 +1,7 @@
 import { cn } from 'cn';
 import type { Metadata } from 'next';
 import { Geist_Mono, Instrument_Sans, Manrope } from 'next/font/google';
+import { SiteHeader } from '@/features/header/components/site-header';
 import { locales } from '@/lib/i18n';
 import { getDictionary, getLocale } from './dictionaries';
 import '../globals.css';
@@ -26,7 +27,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: LayoutProps<'/[lang]'>) {
 	return (
 		<html lang={await getLocale()} className={cn('h-full antialiased', manrope.variable, instrumentSans.variable, geistMono.variable)}>
-			<body className='flex min-h-full flex-col'>{children}</body>
+			<body className='flex min-h-full flex-col'>
+				<SiteHeader />
+				{children}
+			</body>
 		</html>
 	);
 }

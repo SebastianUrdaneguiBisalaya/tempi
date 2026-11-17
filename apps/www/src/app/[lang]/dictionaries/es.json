@@ -2,5 +2,18 @@
   "meta": {
     "title": "Tempi · Calendario de escritorio local-first",
     "description": "Un calendario de escritorio local-first para macOS, Windows y Linux. Sin cuenta, sin nube, sin rastreo."
+  },
+  "header": {
+    "home": "Tempi, volver arriba",
+    "navLabel": "Principal",
+    "nav": {
+      "features": "Funciones",
+      "faq": "Preguntas",
+      "download": "Descargar"
+    },
+    "github": "Tempi en GitHub",
+    "language": "Cambiar idioma",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
   }
 }
