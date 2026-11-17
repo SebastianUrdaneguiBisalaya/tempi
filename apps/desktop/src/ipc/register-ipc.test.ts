@@ -130,6 +130,8 @@ const icalIo: IcalIo = {
 
 /** The fake OS: macOS with the microphone denied. Records which privacy pages were opened and notifications shown. */
 let permissionCalls: string[];
+/** Why the fake OS refuses the next test notification, or null to show it. */
+let notificationRefusal: string | null;
 const permissions: PermissionsIo = {
 	openSystemSettings: permission => {
 		permissionCalls.push(`open ${permission}`);
@@ -138,7 +140,7 @@ const permissions: PermissionsIo = {
 	status: () => ({ microphone: { canOpenSettings: true, state: 'denied' }, notifications: { canOpenSettings: true, state: 'unknown' } }),
 	testNotification: () => {
 		permissionCalls.push('notify');
-		return true;
+		return Promise.resolve(notificationRefusal === null ? { shown: true } : { reason: notificationRefusal, shown: false });
 	},
 };
 
@@ -162,6 +164,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	restoreSource = null;
 	dataCalls = [];
 	permissionCalls = [];
+	notificationRefusal = null;
 	aiKeys = new Map();
 	chats = [];
 	googleEmail = null;
@@ -709,6 +712,17 @@ describe('permissions', () => {
 	test('shows a test notification', async () => {
 		expect(await invoke(CHANNELS.permissions.testNotification)).toEqual({ ok: true, value: null });
 		expect(permissionCalls).toEqual(['notify']);
+	});
+
+	test('reports a test notification the OS refused, with its reason for developers', async () => {
+		notificationRefusal = 'Notifications are not allowed for this application';
+		expect(await invoke(CHANNELS.permissions.testNotification)).toEqual({
+			error: {
+				code: 'internal',
+				issues: [{ detail: 'The OS refused the test notification: Notifications are not allowed for this application', key: 'notifications.failed' }],
+			},
+			ok: false,
+		});
 	});
 
 	test('refuses untrusted senders', async () => {
