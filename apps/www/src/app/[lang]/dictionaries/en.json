@@ -17,7 +17,7 @@
     "closeMenu": "Close menu"
   },
   "hero": {
-    "title": "Your calendar, finally yours.",
+    "title": "Time is personal. Your calendar should be too.",
     "subtitle": "A local-first desktop calendar for macOS, Windows and Linux. No account, no cloud, no tracking: your schedule lives on your computer and works with or without a connection.",
     "download": "Download",
     "downloadForPlatform": "Download for {os}",

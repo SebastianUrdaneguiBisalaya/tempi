@@ -39,7 +39,7 @@ export function HeroContent({ copy }: { copy: HeroCopy }) {
 		<section ref={ref} className='relative isolate flex min-h-[40rem] items-center overflow-hidden md:min-h-[46rem]'>
 			{/* Taller than the section so the parallax never shows an edge. */}
 			<div data-hero-parallax className='absolute inset-x-0 -top-[8%] -bottom-[8%] -z-10'>
-				<Image data-hero-bg src='/bg-tempi.png' alt={copy.imageAlt} fill priority sizes='100vw' className='object-cover object-[72%_center] opacity-55' />
+				<Image data-hero-bg src='/bg-tempi.png' alt={copy.imageAlt} fill priority sizes='100vw' className='object-cover object-[72%_center] opacity-40' />
 			</div>
 			{/* Fade the illustration into the page at both edges. */}
 			<div className='absolute inset-x-0 bottom-0 -z-10 h-1/3 bg-linear-to-b from-transparent to-background' />
