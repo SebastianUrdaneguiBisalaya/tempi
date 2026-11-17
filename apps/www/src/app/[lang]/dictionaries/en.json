@@ -15,5 +15,13 @@
     "language": "Change language",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
+  },
+  "hero": {
+    "titleLines": ["Time is personal.", "Your calendar should be too."],
+    "subtitle": "A local-first desktop calendar for macOS, Windows and Linux. No account, no cloud, no tracking: your schedule lives on your computer and works with or without a connection.",
+    "download": "Download",
+    "downloadForPlatform": "Download for {os}",
+    "learnMore": "Learn more",
+    "imageAlt": "Two people working on laptops on a beach at sunset"
   }
 }
