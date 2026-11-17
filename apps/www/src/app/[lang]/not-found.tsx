@@ -21,7 +21,8 @@ export default async function NotFound() {
 					className={cn(buttonVariants({ variant: 'outline', className: 'mt-8 h-11 rounded-full border-foreground/15 bg-background/30! px-5 text-sm backdrop-blur-md' }))}
 				>
 					<ArrowLeftIcon data-icon='inline-start' />
-					{copy.back}
+					{/* Trims the font's uneven ascent and descent so the text's visual middle lines up with the arrow. */}
+					<span className='[text-box:trim-both_cap_alphabetic]'>{copy.back}</span>
 				</Link>
 			</div>
 		</main>
