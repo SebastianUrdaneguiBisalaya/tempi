@@ -1,0 +1,73 @@
+'use client';
+
+import { LockIcon, type LucideIcon, RefreshCwIcon, ShieldCheckIcon, ZapIcon } from 'lucide-react';
+import { useRef } from 'react';
+import { gsap, useMotion } from '@/lib/gsap';
+import type { Locale } from '@/lib/i18n';
+import { SECTION_IDS } from '@/lib/site';
+import { AppMockup, type MockupCopy } from './app-mockup';
+
+const PILLARS = [
+	{ key: 'local', icon: LockIcon },
+	{ key: 'fast', icon: ZapIcon },
+	{ key: 'sync', icon: RefreshCwIcon },
+	{ key: 'lasting', icon: ShieldCheckIcon },
+] as const satisfies readonly { key: string; icon: LucideIcon }[];
+
+type Pillar = { title: string; body: string };
+
+export type WhyCopy = {
+	eyebrow: string;
+	title: string;
+	subtitle: string;
+	pillars: Record<(typeof PILLARS)[number]['key'], Pillar>;
+	mockup: MockupCopy;
+};
+
+export function WhyContent({ locale, copy }: { locale: Locale; copy: WhyCopy }) {
+	const ref = useRef<HTMLElement>(null);
+
+	useMotion(ref, () => {
+		const reveal = { trigger: ref.current, start: 'top 70%' };
+		gsap.from('[data-why-intro]', { y: 24, autoAlpha: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out', scrollTrigger: reveal });
+		gsap.from('[data-why-pillar]', { y: 24, autoAlpha: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out', delay: 0.2, scrollTrigger: reveal });
+		gsap.timeline({ scrollTrigger: { trigger: '[data-why-mockup]', start: 'top 80%' } })
+			.from('[data-why-mockup]', { y: 60, autoAlpha: 0, duration: 1, ease: 'power3.out' })
+			.from('[data-mockup-event]', { x: -12, autoAlpha: 0, duration: 0.5, stagger: 0.18, ease: 'power2.out' }, '-=0.4')
+			.from('[data-mockup-now]', { scaleX: 0, transformOrigin: 'left center', duration: 0.6, ease: 'power2.inOut' }, '-=0.2');
+	});
+
+	return (
+		<section ref={ref} id={SECTION_IDS.why} className='mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 md:py-32'>
+			<div className='grid items-center gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12'>
+				<div>
+					<p data-why-intro className='text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase'>
+						{copy.eyebrow}
+					</p>
+					<h2 data-why-intro className='mt-4 font-heading text-4xl leading-[1.1] font-medium tracking-tight text-balance sm:text-5xl'>
+						{copy.title}
+					</h2>
+					<p data-why-intro className='mt-5 max-w-md text-base leading-relaxed text-foreground/70'>
+						{copy.subtitle}
+					</p>
+					<ul className='mt-10 flex flex-col gap-6'>
+						{PILLARS.map(({ key, icon: Icon }) => (
+							<li key={key} data-why-pillar className='flex gap-4'>
+								<span className='flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted/30'>
+									<Icon aria-hidden className='size-4.5' />
+								</span>
+								<div>
+									<h3 className='text-sm font-semibold'>{copy.pillars[key].title}</h3>
+									<p className='mt-1 text-sm leading-relaxed text-muted-foreground'>{copy.pillars[key].body}</p>
+								</div>
+							</li>
+						))}
+					</ul>
+				</div>
+				<div data-why-mockup>
+					<AppMockup locale={locale} copy={copy.mockup} />
+				</div>
+			</div>
+		</section>
+	);
+}

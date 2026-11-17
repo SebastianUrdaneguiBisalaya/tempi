@@ -1,4 +1,5 @@
 import { Hero } from '@/features/hero/components/hero';
+import { WhyTempi } from '@/features/why/components/why-tempi';
 import { SECTION_IDS } from '@/lib/site';
 
 export default function LandingPage() {
@@ -6,7 +7,7 @@ export default function LandingPage() {
 	return (
 		<main className='flex flex-1 flex-col'>
 			<Hero />
-			<section id={SECTION_IDS.why} className='min-h-svh border-t' />
+			<WhyTempi />
 			<section id={SECTION_IDS.features} className='min-h-svh border-t' />
 			<section id={SECTION_IDS.faq} className='min-h-svh border-t' />
 			<section id={SECTION_IDS.download} className='min-h-svh border-t' />

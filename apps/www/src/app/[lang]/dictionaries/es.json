@@ -23,5 +23,51 @@
     "downloadForPlatform": "Descargar para {os}",
     "learnMore": "Conocer más",
     "imageAlt": "Dos personas trabajando con sus laptops en una playa al atardecer"
+  },
+  "why": {
+    "eyebrow": "Por qué Tempi",
+    "title": "Tu agenda, bajo tu control.",
+    "subtitle": "La mayoría de los calendarios son un servicio web que alquilas. Tempi devuelve tus datos a tu dispositivo, con la velocidad y la libertad que eso trae.",
+    "pillars": {
+      "local": {
+        "title": "Tus datos, en tu dispositivo.",
+        "body": "Todo se guarda en una base de datos SQLite local. No hay nada en lo que registrarse."
+      },
+      "fast": {
+        "title": "Rápido porque es local.",
+        "body": "Las vistas, la búsqueda y los cambios no esperan a un servidor."
+      },
+      "sync": {
+        "title": "La sincronización es opcional.",
+        "body": "Conecta Google Calendar si quieres sincronizar en ambos sentidos; todo lo demás funciona sin él."
+      },
+      "lasting": {
+        "title": "Hecho para durar.",
+        "body": "Los registros llevan IDs y marcas de tiempo listos para sincronizar, así llegarán nuevos proveedores sin tocar tus datos."
+      }
+    },
+    "mockup": {
+      "label": "Vista de día de Tempi con eventos de trabajo, personales y de un proyecto",
+      "calendars": {
+        "work": "Trabajo",
+        "personal": "Personal",
+        "project": "Proyecto",
+        "holidays": "Feriados"
+      },
+      "readOnly": "solo lectura",
+      "addCalendar": "Añadir calendario",
+      "search": "Buscar…",
+      "views": {
+        "day": "Día",
+        "week": "Semana",
+        "month": "Mes"
+      },
+      "events": {
+        "teamSync": "Sync del equipo",
+        "designReview": "Revisión de diseño",
+        "lunch": "Almuerzo",
+        "docs": "Escribir documentación"
+      }
+    }
   }
 }

@@ -23,5 +23,51 @@
     "downloadForPlatform": "Download for {os}",
     "learnMore": "Learn more",
     "imageAlt": "Two people working on laptops on a beach at sunset"
+  },
+  "why": {
+    "eyebrow": "Why Tempi",
+    "title": "Your schedule, your control.",
+    "subtitle": "Most calendars are a web service you rent. Tempi puts your data back on your device, with the speed and freedom that come with it.",
+    "pillars": {
+      "local": {
+        "title": "Your data, on your device.",
+        "body": "Everything is stored in a local SQLite database. There is nothing to sign up for."
+      },
+      "fast": {
+        "title": "Fast because it's local.",
+        "body": "Views, search and edits don't wait for a server."
+      },
+      "sync": {
+        "title": "Sync is optional.",
+        "body": "Connect Google Calendar if you want two-way sync; everything else keeps working without it."
+      },
+      "lasting": {
+        "title": "Built to last.",
+        "body": "Records carry sync-ready IDs and timestamps, so new sync providers can arrive without touching your data."
+      }
+    },
+    "mockup": {
+      "label": "Tempi's day view with work, personal and project events",
+      "calendars": {
+        "work": "Work",
+        "personal": "Personal",
+        "project": "Side project",
+        "holidays": "Holidays"
+      },
+      "readOnly": "read-only",
+      "addCalendar": "Add calendar",
+      "search": "Search…",
+      "views": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "events": {
+        "teamSync": "Team sync",
+        "designReview": "Design review",
+        "lunch": "Lunch break",
+        "docs": "Write documentation"
+      }
+    }
   }
 }
