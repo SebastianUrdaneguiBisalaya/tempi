@@ -1,3 +1,4 @@
+import { Faq } from '@/features/faq/components/faq';
 import { Features } from '@/features/features/components/features';
 import { Hero } from '@/features/hero/components/hero';
 import { Keyboard } from '@/features/keyboard/components/keyboard';
@@ -12,7 +13,7 @@ export default function LandingPage() {
 			<WhyTempi />
 			<Features />
 			<Keyboard />
-			<section id={SECTION_IDS.faq} className='min-h-svh border-t' />
+			<Faq />
 			<section id={SECTION_IDS.download} className='min-h-svh border-t' />
 		</main>
 	);
