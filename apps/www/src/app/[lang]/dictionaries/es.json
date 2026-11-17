@@ -17,7 +17,8 @@
     "closeMenu": "Cerrar menú"
   },
   "hero": {
-    "title": "Tu tiempo es personal. Tu calendario también debería serlo.",
+    "title": "Tu tiempo es personal.",
+    "titleSecondary": "Tu calendario también debería serlo.",
     "subtitle": "Un calendario de escritorio local-first para macOS, Windows y Linux. Sin cuenta, sin nube, sin rastreo: tu agenda vive en tu computadora y funciona con o sin conexión.",
     "download": "Descargar",
     "downloadForPlatform": "Descargar para {os}",

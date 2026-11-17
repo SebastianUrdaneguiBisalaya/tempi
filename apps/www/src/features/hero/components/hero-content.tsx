@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { ArrowDownIcon } from 'lucide-react';
 import Image from 'next/image';
 import { Fragment, useRef } from 'react';
@@ -10,6 +11,7 @@ import { DownloadButton } from './download-button';
 
 export type HeroCopy = {
 	title: string;
+	titleSecondary: string;
 	subtitle: string;
 	download: string;
 	downloadForPlatform: string;
@@ -46,22 +48,12 @@ export function HeroContent({ copy }: { copy: HeroCopy }) {
 			<div className='absolute inset-x-0 top-0 -z-10 h-32 bg-linear-to-b from-background/80 to-transparent' />
 
 			<div className='mx-auto w-full max-w-6xl px-4 pt-24 pb-16 sm:px-6'>
-				<div className='max-w-xl'>
+				<div className='max-w-3xl'>
 					<h1 className='font-heading text-4xl leading-[1.1] font-medium tracking-tight text-balance sm:text-5xl lg:text-[3.5rem]'>
-						{copy.title.split(' ').map((word, index) => (
-							// Words never reorder, so the position plus the word is a stable key.
-							// biome-ignore lint/suspicious/noArrayIndexKey: static text split once per render.
-							<Fragment key={`${index}-${word}`}>
-								{/* The clipping wrapper lets each word slide up from below its own baseline. */}
-								<span className='inline-block overflow-hidden pb-[0.1em] align-top'>
-									<span data-hero-word className='inline-block'>
-										{word}
-									</span>
-								</span>{' '}
-							</Fragment>
-						))}
+						<HeroLine text={copy.title} />
+						<HeroLine text={copy.titleSecondary} className='text-foreground/50' />
 					</h1>
-					<p data-hero-fade className='mt-6 max-w-lg text-base leading-relaxed text-foreground/75 sm:text-lg'>
+					<p data-hero-fade className='mt-6 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg'>
 						{copy.subtitle}
 					</p>
 					<div data-hero-fade className='mt-9 flex flex-col gap-3 sm:flex-row'>
@@ -74,5 +66,29 @@ export function HeroContent({ copy }: { copy: HeroCopy }) {
 				</div>
 			</div>
 		</section>
+	);
+}
+
+type HeroLineProps = {
+	text: string;
+	className?: string;
+};
+
+// One line of the heading, split into words so each can slide up from behind its own clipping box.
+function HeroLine({ text, className }: HeroLineProps) {
+	return (
+		<span className={cn('block', className)}>
+			{text.split(' ').map((word, index) => (
+				// Words never reorder, so the position plus the word is a stable key.
+				// biome-ignore lint/suspicious/noArrayIndexKey: static text split once per render.
+				<Fragment key={`${index}-${word}`}>
+					<span className='inline-block overflow-hidden pb-[0.1em] align-top'>
+						<span data-hero-word className='inline-block'>
+							{word}
+						</span>
+					</span>{' '}
+				</Fragment>
+			))}
+		</span>
 	);
 }
