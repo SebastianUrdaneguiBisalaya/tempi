@@ -81,6 +81,10 @@
 		@apply font-sans;
 		scroll-behavior: smooth;
 	}
+	/* Anchored sections stop below the fixed header instead of under it. */
+	[id] {
+		scroll-margin-top: 4rem;
+	}
 	@media (prefers-reduced-motion: reduce) {
 		html {
 			scroll-behavior: auto;

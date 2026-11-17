@@ -2,5 +2,18 @@
   "meta": {
     "title": "Tempi · Local-first desktop calendar",
     "description": "A local-first desktop calendar for macOS, Windows and Linux. No account, no cloud, no tracking."
+  },
+  "header": {
+    "home": "Tempi, back to top",
+    "navLabel": "Main",
+    "nav": {
+      "features": "Features",
+      "faq": "FAQ",
+      "download": "Download"
+    },
+    "github": "Tempi on GitHub",
+    "language": "Change language",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   }
 }
