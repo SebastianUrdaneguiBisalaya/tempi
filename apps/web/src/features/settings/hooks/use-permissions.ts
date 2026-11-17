@@ -42,5 +42,8 @@ export const useTestNotification = () => {
 			if (api === null) throw STORAGE_UNAVAILABLE;
 			return unwrap(await api.permissions.testNotification());
 		},
+		// Only there to make macOS ask for permission. A refusal (e.g. the ad-hoc signed dev build) isn't something
+		// the user can fix from a toast, so it's only logged.
+		meta: { silentErrors: true },
 	});
 };

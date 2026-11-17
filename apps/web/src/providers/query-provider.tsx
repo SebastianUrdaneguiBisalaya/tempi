@@ -16,6 +16,8 @@ export type ToastMessageKey = `toasts.${{ [K in LeafPaths<ToastMessages>]: Toast
 type ErrorFeedbackMeta = {
 	/** The caller (a form) shows issues that have a `field`; the error toast shows only the rest. */
 	handlesFieldErrors?: boolean;
+	/** A failure the user can't act on (e.g. a best-effort probe): issues are only logged, never toasted. */
+	silentErrors?: boolean;
 };
 
 declare module '@tanstack/react-query' {
@@ -46,6 +48,7 @@ const translateIssue = (issue: DomainIssue): string => {
 /** Logs every issue for developers and shows the translated ones, once each, in a single error toast. */
 const showError = (error: DomainError, meta: ErrorFeedbackMeta | undefined): void => {
 	for (const issue of error.issues) console.error(`[${error.code}] ${issue.key}: ${issue.detail}`);
+	if (meta?.silentErrors === true) return;
 
 	const shown = meta?.handlesFieldErrors === true ? error.issues.filter(issue => issue.field === undefined) : error.issues;
 	const [title, ...rest] = [...new Set(shown.map(translateIssue))];
