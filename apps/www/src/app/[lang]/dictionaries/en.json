@@ -17,8 +17,7 @@
     "closeMenu": "Close menu"
   },
   "hero": {
-    "title": "Time is personal.",
-    "titleSecondary": "Your calendar should be too.",
+    "titleLines": ["Time is personal.", "Your calendar should be too.", "Private by design, local by default."],
     "subtitle": "A local-first desktop calendar for macOS, Windows and Linux. No account, no cloud, no tracking: your schedule lives on your computer and works with or without a connection.",
     "download": "Download",
     "downloadForPlatform": "Download for {os}",
