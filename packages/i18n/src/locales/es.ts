@@ -641,6 +641,9 @@ export const es = {
 		ical: {
 			invalidFile: 'Este archivo no es un calendario (.ics) válido.',
 		},
+		notifications: {
+			failed: 'Tu sistema bloqueó la notificación de Tempi. Permite las notificaciones de Tempi en los ajustes del sistema e inténtalo de nuevo.',
+		},
 		profile: {
 			country: 'Elige un país válido.',
 		},

@@ -34,6 +34,7 @@ export const ERROR_KEYS = {
 	'google.syncFailed': 'Google Calendar sync failed; see detail',
 	'google.timeout': 'Google sign-in was not completed in time',
 	'ical.invalidFile': 'The file is not valid iCalendar (.ics)',
+	'notifications.failed': 'The OS refused to show a notification (blocked for the app, or the build is not code-signed on macOS); see detail',
 	'recurrence.untilBeforeStart': 'A recurrence must end on or after its first day',
 	'profile.country': 'Country must be an ISO 3166-1 alpha-2 code',
 	'range.endBeforeStart': 'Range end must be after its start',

@@ -639,6 +639,9 @@ export const en = {
 		ical: {
 			invalidFile: 'This file isn’t a valid calendar (.ics) file.',
 		},
+		notifications: {
+			failed: 'Your system blocked Tempi’s notification. Allow notifications for Tempi in your system settings, then try again.',
+		},
 		profile: {
 			country: 'Pick a valid country.',
 		},

@@ -49,7 +49,7 @@ import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
 import { osPermissionsStatus, systemSettingsUrl } from './os-permissions.js';
 import { createPermissionRequestHandler, isPermissionCheckAllowed, microphoneAccess } from './permissions.js';
 import { fileReminderCheckpoint } from './reminder-checkpoint.js';
-import { createReminderNotifier, type NotificationApi } from './reminder-notifier.js';
+import { createReminderNotifier, deliverNotification, type NotificationApi } from './reminder-notifier.js';
 import { createReminderScheduler, type ReminderScheduler } from './reminder-scheduler.js';
 import { fetchLatestRelease } from './updates/latest-release.js';
 import { createUpdateService, type Downloader, type UpdateService, type UpdateStrategy } from './updates/update-service.js';
@@ -458,10 +458,8 @@ function permissionsIo(): PermissionsIo {
 		status: () => osPermissionsStatus(process.platform, systemPreferences, Notification.isSupported()),
 		// The first notification is what makes macOS ask whether Tempi may show them.
 		testNotification: () => {
-			if (!Notification.isSupported()) return false;
 			const texts = resources[language].common.onboarding.reminders;
-			new Notification({ body: texts.testBody, title: texts.testTitle, ...(process.platform === 'darwin' ? {} : { icon: ICON_PNG }) }).show();
-			return true;
+			return deliverNotification(electronNotifications, { body: texts.testBody, title: texts.testTitle, ...(process.platform === 'darwin' ? {} : { icon: ICON_PNG }) });
 		},
 	};
 }
