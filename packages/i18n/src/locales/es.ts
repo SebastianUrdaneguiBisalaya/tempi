@@ -301,6 +301,32 @@ export const es = {
 			},
 			description: 'Cambia tu perfil y tus preferencias.',
 			integrations: {
+				ai: {
+					confirmDescription: 'Tempi olvidará tu clave de {{provider}} en esta computadora y se desactivarán las funciones de {{provider}}. Puedes volver a agregarla después.',
+					confirmTitle: '¿Quitar la clave de {{provider}}?',
+					keyLabel: 'Clave de API',
+					keyPlaceholder: 'Pega tu clave de API',
+					keySaved: 'Clave de API guardada',
+					model: 'Modelo',
+					privacy:
+						'Las funciones de IA son opcionales y usan tus propias claves de API. Cuando las usas, los datos de tus eventos y tus grabaciones de voz se envían al proveedor que elegiste, bajo sus condiciones. Las claves se guardan cifradas en esta computadora.',
+					providers: {
+						anthropic: { description: 'Modelos Claude para el asistente.', title: 'Anthropic' },
+						elevenlabs: { description: 'Voz a texto y texto a voz.', title: 'ElevenLabs' },
+						google: { description: 'Modelos Gemini para el asistente.', title: 'Google Gemini' },
+						groq: { description: 'Modelos abiertos y rápidos para el asistente.', title: 'Groq' },
+						openai: { description: 'Modelos GPT para el asistente.', title: 'OpenAI' },
+						xai: { description: 'Modelos Grok para el asistente.', title: 'xAI' },
+					},
+					removeKey: 'Quitar clave',
+					saveKey: 'Probar y guardar',
+					sttModel: 'Modelo de voz a texto',
+					testKey: 'Probar clave',
+					ttsModel: 'Modelo de texto a voz',
+					voice: { en: 'Voz en inglés', es: 'Voz en español' },
+					voicePlaceholder: 'Elige una voz',
+					voicesLoading: 'Cargando voces…',
+				},
 				browserDone: 'Sesión iniciada. Puedes cerrar esta pestaña y volver a Tempi.',
 				browserFailed: 'No se completó el inicio de sesión. Puedes cerrar esta pestaña y volver a Tempi.',
 				calendarsDescription: 'Elige qué calendarios de esta cuenta aparecen en Tempi. Desmarcar uno lo quita de Tempi, no de Google.',
@@ -402,6 +428,10 @@ export const es = {
 			title: 'Atajos de teclado',
 		},
 		toasts: {
+			aiKeyRemoved: 'Clave de API eliminada.',
+			aiKeySaved: 'La clave de API funciona y se guardó.',
+			aiKeyWorks: 'La clave de API funciona.',
+			aiSettingsSaved: 'Ajustes de IA guardados.',
 			backupCreated: 'Copia de seguridad creada.',
 			calendarCreated: 'Calendario creado.',
 			calendarDeleted: 'Calendario eliminado.',
@@ -443,6 +473,13 @@ export const es = {
 		},
 	},
 	errors: {
+		ai: {
+			encryptionUnavailable: 'Tu sistema no puede guardar claves de API de forma segura, así que Tempi no la guardará.',
+			invalidKey: 'El proveedor rechazó esta clave de API. Revísala e inténtalo de nuevo.',
+			network: 'No se puede conectar con el proveedor. Revisa tu conexión e inténtalo de nuevo.',
+			providerError: 'El proveedor devolvió un error. Inténtalo más tarde.',
+			rateLimited: 'El proveedor está limitando las solicitudes de esta clave o se agotó su cuota. Inténtalo más tarde.',
+		},
 		avatar: {
 			fileName: 'No se encuentra esta foto.',
 			tooLarge: 'Esta foto es demasiado grande.',

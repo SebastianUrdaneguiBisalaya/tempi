@@ -1,3 +1,21 @@
+export type { AiKeyFlags, AiKeyInput, AiProvider, AiSettings, AiSettingsPatch, AiSettingsValues, AiVoice, TextProvider } from './domain/ai-settings';
+export {
+	AI_PROVIDERS,
+	aiKeyFlagsSchema,
+	aiKeyInputSchema,
+	aiProviderSchema,
+	aiSettingsPatchSchema,
+	aiSettingsSchema,
+	aiSettingsValuesSchema,
+	aiVoiceSchema,
+	applyAiSettingsPatch,
+	DEFAULT_AI_SETTINGS,
+	ELEVENLABS_STT_MODELS,
+	ELEVENLABS_TTS_MODELS,
+	TEXT_MODELS,
+	TEXT_PROVIDERS,
+	voiceIdSchema,
+} from './domain/ai-settings';
 export type { AppUpdateState, AppUpdateStatus } from './domain/app-update';
 export { APP_UPDATE_STATES, appUpdateStatusSchema, compareVersions, isNewerVersion } from './domain/app-update';
 export type { AvatarImage, AvatarType } from './domain/avatar';

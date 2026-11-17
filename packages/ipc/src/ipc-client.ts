@@ -21,6 +21,14 @@ const call = async <C extends Channel>(channel: C, invoke: () => Promise<unknown
 
 /** Renderer client: the app's use cases over `window.desktop`. */
 export const createIpcClient = (api: DesktopApi): TempiApi => ({
+	ai: {
+		getSettings: () => call(CHANNELS.ai.getSettings, () => api.ai.getSettings()),
+		listVoices: () => call(CHANNELS.ai.listVoices, () => api.ai.listVoices()),
+		removeKey: provider => call(CHANNELS.ai.removeKey, () => api.ai.removeKey(provider)),
+		saveKey: input => call(CHANNELS.ai.saveKey, () => api.ai.saveKey(input)),
+		saveSettings: patch => call(CHANNELS.ai.saveSettings, () => api.ai.saveSettings(patch)),
+		testKey: provider => call(CHANNELS.ai.testKey, () => api.ai.testKey(provider)),
+	},
 	app: {
 		// Pushed payloads are as untrusted as answers: a malformed one is logged and dropped.
 		onShowEvent: listener =>

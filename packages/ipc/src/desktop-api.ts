@@ -8,6 +8,14 @@ type Call<C extends Channel, Raw extends boolean> = (input: ChannelInput<C>) => 
 type CallWithoutInput<C extends Channel, Raw extends boolean> = () => Promise<Answer<C, Raw>>;
 
 type Api<Raw extends boolean> = {
+	ai: {
+		getSettings: CallWithoutInput<'ai:getSettings', Raw>;
+		listVoices: CallWithoutInput<'ai:listVoices', Raw>;
+		removeKey: Call<'ai:removeKey', Raw>;
+		saveKey: Call<'ai:saveKey', Raw>;
+		saveSettings: Call<'ai:saveSettings', Raw>;
+		testKey: Call<'ai:testKey', Raw>;
+	};
 	app: {
 		showEvent: Call<'app:showEvent', Raw>;
 		/** Calls `listener` each time the main process asks this window to show an occurrence; returns the unsubscribe function. */

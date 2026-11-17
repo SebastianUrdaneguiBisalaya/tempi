@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { useConnectGoogle, useDisconnectGoogle, useGoogleAccount } from '../hooks/use-google-account';
+import { AiIntegrations } from './ai-integrations';
 import { GoogleSyncSettings } from './google-sync-settings';
 
 /** Connects one Google account through the system browser, syncs its calendars, or disconnects it after confirming. */
@@ -67,6 +68,7 @@ export function IntegrationsSettings() {
 					)}
 				</Card>
 			</section>
+			<AiIntegrations />
 			<AlertDialog onOpenChange={setConfirming} open={confirming}>
 				<AlertDialogContent>
 					<AlertDialogHeader>

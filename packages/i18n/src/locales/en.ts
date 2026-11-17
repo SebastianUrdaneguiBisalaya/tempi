@@ -299,6 +299,32 @@ export const en = {
 			},
 			description: 'Change your profile and preferences.',
 			integrations: {
+				ai: {
+					confirmDescription: 'Tempi will forget your {{provider}} key on this computer, and {{provider}} features turn off. You can add it again later.',
+					confirmTitle: 'Remove {{provider}} key?',
+					keyLabel: 'API key',
+					keyPlaceholder: 'Paste your API key',
+					keySaved: 'API key saved',
+					model: 'Model',
+					privacy:
+						'AI features are optional and use your own API keys. When you use them, your event details and voice recordings are sent to the provider you chose, under its terms. Keys stay encrypted on this computer.',
+					providers: {
+						anthropic: { description: 'Claude models for the assistant.', title: 'Anthropic' },
+						elevenlabs: { description: 'Speech to text and text to speech.', title: 'ElevenLabs' },
+						google: { description: 'Gemini models for the assistant.', title: 'Google Gemini' },
+						groq: { description: 'Fast open models for the assistant.', title: 'Groq' },
+						openai: { description: 'GPT models for the assistant.', title: 'OpenAI' },
+						xai: { description: 'Grok models for the assistant.', title: 'xAI' },
+					},
+					removeKey: 'Remove key',
+					saveKey: 'Test and save',
+					sttModel: 'Speech to text model',
+					testKey: 'Test key',
+					ttsModel: 'Text to speech model',
+					voice: { en: 'English voice', es: 'Spanish voice' },
+					voicePlaceholder: 'Choose a voice',
+					voicesLoading: 'Loading voices…',
+				},
 				browserDone: 'You’re signed in. You can close this tab and go back to Tempi.',
 				browserFailed: 'Sign-in didn’t finish. You can close this tab and go back to Tempi.',
 				calendarsDescription: 'Choose which calendars of this account appear in Tempi. Unchecking one removes it from Tempi, not from Google.',
@@ -400,6 +426,10 @@ export const en = {
 			title: 'Keyboard shortcuts',
 		},
 		toasts: {
+			aiKeyRemoved: 'API key removed.',
+			aiKeySaved: 'API key works and was saved.',
+			aiKeyWorks: 'API key works.',
+			aiSettingsSaved: 'AI settings saved.',
 			backupCreated: 'Backup created.',
 			calendarCreated: 'Calendar created.',
 			calendarDeleted: 'Calendar deleted.',
@@ -442,6 +472,13 @@ export const en = {
 	},
 	// Keys mirror core's ERROR_KEYS. Interpolation values come from `DomainIssue.params`.
 	errors: {
+		ai: {
+			encryptionUnavailable: 'Your system can’t store API keys securely, so Tempi won’t save it.',
+			invalidKey: 'The provider rejected this API key. Check it and try again.',
+			network: 'The provider can’t be reached. Check your connection and try again.',
+			providerError: 'The provider returned an error. Try again later.',
+			rateLimited: 'The provider is limiting requests for this key, or its quota is used up. Try again later.',
+		},
 		avatar: {
 			fileName: 'This photo can’t be found.',
 			tooLarge: 'This photo is too large.',

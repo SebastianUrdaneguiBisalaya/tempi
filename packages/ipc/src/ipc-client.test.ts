@@ -16,6 +16,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 		return response();
 	};
 	const api: DesktopApi = {
+		ai: { getSettings: answer, listVoices: answer, removeKey: answer, saveKey: answer, saveSettings: answer, testKey: answer },
 		app: {
 			onShowEvent: listener => {
 				showListeners.push(listener);

@@ -1,5 +1,18 @@
 /** Every IPC channel, named `domain:action`. Each one runs a single core use case; one `ipcMain.handle` per channel. */
 export const CHANNELS = {
+	ai: {
+		/** The AI choices and which providers have a key. Keys never cross IPC towards the renderer. */
+		getSettings: 'ai:getSettings',
+		/** The ElevenLabs voices of the saved key's account. */
+		listVoices: 'ai:listVoices',
+		/** Deletes a provider's key, which disables it. */
+		removeKey: 'ai:removeKey',
+		/** Tests a provider's key and, only if it works, stores it encrypted in the main process. */
+		saveKey: 'ai:saveKey',
+		saveSettings: 'ai:saveSettings',
+		/** Tests the saved key of a provider again. */
+		testKey: 'ai:testKey',
+	},
 	app: {
 		/** Brings the main window forward on an occurrence, e.g. one picked in the menu bar calendar. */
 		showEvent: 'app:showEvent',

@@ -22,6 +22,12 @@ describe('payloadSchemas', () => {
 	});
 
 	test.each([
+		['ai:getSettings', undefined],
+		['ai:listVoices', undefined],
+		['ai:removeKey', 'groq'],
+		['ai:saveKey', { key: 'sk-test', provider: 'anthropic' }],
+		['ai:saveSettings', { elevenlabs: { voices: { es: 'voice-es' } }, models: { openai: 'gpt-5.4-mini' } }],
+		['ai:testKey', 'elevenlabs'],
 		['app:showEvent', { key: 'event-1', startAt: '2026-11-20T09:00:00-05:00' }],
 		['calendars:create', { color: '#3B82F6', name: 'Work' }],
 		['calendars:delete', { id: 'cal-1', moveEventsTo: null }],
@@ -64,6 +70,9 @@ describe('payloadSchemas', () => {
 	});
 
 	test.each([
+		['ai:removeKey', 'mistral', ['']],
+		['ai:saveKey', { key: ' ', provider: 'mistral' }, ['key', 'provider']],
+		['ai:saveSettings', { elevenlabs: { ttsModel: 'eleven_v9' }, models: { anthropic: 'custom-model' } }, ['elevenlabs.ttsModel', 'models.anthropic']],
 		['app:showEvent', { key: '', startAt: 'tomorrow' }, ['key', 'startAt']],
 		['calendars:create', { color: 'blue', name: ' ' }, ['color', 'name']],
 		['calendars:delete', { id: '', moveEventsTo: '' }, ['id', 'moveEventsTo']],
@@ -99,6 +108,24 @@ describe('resultSchema', () => {
 		expect(schema.safeParse({ error: { code: 'not_found', issues: [{ detail: 'gone', key: 'calendar.vanished' }] }, ok: false }).success).toBe(false);
 		expect(schema.safeParse({ error: { code: 'internal', issues: [] }, ok: false }).success).toBe(false);
 		expect(schema.safeParse({ ok: true, value: 42 }).success).toBe(false);
+	});
+});
+
+describe('ai answers', () => {
+	const settings = {
+		elevenlabs: { sttModel: 'scribe_v2', ttsModel: 'eleven_multilingual_v2', voices: { en: null, es: 'voice-es' } },
+		keys: { anthropic: true, elevenlabs: true, google: false, groq: false, openai: false, xai: false },
+		models: { anthropic: 'claude-opus-5-5', google: 'gemini-3.8-flash', groq: 'openai/gpt-oss-120b', openai: 'gpt-5.6', xai: 'grok-4.7' },
+	} as const;
+
+	test('carry only whether a key exists, so keys could never reach the renderer', () => {
+		const parsed = resultSchema(responseValueSchemas['ai:getSettings']).parse({ ok: true, value: { ...settings, apiKeys: { anthropic: 'sk-secret' } } });
+		expect(JSON.stringify(parsed)).not.toContain('sk-secret');
+		expect(parsed).toEqual({ ok: true, value: settings });
+	});
+
+	test('reject a key flag that is not a boolean', () => {
+		expect(resultSchema(responseValueSchemas['ai:saveKey']).safeParse({ ok: true, value: { ...settings, keys: { ...settings.keys, anthropic: 'sk-secret' } } }).success).toBe(false);
 	});
 });
 

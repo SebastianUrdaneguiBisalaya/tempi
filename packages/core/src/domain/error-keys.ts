@@ -3,6 +3,11 @@
  * User-facing translations live in `@tempi/i18n`, which must cover every key here.
  */
 export const ERROR_KEYS = {
+	'ai.encryptionUnavailable': 'The OS cannot encrypt AI provider keys (safeStorage unavailable); keys are never stored in clear',
+	'ai.invalidKey': 'The provider rejected the API key, or no key is stored for it',
+	'ai.network': 'The AI provider could not be reached',
+	'ai.providerError': 'The AI provider answered with an unexpected error; see detail',
+	'ai.rateLimited': 'The AI provider is rate limiting this key or its quota is used up',
 	'avatar.fileName': 'Avatar must be a stored file name (id plus jpg, png or webp extension)',
 	'avatar.tooLarge': 'Avatar image exceeds the maximum size',
 	'backup.invalidFile': 'The file is not a Tempi database backup',
