@@ -39,7 +39,8 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 		gsap.from('[data-header-item]', { y: -12, autoAlpha: 0, duration: 0.6, stagger: 0.06, ease: 'power2.out' });
 	});
 
-	const solid = scrolled || menuOpen;
+	// Near the top the pill spans the layout width; once the page scrolls it shrinks into a compact bar and grows back on return.
+	const compact = scrolled && !menuOpen;
 
 	return (
 		<header
@@ -47,33 +48,39 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 			onKeyDown={event => {
 				if (event.key === 'Escape') setMenuOpen(false);
 			}}
-			className={cn('fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300', solid ? 'border-border bg-background/70 backdrop-blur-xl backdrop-saturate-150' : 'border-transparent')}
+			className='fixed inset-x-0 top-0 z-50 px-4 pt-3 sm:px-6 sm:pt-4'
 		>
-			<div className='mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6'>
-				<a href='#' aria-label={copy.home} className='flex items-center gap-1 rounded-md' data-header-item>
+			<div
+				className={cn(
+					'mx-auto flex items-center justify-between gap-4 rounded-full border pr-2 pl-4 backdrop-blur-xl backdrop-saturate-150 transition-[max-width,height,background-color,border-color,box-shadow] duration-500 ease-out',
+					compact ? 'h-12 max-w-3xl border-border bg-background/70 shadow-lg shadow-black/30' : 'h-14 max-w-6xl border-foreground/10 bg-background/25'
+				)}
+			>
+				<a href='#' aria-label={copy.home} className='flex items-center gap-1 rounded-full' data-header-item>
 					{/* The icon has wide transparent padding; the negative margin keeps the dolphin aligned with the content. */}
-					<Image src='/tempi-icon.png' alt='' width={44} height={44} priority className='-my-2 -ml-2.5 size-11' />
-					<span className='font-heading text-lg font-medium tracking-tight'>Tempi</span>
+					<Image src='/tempi-icon.png' alt='' width={40} height={40} priority className='-my-2 -ml-2.5 size-10' />
+					<span className='font-heading text-base font-medium tracking-tight'>Tempi</span>
 				</a>
 
-				<nav aria-label={copy.navLabel} className='hidden items-center gap-7 md:flex'>
+				<nav aria-label={copy.navLabel} className='hidden items-center gap-6 md:flex'>
 					{NAV_ORDER.map(section => (
 						<a key={section} href={`#${SECTION_IDS[section]}`} className='rounded-sm text-sm text-foreground/75 transition-colors hover:text-foreground' data-header-item>
 							{copy.nav[section]}
 						</a>
 					))}
-					<div className='flex items-center gap-2' data-header-item>
-						<a href={GITHUB_URL} target='_blank' rel='noreferrer' aria-label={copy.github} className={buttonVariants({ variant: 'ghost', size: 'icon', className: 'rounded-full' })}>
-							<GitHubDark aria-hidden className='size-4' />
-						</a>
-						<LanguageSwitcher locale={locale} label={copy.language} />
-					</div>
 				</nav>
+
+				<div className='hidden items-center gap-1 md:flex' data-header-item>
+					<a href={GITHUB_URL} target='_blank' rel='noreferrer' aria-label={copy.github} className={buttonVariants({ variant: 'ghost', size: 'icon', className: 'rounded-full' })}>
+						<GitHubDark aria-hidden className='size-4' />
+					</a>
+					<LanguageSwitcher locale={locale} label={copy.language} />
+				</div>
 
 				<Button
 					variant='ghost'
 					size='icon-lg'
-					className='md:hidden'
+					className='rounded-full md:hidden'
 					aria-expanded={menuOpen}
 					aria-controls={menuId}
 					aria-label={menuOpen ? copy.closeMenu : copy.openMenu}
@@ -84,8 +91,8 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 				</Button>
 			</div>
 
-			<div id={menuId} hidden={!menuOpen} className='border-t border-border md:hidden'>
-				<nav aria-label={copy.navLabel} className='mx-auto flex max-w-6xl flex-col px-4 py-3 sm:px-6'>
+			<div id={menuId} hidden={!menuOpen} className='mx-auto mt-2 max-w-6xl rounded-3xl border border-border bg-background/80 backdrop-blur-xl backdrop-saturate-150 md:hidden'>
+				<nav aria-label={copy.navLabel} className='flex flex-col p-3'>
 					{NAV_ORDER.map(section => (
 						<a
 							key={section}

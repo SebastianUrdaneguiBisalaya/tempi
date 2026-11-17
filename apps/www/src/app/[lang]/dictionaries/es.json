@@ -17,8 +17,8 @@
     "closeMenu": "Cerrar menú"
   },
   "hero": {
-    "title": "Un calendario de escritorio local-first para macOS, Windows y Linux.",
-    "subtitle": "Sin cuenta, sin nube, sin rastreo: tus calendarios viven en una base de datos en tu propia computadora, y Tempi funciona igual con o sin conexión.",
+    "title": "Tu calendario, por fin tuyo.",
+    "subtitle": "Un calendario de escritorio local-first para macOS, Windows y Linux. Sin cuenta, sin nube, sin rastreo: tu agenda vive en tu computadora y funciona con o sin conexión.",
     "download": "Descargar",
     "downloadForPlatform": "Descargar para {os}",
     "learnMore": "Conocer más",
