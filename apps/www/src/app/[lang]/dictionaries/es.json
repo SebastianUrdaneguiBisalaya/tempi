@@ -166,5 +166,46 @@
       "showShortcuts": "Mostrar atajos de teclado",
       "togglePanel": "Mostrar u ocultar panel de detalles"
     }
+  },
+  "faq": {
+    "eyebrow": "Preguntas",
+    "title": "Preguntas frecuentes.",
+    "subtitle": "Lo que la gente suele preguntar antes de instalar Tempi.",
+    "askOnGitHub": "Pregunta en GitHub",
+    "items": {
+      "free": {
+        "question": "¿Tempi es gratis y de código abierto?",
+        "answer": "Sí. Tempi es gratis y de código abierto bajo la licencia ISC, y todo su código está en GitHub."
+      },
+      "data": {
+        "question": "¿Dónde se guardan mis calendarios?",
+        "answer": "En una base de datos SQLite en la carpeta de datos de Tempi, en tu propia computadora. Nada va a un servidor a menos que conectes Google Calendar, y puedes hacer respaldos completos desde Ajustes → Datos."
+      },
+      "account": {
+        "question": "¿Necesito una cuenta de Google?",
+        "answer": "No. Tempi funciona por completo sin ninguna cuenta. La sincronización con Google Calendar es opcional: conéctala desde Ajustes → Integraciones cuando quieras sincronizar en ambos sentidos."
+      },
+      "offline": {
+        "question": "¿Funciona sin conexión?",
+        "answer": "Sí. Tus calendarios viven en tu computadora, así que Tempi funciona igual con o sin conexión. Solo la sincronización con Google Calendar necesita internet."
+      },
+      "macos": {
+        "question": "macOS dice que Tempi “no se puede abrir”. ¿Qué hago?",
+        "answer": "Tempi aún no está firmado con un certificado de Apple Developer. Después de moverlo a Aplicaciones, abre Ajustes del Sistema → Privacidad y seguridad y haz clic en Abrir igualmente junto al mensaje sobre Tempi, o ejecuta esto en Terminal:",
+        "command": "xattr -dr com.apple.quarantine /Applications/Tempi.app"
+      },
+      "windows": {
+        "question": "Windows dice “Windows protegió tu PC”.",
+        "answer": "SmartScreen avisa sobre las apps que aún no reconoce. Haz clic en Más información → Ejecutar de todas formas."
+      },
+      "updates": {
+        "question": "¿Cómo se actualiza Tempi?",
+        "answer": "En Windows y Linux (AppImage) las actualizaciones se descargan en segundo plano y se instalan al reiniciar. En macOS y con el paquete .deb, Tempi te avisa cuando hay una nueva versión y te enlaza a ella. Tus datos se conservan en todos los casos."
+      },
+      "languages": {
+        "question": "¿En qué idiomas está Tempi?",
+        "answer": "Inglés y español. Tempi usa el idioma de tu sistema y puedes cambiarlo en Ajustes cuando quieras."
+      }
+    }
   }
 }

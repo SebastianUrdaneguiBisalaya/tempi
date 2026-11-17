@@ -166,5 +166,46 @@
       "showShortcuts": "Show keyboard shortcuts",
       "togglePanel": "Toggle details panel"
     }
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "title": "Questions, answered.",
+    "subtitle": "What people usually ask before installing Tempi.",
+    "askOnGitHub": "Ask on GitHub",
+    "items": {
+      "free": {
+        "question": "Is Tempi free and open source?",
+        "answer": "Yes. Tempi is free and open source under the ISC license, and all of its code is on GitHub."
+      },
+      "data": {
+        "question": "Where are my calendars stored?",
+        "answer": "In a SQLite database in Tempi's data folder on your own computer. Nothing goes to a server unless you connect Google Calendar, and you can make full backups from Settings → Data."
+      },
+      "account": {
+        "question": "Do I need a Google account?",
+        "answer": "No. Tempi works fully without any account. Google Calendar sync is optional: connect it from Settings → Integrations whenever you want two-way sync."
+      },
+      "offline": {
+        "question": "Does it work offline?",
+        "answer": "Yes. Your calendars live on your computer, so Tempi works the same with or without a connection. Only Google Calendar sync needs the internet."
+      },
+      "macos": {
+        "question": "macOS says Tempi “can't be opened”. What do I do?",
+        "answer": "Tempi isn't signed with an Apple Developer certificate yet. After moving it to Applications, open System Settings → Privacy & Security and click Open Anyway next to the message about Tempi, or run this in Terminal:",
+        "command": "xattr -dr com.apple.quarantine /Applications/Tempi.app"
+      },
+      "windows": {
+        "question": "Windows says “Windows protected your PC”.",
+        "answer": "SmartScreen warns about apps it doesn't recognize yet. Click More info → Run anyway."
+      },
+      "updates": {
+        "question": "How does Tempi update?",
+        "answer": "On Windows and Linux (AppImage) updates download in the background and install when you restart. On macOS and with the .deb package, Tempi tells you when a new version is out and links to it. Your data is kept either way."
+      },
+      "languages": {
+        "question": "Which languages does Tempi speak?",
+        "answer": "English and Spanish. Tempi picks your system language and you can change it in Settings at any time."
+      }
+    }
   }
 }
