@@ -11,12 +11,26 @@ const fakeApi = (response: () => Promise<unknown>) => {
 	const sent: unknown[] = [];
 	const showListeners: ((payload: unknown) => void)[] = [];
 	const updateListeners: ((payload: unknown) => void)[] = [];
+	const chatListeners: ((payload: unknown) => void)[] = [];
+	const stopped: string[] = [];
 	const answer = (input?: unknown) => {
 		sent.push(input);
 		return response();
 	};
 	const api: DesktopApi = {
-		ai: { getSettings: answer, listVoices: answer, removeKey: answer, saveKey: answer, saveSettings: answer, testKey: answer },
+		ai: {
+			chat: (input, listener) => {
+				chatListeners.push(listener);
+				return answer(input);
+			},
+			getSettings: answer,
+			listVoices: answer,
+			removeKey: answer,
+			saveKey: answer,
+			saveSettings: answer,
+			stopChat: requestId => void stopped.push(requestId),
+			testKey: answer,
+		},
 		app: {
 			onShowEvent: listener => {
 				showListeners.push(listener);
@@ -50,7 +64,11 @@ const fakeApi = (response: () => Promise<unknown>) => {
 	const pushUpdateStatus = (payload: unknown) => {
 		for (const listener of updateListeners) listener(payload);
 	};
-	return { api, pushShowEvent, pushUpdateStatus, sent };
+	/** Simulates the main process streaming an assistant event. */
+	const streamChat = (payload: unknown) => {
+		for (const listener of chatListeners) listener(payload);
+	};
+	return { api, pushShowEvent, pushUpdateStatus, sent, stopped, streamChat };
 };
 
 describe('createIpcClient', () => {
@@ -115,5 +133,27 @@ describe('pushed update statuses', () => {
 		createIpcClient(api).updates.onStatus(next => received.push(next));
 		pushUpdateStatus({ ...status, downloadUrl: 'http://example.com' });
 		expect(received).toEqual([]);
+	});
+});
+
+describe('assistant chat', () => {
+	const input = { messages: [{ role: 'user' as const, text: 'Hola' }], provider: 'openai' as const, requestId: '01890a5d-ac96-774b-bcce-b302099a8057' };
+
+	test('passes valid streamed events through and turns a malformed one into an error event', async () => {
+		const { api, sent, stopped, streamChat } = fakeApi(() => Promise.resolve(ok(null)));
+		const client = createIpcClient(api);
+		const received: unknown[] = [];
+		expect(await client.ai.chat(input, event => received.push(event))).toEqual({ ok: true, value: null });
+		expect(sent.at(-1)).toEqual(input);
+
+		streamChat({ text: 'Hola', type: 'text' });
+		streamChat({ type: 'surprise' });
+		client.ai.stopChat(input.requestId);
+
+		expect(received).toEqual([
+			{ text: 'Hola', type: 'text' },
+			{ error: { code: 'internal', issues: [{ detail: 'ai:chat streamed a malformed event', key: 'system.unexpected' }] }, type: 'error' },
+		]);
+		expect(stopped).toEqual([input.requestId]);
 	});
 });

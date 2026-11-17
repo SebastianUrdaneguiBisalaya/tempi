@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { asOccurrence, type Calendar, EVENT_STATUSES, type EventOccurrence, type EventPatch, zodErrorKeyMap } from '@tempi/core';
 import { Trash2Icon, VideoIcon, XIcon } from 'lucide-react';
-import { useId } from 'react';
+import { useEffect, useEffectEvent, useId } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormFieldError } from '@/components/form-field-error';
@@ -30,13 +30,15 @@ type EventFormProps = {
 	defaultValues: EventFormValues;
 	/** The event or occurrence being edited, or null for a new one. */
 	event: EventOccurrence | null;
+	/** Unsaved edits to start with (an assistant proposal to review), marked as changed so Save sends them. */
+	changes?: Partial<EventFormValues> | undefined;
 };
 
 /**
  * The event detail is this form, editable in place: a new event shows Create, an existing one shows Save and
  * Discard once something changed, and Delete. Every rule comes from core's event schema.
  */
-export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
+export function EventForm({ calendars, changes, defaultValues, event }: EventFormProps) {
 	const { t } = useTranslation();
 	const id = useId();
 	const { chooseScope, close, openEvent, requestDelete } = useEventPanel();
@@ -46,6 +48,14 @@ export function EventForm({ calendars, defaultValues, event }: EventFormProps) {
 	const form = useForm<EventFormValues, unknown, EventFormOutput>({ defaultValues, resolver: zodResolver(eventFormSchema, { error: zodErrorKeyMap }) });
 	const { control, formState, getValues, handleSubmit, reset, setError, setValue, watch } = form;
 	const allDay = watch('allDay');
+	// Applied once after mount: react-hook-form only marks a field dirty through `setValue`, never through defaults.
+	const applyChanges = useEffectEvent(() => {
+		if (changes === undefined) return;
+		for (const [field, value] of Object.entries(changes)) {
+			if (isFormField(defaultValues, field)) setValue(field, value, { shouldDirty: true });
+		}
+	});
+	useEffect(() => applyChanges(), []);
 	const pending = createEvent.isPending || updateEvent.isPending || updateOccurrence.isPending;
 
 	// Issues the backend ties to a field show under it; the rest go to the error toast (`handlesFieldErrors`).

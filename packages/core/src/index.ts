@@ -18,6 +18,16 @@ export {
 } from './domain/ai-settings';
 export type { AppUpdateState, AppUpdateStatus } from './domain/app-update';
 export { APP_UPDATE_STATES, appUpdateStatusSchema, compareVersions, isNewerVersion } from './domain/app-update';
+export type { AssistantChatInput, AssistantMessage, AssistantProposal, AssistantStreamEvent, AssistantTool } from './domain/assistant';
+export {
+	ASSISTANT_TOOLS,
+	assistantChatInputSchema,
+	assistantMessageSchema,
+	assistantProposalSchema,
+	assistantStreamEventSchema,
+	MAX_ASSISTANT_MESSAGE_LENGTH,
+	MAX_ASSISTANT_MESSAGES,
+} from './domain/assistant';
 export type { AvatarImage, AvatarType } from './domain/avatar';
 export { AVATAR_TYPES, avatarFileNameSchema, avatarImageSchema, MAX_AVATAR_BYTES } from './domain/avatar';
 export type { Calendar, CalendarFields, CalendarPatch, CalendarSource, DeleteCalendarInput, NewCalendarInput } from './domain/calendar';
@@ -80,7 +90,7 @@ export {
 export type { TimeRange } from './domain/reschedule';
 export { moveRange, resizeRange, SNAP_MINUTES, sweepRange, wallTime } from './domain/reschedule';
 export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';
-export { DOMAIN_ERROR_CODES, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
+export { DOMAIN_ERROR_CODES, domainErrorSchema, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
 export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, WeekStart } from './domain/settings';
 export { DEFAULT_SETTINGS, LANGUAGES, resolveLanguage, settingsPatchSchema, settingsSchema, settingsValuesSchema, THEMES, TIME_FORMATS, WEEK_STARTS } from './domain/settings';
 export type { Timestamps } from './domain/timestamps';

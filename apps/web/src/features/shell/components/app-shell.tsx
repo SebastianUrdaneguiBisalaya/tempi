@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { Assistant } from '@/features/assistant/components/assistant';
+import { AssistantProvider } from '@/features/assistant/components/assistant-provider';
 import { CalendarMain } from '@/features/calendar/components/calendar-main';
 import { CalendarNavigationProvider } from '@/features/calendar/components/calendar-navigation-provider';
 import { CalendarShortcuts } from '@/features/calendar/components/calendar-shortcuts';
@@ -38,14 +40,16 @@ export function AppShell() {
 			<EventPanelProvider>
 				<SettingsDialogProvider>
 					<GoToDateProvider>
-						<CalendarShortcuts />
-						<EventShortcuts />
-						<ShowEventRequests />
-						<GoogleSyncWatcher />
-						<UpdateWatcher />
-						<ShellLayout />
-						<ShortcutsDialog />
-						<CommandMenu />
+						<AssistantProvider>
+							<CalendarShortcuts />
+							<EventShortcuts />
+							<ShowEventRequests />
+							<GoogleSyncWatcher />
+							<UpdateWatcher />
+							<ShellLayout />
+							<ShortcutsDialog />
+							<CommandMenu />
+						</AssistantProvider>
 					</GoToDateProvider>
 				</SettingsDialogProvider>
 			</EventPanelProvider>
@@ -143,6 +147,7 @@ function ShellLayout() {
 						</Drawer>
 					)}
 				</div>
+				<Assistant inset={panelInline && panelOpen} />
 			</SidebarInset>
 		</SidebarProvider>
 	);

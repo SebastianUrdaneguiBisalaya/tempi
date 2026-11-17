@@ -1,4 +1,4 @@
-import type { AppUpdateStatus, GoogleSyncStatus, Result } from '@tempi/core';
+import type { AppUpdateStatus, AssistantStreamEvent, GoogleSyncStatus, Result } from '@tempi/core';
 import type { Channel } from './channels';
 import type { ChannelInput, ChannelValue, OccurrenceRef } from './schemas';
 
@@ -9,6 +9,12 @@ type CallWithoutInput<C extends Channel, Raw extends boolean> = () => Promise<An
 
 type Api<Raw extends boolean> = {
 	ai: {
+		/**
+		 * Starts an assistant reply; `listener` receives its events until `done` or `error`. Call `stopChat` with the same
+		 * `requestId` to stop it early or once it ended, which closes its stream.
+		 */
+		chat: (input: ChannelInput<'ai:chat'>, listener: (event: Raw extends true ? unknown : AssistantStreamEvent) => void) => Promise<Answer<'ai:chat', Raw>>;
+		stopChat: (requestId: string) => void;
 		getSettings: CallWithoutInput<'ai:getSettings', Raw>;
 		listVoices: CallWithoutInput<'ai:listVoices', Raw>;
 		removeKey: Call<'ai:removeKey', Raw>;

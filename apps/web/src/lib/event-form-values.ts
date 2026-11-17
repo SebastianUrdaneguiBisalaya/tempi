@@ -124,7 +124,10 @@ export const recurrenceFormValues = (rrule: string | null, startAt: string, time
 	return { recurrence, repeat };
 };
 
-export const eventToFormValues = (event: CalendarEvent): EventFormValues => ({
+/** The fields the form shows, from a stored event or a new one not saved yet (an assistant proposal). */
+type EventFormSource = Pick<CalendarEvent, 'allDay' | 'calendarId' | 'description' | 'endAt' | 'location' | 'reminderMinutes' | 'rrule' | 'startAt' | 'status' | 'timeZone' | 'title' | 'videoUrl'>;
+
+export const eventToFormValues = (event: EventFormSource): EventFormValues => ({
 	...recurrenceFormValues(event.rrule, event.startAt, event.timeZone),
 	allDay: event.allDay,
 	calendarId: event.calendarId,

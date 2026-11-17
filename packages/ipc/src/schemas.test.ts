@@ -22,6 +22,7 @@ describe('payloadSchemas', () => {
 	});
 
 	test.each([
+		['ai:chat', { messages: [{ role: 'user', text: 'Dentista mañana a las 3pm' }], provider: 'anthropic', requestId: '01890a5d-ac96-774b-bcce-b302099a8057' }],
 		['ai:getSettings', undefined],
 		['ai:listVoices', undefined],
 		['ai:removeKey', 'groq'],
@@ -70,6 +71,8 @@ describe('payloadSchemas', () => {
 	});
 
 	test.each([
+		['ai:chat', { messages: [{ role: 'system', text: ' ' }], provider: 'elevenlabs', requestId: 'not-a-uuid' }, ['messages.0.role', 'messages.0.text', 'provider', 'requestId']],
+		['ai:chat', { messages: [], provider: 'openai', requestId: '01890a5d-ac96-774b-bcce-b302099a8057' }, ['messages']],
 		['ai:removeKey', 'mistral', ['']],
 		['ai:saveKey', { key: ' ', provider: 'mistral' }, ['key', 'provider']],
 		['ai:saveSettings', { elevenlabs: { ttsModel: 'eleven_v9' }, models: { anthropic: 'custom-model' } }, ['elevenlabs.ttsModel', 'models.anthropic']],

@@ -26,13 +26,45 @@ ipcRenderer.on(PUSH_CHANNELS.updates.status, (_event, status: unknown) => {
 	for (const listener of updateStatusListeners) listener(status);
 });
 
+// Each assistant reply streams on its own MessagePort. A port can't cross the context bridge, so the preload keeps
+// it and forwards each message to the page's listener; closing it (stopChat) tells the main process to stop.
+type ChatListener = (event: unknown) => void;
+const chatListeners = new Map<string, ChatListener>();
+const chatPorts = new Map<string, MessagePort>();
+ipcRenderer.on(PUSH_CHANNELS.ai.chatPort, (event, message: unknown) => {
+	const port = event.ports[0];
+	if (port === undefined) return;
+	const requestId = typeof message === 'object' && message !== null && 'requestId' in message && typeof message.requestId === 'string' ? message.requestId : null;
+	const listener = requestId === null ? undefined : chatListeners.get(requestId);
+	// A reply nobody waits for any more (stopped before its port arrived) is stopped right away.
+	if (requestId === null || listener === undefined) {
+		port.close();
+		return;
+	}
+	chatPorts.set(requestId, port);
+	port.onmessage = ({ data }) => listener(data);
+	port.start();
+});
+
+const stopChat = (requestId: string) => {
+	chatListeners.delete(requestId);
+	chatPorts.get(requestId)?.close();
+	chatPorts.delete(requestId);
+};
+
 const desktop: DesktopApi = {
 	ai: {
+		chat: (input, listener) => {
+			const requestId = typeof input === 'object' && input !== null && 'requestId' in input && typeof input.requestId === 'string' ? input.requestId : null;
+			if (requestId !== null) chatListeners.set(requestId, listener);
+			return ipcRenderer.invoke(CHANNELS.ai.chat, input);
+		},
 		getSettings: () => ipcRenderer.invoke(CHANNELS.ai.getSettings),
 		listVoices: () => ipcRenderer.invoke(CHANNELS.ai.listVoices),
 		removeKey: provider => ipcRenderer.invoke(CHANNELS.ai.removeKey, provider),
 		saveKey: input => ipcRenderer.invoke(CHANNELS.ai.saveKey, input),
 		saveSettings: patch => ipcRenderer.invoke(CHANNELS.ai.saveSettings, patch),
+		stopChat,
 		testKey: provider => ipcRenderer.invoke(CHANNELS.ai.testKey, provider),
 	},
 	app: {

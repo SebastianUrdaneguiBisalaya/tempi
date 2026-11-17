@@ -1,4 +1,4 @@
-import { appUpdateStatusSchema, fail, googleSyncStatusSchema, type Result } from '@tempi/core';
+import { appUpdateStatusSchema, assistantStreamEventSchema, fail, googleSyncStatusSchema, type Result } from '@tempi/core';
 import { CHANNELS, type Channel, PUSH_CHANNELS } from './channels';
 import type { DesktopApi, TempiApi } from './desktop-api';
 import { type ChannelValue, occurrenceRefSchema, responseValueSchemas, resultSchema } from './schemas';
@@ -22,9 +22,19 @@ const call = async <C extends Channel>(channel: C, invoke: () => Promise<unknown
 /** Renderer client: the app's use cases over `window.desktop`. */
 export const createIpcClient = (api: DesktopApi): TempiApi => ({
 	ai: {
+		chat: (input, listener) =>
+			call(CHANNELS.ai.chat, () =>
+				api.ai.chat(input, payload => {
+					// A malformed event ends the reply as a failure, so the UI never waits on a stream it can't read.
+					const parsed = assistantStreamEventSchema.safeParse(payload);
+					if (parsed.success) listener(parsed.data);
+					else listener({ error: { code: 'internal', issues: [{ detail: 'ai:chat streamed a malformed event', key: 'system.unexpected' }] }, type: 'error' });
+				})
+			),
 		getSettings: () => call(CHANNELS.ai.getSettings, () => api.ai.getSettings()),
 		listVoices: () => call(CHANNELS.ai.listVoices, () => api.ai.listVoices()),
 		removeKey: provider => call(CHANNELS.ai.removeKey, () => api.ai.removeKey(provider)),
+		stopChat: requestId => api.ai.stopChat(requestId),
 		saveKey: input => call(CHANNELS.ai.saveKey, () => api.ai.saveKey(input)),
 		saveSettings: patch => call(CHANNELS.ai.saveSettings, () => api.ai.saveSettings(patch)),
 		testKey: provider => call(CHANNELS.ai.testKey, () => api.ai.testKey(provider)),
