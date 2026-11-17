@@ -53,7 +53,7 @@ export function DownloadContent({ copy, footer }: { copy: DownloadCopy; footer: 
 						</div>
 					))}
 				</div>
-				<p data-download-reveal className='mt-8 max-w-md text-sm text-balance text-muted-foreground'>
+				<p data-download-reveal className='mt-8 max-w-md text-sm text-balance text-foreground/80'>
 					{copy.firstLaunch}{' '}
 					<a href={`#${SECTION_IDS.faq}`} className='rounded-sm text-foreground underline underline-offset-4'>
 						{copy.firstLaunchLink}

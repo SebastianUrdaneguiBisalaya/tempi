@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { DownloadIcon } from 'lucide-react';
 import { useSyncExternalStore } from 'react';
 import { buttonVariants } from '@/components/ui/button';
@@ -27,7 +28,7 @@ export function DownloadButton({ labelForPlatform, label, className }: DownloadB
 	);
 
 	return (
-		<a href={platform ? defaultDownloadUrl(platform) : `#${SECTION_IDS.download}`} className={buttonVariants({ className })}>
+		<a href={platform ? defaultDownloadUrl(platform) : `#${SECTION_IDS.download}`} className={cn(buttonVariants({ className }))}>
 			<DownloadIcon data-icon='inline-start' />
 			{platform ? labelForPlatform.replace('{os}', PLATFORM_NAMES[platform]) : label}
 		</a>

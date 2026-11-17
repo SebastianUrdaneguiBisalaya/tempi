@@ -212,8 +212,8 @@
     "title": "Descarga Tempi",
     "subtitle": "Obtén la última versión para tu plataforma. Gratis, de código abierto y tuyo.",
     "choose": "Elegir una descarga para {os}",
-    "firstLaunch": "Tempi aún no está firmado por Apple ni Microsoft, así que la primera vez verás un aviso de seguridad.",
-    "firstLaunchLink": "Así se abre."
+    "firstLaunch": "¿Lo abres por primera vez en macOS o Windows?",
+    "firstLaunchLink": "Mira las preguntas frecuentes."
   },
   "footer": {
     "license": "Licencia ISC",

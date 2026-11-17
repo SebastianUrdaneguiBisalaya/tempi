@@ -71,7 +71,7 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 				</nav>
 
 				<div className='hidden items-center gap-1 md:flex' data-header-item>
-					<a href={GITHUB_URL} target='_blank' rel='noreferrer' aria-label={copy.github} className={buttonVariants({ variant: 'ghost', size: 'icon', className: 'rounded-full' })}>
+					<a href={GITHUB_URL} target='_blank' rel='noreferrer' aria-label={copy.github} className={cn(buttonVariants({ variant: 'ghost', size: 'icon', className: 'rounded-full' }))}>
 						<GitHubDark aria-hidden className='size-4' />
 					</a>
 					<LanguageSwitcher locale={locale} label={copy.language} />

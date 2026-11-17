@@ -212,8 +212,8 @@
     "title": "Download Tempi",
     "subtitle": "Get the latest version for your platform. Free, open source and yours to keep.",
     "choose": "Choose a {os} download",
-    "firstLaunch": "Tempi isn't signed by Apple or Microsoft yet, so the first launch shows a security warning.",
-    "firstLaunchLink": "Here's how to open it."
+    "firstLaunch": "Opening it for the first time on macOS or Windows?",
+    "firstLaunchLink": "See the FAQ."
   },
   "footer": {
     "license": "ISC License",
