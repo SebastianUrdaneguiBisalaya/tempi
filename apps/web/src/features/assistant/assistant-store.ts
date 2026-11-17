@@ -9,6 +9,7 @@ import {
 	type TextProvider,
 } from '@tempi/core';
 import type { TempiApi } from '@tempi/ipc';
+import { createStore } from 'zustand/vanilla';
 
 export type ToolTrace = { id: string; status: 'done' | 'error' | 'running'; tool: AssistantTool };
 
@@ -76,6 +77,8 @@ export const toModelMessages = (turns: readonly Turn[]): AssistantMessage[] =>
 
 const isEnded = (status: AssistantTurn['status']) => status !== 'streaming';
 
+const stopTraces = (traces: ToolTrace[]): ToolTrace[] => traces.map(trace => (trace.status === 'running' ? { ...trace, status: 'error' } : trace));
+
 /** Applies one streamed event to the reply it belongs to. */
 export const applyStreamEvent = (turn: AssistantTurn, event: AssistantStreamEvent): AssistantTurn => {
 	if (isEnded(turn.status)) return turn;
@@ -89,96 +92,91 @@ export const applyStreamEvent = (turn: AssistantTurn, event: AssistantStreamEven
 		case 'proposal':
 			return { ...turn, proposals: [...turn.proposals, { id: event.id, proposal: event.proposal, status: 'pending' }] };
 		case 'error':
-			return { ...turn, error: event.error, status: 'error', traces: turn.traces.map(trace => (trace.status === 'running' ? { ...trace, status: 'error' } : trace)) };
+			return { ...turn, error: event.error, status: 'error', traces: stopTraces(turn.traces) };
 		case 'done':
 			return { ...turn, status: 'done' };
 	}
+};
+
+export type AssistantActions = {
+	setDraft: (draft: string) => void;
+	/** Adds dictated text after whatever the prompt already holds, for the user to review before sending. */
+	appendDraft: (text: string) => void;
+	setProvider: (provider: TextProvider) => void;
+	setVoiceProvider: (voiceProvider: TextProvider) => void;
+	setTab: (tab: AssistantTab) => void;
+	setProposalStatus: (turnId: string, proposalId: string, status: ProposalStatus) => void;
+	/**
+	 * Sends `text` and streams the reply. The reply's id is its request id, so its events find it. Resolves with the
+	 * reply once it ended (done, failed or stopped), or null if nothing was sent. `voice` asks for a reply to be heard.
+	 */
+	send: (api: TempiApi, provider: TextProvider, text: string, options?: { voice?: boolean }) => Promise<AssistantTurn | null>;
+	stop: (api: TempiApi) => void;
+	/** Starts over, for both tabs. A reply still streaming is stopped. */
+	clear: (api: TempiApi) => void;
 };
 
 /**
  * The assistant's one conversation for this session, shared by the Chat and Voice tabs and kept in memory only. Lives
  * above the panel, so collapsing it keeps everything.
  */
-export const createAssistantStore = () => {
-	let state = INITIAL;
-	const listeners = new Set<() => void>();
-	const set = (next: AssistantState) => {
-		state = next;
-		for (const listener of listeners) listener();
-	};
-	const updateTurn = (id: string, update: (turn: AssistantTurn) => AssistantTurn) =>
-		set({ ...state, turns: state.turns.map(turn => (turn.id === id && turn.role === 'assistant' ? update(turn) : turn)) });
-	// Who waits for each reply to end (the Voice tab, to read it aloud).
-	const waiting = new Map<string, (turn: AssistantTurn | null) => void>();
-	const finish = (api: TempiApi, requestId: string) => {
-		api.ai.stopChat(requestId);
-		if (state.requestId === requestId) set({ ...state, requestId: null });
-		const turn = state.turns.find((candidate): candidate is AssistantTurn => candidate.id === requestId && candidate.role === 'assistant');
-		waiting.get(requestId)?.(turn ?? null);
-		waiting.delete(requestId);
-	};
+export const createAssistantStore = () =>
+	createStore<AssistantState & AssistantActions>()((set, get) => {
+		const updateTurn = (id: string, update: (turn: AssistantTurn) => AssistantTurn) =>
+			set(state => ({ turns: state.turns.map(turn => (turn.id === id && turn.role === 'assistant' ? update(turn) : turn)) }));
+		// Who waits for each reply to end (the Voice tab, to read it aloud).
+		const waiting = new Map<string, (turn: AssistantTurn | null) => void>();
+		const finish = (api: TempiApi, requestId: string) => {
+			api.ai.stopChat(requestId);
+			if (get().requestId === requestId) set({ requestId: null });
+			const turn = get().turns.find((candidate): candidate is AssistantTurn => candidate.id === requestId && candidate.role === 'assistant');
+			waiting.get(requestId)?.(turn ?? null);
+			waiting.delete(requestId);
+		};
 
-	const stop = (api: TempiApi) => {
-		const { requestId } = state;
-		if (requestId === null) return;
-		updateTurn(requestId, turn =>
-			isEnded(turn.status) ? turn : { ...turn, status: 'stopped', traces: turn.traces.map(trace => (trace.status === 'running' ? { ...trace, status: 'error' } : trace)) }
-		);
-		finish(api, requestId);
-	};
-
-	return {
-		getSnapshot: () => state,
-		subscribe: (listener: () => void) => {
-			listeners.add(listener);
-			return () => {
-				listeners.delete(listener);
-			};
-		},
-		setDraft: (draft: string) => set({ ...state, draft }),
-		/** Adds dictated text after whatever the prompt already holds, for the user to review before sending. */
-		appendDraft: (text: string) => {
-			const current = state.draft.trimEnd();
-			set({ ...state, draft: current === '' ? text : `${current} ${text}` });
-		},
-		setProvider: (provider: TextProvider) => set({ ...state, provider }),
-		setVoiceProvider: (voiceProvider: TextProvider) => set({ ...state, voiceProvider }),
-		setTab: (tab: AssistantTab) => set({ ...state, tab }),
-		setProposalStatus: (turnId: string, proposalId: string, status: ProposalStatus) =>
-			updateTurn(turnId, turn => ({ ...turn, proposals: turn.proposals.map(item => (item.id === proposalId ? { ...item, status } : item)) })),
-		/**
-		 * Sends `text` and streams the reply. The reply's id is its request id, so its events find it. Resolves with the
-		 * reply once it ended (done, failed or stopped), or null if nothing was sent. `voice` asks for a reply to be heard.
-		 */
-		send: (api: TempiApi, provider: TextProvider, text: string, { voice = false }: { voice?: boolean } = {}): Promise<AssistantTurn | null> => {
-			const trimmed = text.trim();
-			if (trimmed === '' || state.requestId !== null) return Promise.resolve(null);
-			const requestId = crypto.randomUUID();
-			const user: UserTurn = { id: crypto.randomUUID(), role: 'user', text: trimmed };
-			const reply: AssistantTurn = { error: null, id: requestId, proposals: [], provider, role: 'assistant', status: 'streaming', text: '', traces: [] };
-			const turns = [...state.turns, user];
-			// A spoken message leaves the Chat tab's unsent prompt alone.
-			set({ ...state, draft: voice ? state.draft : '', requestId, turns: [...turns, reply] });
-			const ended = new Promise<AssistantTurn | null>(resolve => waiting.set(requestId, resolve));
-			void api.ai
-				.chat({ messages: toModelMessages(turns), provider, requestId, ...(voice ? { voice } : {}) }, event => {
-					updateTurn(requestId, turn => applyStreamEvent(turn, event));
-					if (event.type === 'done' || event.type === 'error') finish(api, requestId);
-				})
-				.then(started => {
-					if (started.ok) return;
-					updateTurn(requestId, turn => applyStreamEvent(turn, { error: started.error, type: 'error' }));
-					finish(api, requestId);
-				});
-			return ended;
-		},
-		stop,
-		/** Starts over, for both tabs. A reply still streaming is stopped. */
-		clear: (api: TempiApi) => {
-			stop(api);
-			set({ ...INITIAL, provider: state.provider, tab: state.tab, voiceProvider: state.voiceProvider });
-		},
-	};
-};
+		return {
+			...INITIAL,
+			setDraft: draft => set({ draft }),
+			appendDraft: text => {
+				const current = get().draft.trimEnd();
+				set({ draft: current === '' ? text : `${current} ${text}` });
+			},
+			setProvider: provider => set({ provider }),
+			setVoiceProvider: voiceProvider => set({ voiceProvider }),
+			setTab: tab => set({ tab }),
+			setProposalStatus: (turnId, proposalId, status) => updateTurn(turnId, turn => ({ ...turn, proposals: turn.proposals.map(item => (item.id === proposalId ? { ...item, status } : item)) })),
+			send: (api, provider, text, { voice = false } = {}) => {
+				const trimmed = text.trim();
+				if (trimmed === '' || get().requestId !== null) return Promise.resolve(null);
+				const requestId = crypto.randomUUID();
+				const turns = [...get().turns, { id: crypto.randomUUID(), role: 'user', text: trimmed } satisfies UserTurn];
+				const reply: AssistantTurn = { error: null, id: requestId, proposals: [], provider, role: 'assistant', status: 'streaming', text: '', traces: [] };
+				// A spoken message leaves the Chat tab's unsent prompt alone.
+				set(state => ({ draft: voice ? state.draft : '', requestId, turns: [...turns, reply] }));
+				const ended = new Promise<AssistantTurn | null>(resolve => waiting.set(requestId, resolve));
+				void api.ai
+					.chat({ messages: toModelMessages(turns), provider, requestId, ...(voice ? { voice } : {}) }, event => {
+						updateTurn(requestId, turn => applyStreamEvent(turn, event));
+						if (event.type === 'done' || event.type === 'error') finish(api, requestId);
+					})
+					.then(started => {
+						if (started.ok) return;
+						updateTurn(requestId, turn => applyStreamEvent(turn, { error: started.error, type: 'error' }));
+						finish(api, requestId);
+					});
+				return ended;
+			},
+			stop: api => {
+				const { requestId } = get();
+				if (requestId === null) return;
+				updateTurn(requestId, turn => (isEnded(turn.status) ? turn : { ...turn, status: 'stopped', traces: stopTraces(turn.traces) }));
+				finish(api, requestId);
+			},
+			clear: api => {
+				get().stop(api);
+				set({ draft: '', requestId: null, turns: [] });
+			},
+		};
+	});
 
 export type AssistantStore = ReturnType<typeof createAssistantStore>;
