@@ -22,7 +22,7 @@ export function DownloadContent({ copy, footer }: { copy: DownloadCopy; footer: 
 	const ref = useRef<HTMLElement>(null);
 
 	useMotion(ref, () => {
-		gsap.timeline({ scrollTrigger: { trigger: ref.current, start: 'top 65%' }, defaults: { ease: 'power3.out' } })
+		gsap.timeline({ scrollTrigger: { trigger: ref.current, start: 'top 80%', once: true }, defaults: { ease: 'power3.out' } })
 			.from('[data-download-reveal]', { y: 24, autoAlpha: 0, duration: 0.8, stagger: 0.1 })
 			.from('[data-download-button]', { y: 16, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, '-=0.4');
 		gsap.from('[data-download-bg]', { scale: 1.1, ease: 'none', scrollTrigger: { trigger: ref.current, start: 'top bottom', end: 'bottom bottom', scrub: true } });
@@ -46,11 +46,14 @@ export function DownloadContent({ copy, footer }: { copy: DownloadCopy; footer: 
 					{copy.subtitle}
 				</p>
 				<div className='mt-10 flex flex-wrap justify-center gap-3'>
+					{/* GSAP animates the wrappers: the buttons' own `transition-all` would fight its inline styles. */}
 					{PLATFORMS.map(platform => (
-						<PlatformButton key={platform} platform={platform} chooseLabel={copy.choose} />
+						<div key={platform} data-download-button>
+							<PlatformButton platform={platform} chooseLabel={copy.choose} />
+						</div>
 					))}
 				</div>
-				<p data-download-reveal className='mt-8 text-sm text-muted-foreground'>
+				<p data-download-reveal className='mt-8 max-w-md text-sm text-balance text-muted-foreground'>
 					{copy.firstLaunch}{' '}
 					<a href={`#${SECTION_IDS.faq}`} className='rounded-sm text-foreground underline underline-offset-4'>
 						{copy.firstLaunchLink}

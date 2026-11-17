@@ -23,7 +23,7 @@ export function PlatformButton({ platform, chooseLabel }: { platform: Platform; 
 
 	if (variants.length === 1) {
 		return (
-			<a data-download-button href={variants[0].url} className={buttonVariants({ variant: 'outline', className: `${PILL} gap-2` })}>
+			<a href={variants[0].url} className={buttonVariants({ variant: 'outline', className: `${PILL} gap-2` })}>
 				{ICONS[platform]}
 				{name}
 			</a>
@@ -32,7 +32,7 @@ export function PlatformButton({ platform, chooseLabel }: { platform: Platform; 
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger data-download-button render={<Button variant='outline' className={`${PILL} gap-2 pr-4`} aria-label={chooseLabel.replace('{os}', name)} />}>
+			<DropdownMenuTrigger render={<Button variant='outline' className={`${PILL} gap-2 pr-4`} aria-label={chooseLabel.replace('{os}', name)} />}>
 				{ICONS[platform]}
 				{name}
 				<ChevronDownIcon data-icon='inline-end' className='opacity-60' />
