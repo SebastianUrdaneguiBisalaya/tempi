@@ -16,9 +16,17 @@ export function EventPanel() {
 	if (selection === null || calendars === undefined) return null;
 
 	if (selection.kind === 'event') {
-		const { event } = selection;
-		// Remount on another event or a saved change, so the form starts from the stored values.
-		return <EventForm calendars={calendars} defaultValues={eventToFormValues(event)} event={event} key={`${event.key}:${event.updatedAt}`} />;
+		const { changes, event } = selection;
+		// Remount on another event, a saved change or new suggested changes, so the form starts from the right values.
+		return (
+			<EventForm
+				calendars={calendars}
+				changes={changes}
+				defaultValues={eventToFormValues(event)}
+				event={event}
+				key={`${event.key}:${event.updatedAt}:${changes === undefined ? '' : JSON.stringify(changes)}`}
+			/>
+		);
 	}
 
 	const { draft } = selection;
@@ -38,6 +46,7 @@ export function EventPanel() {
 		timeZone,
 		title: '',
 		videoUrl: '',
+		...draft.values,
 	};
-	return <EventForm calendars={calendars} defaultValues={defaultValues} event={null} key={`new:${draft.startAt}:${draft.endAt}`} />;
+	return <EventForm calendars={calendars} defaultValues={defaultValues} event={null} key={`new:${draft.startAt}:${draft.endAt}:${draft.values === undefined ? '' : JSON.stringify(draft.values)}`} />;
 }

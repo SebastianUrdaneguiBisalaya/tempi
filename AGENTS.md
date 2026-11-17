@@ -134,6 +134,7 @@ packages/
       index.ts
   ai/                        @tempi/ai: optional AI processes over user-owned keys (AI SDK, ElevenLabs); desktop main only
     src/
+      assistant.ts           streams one assistant reply (AI SDK `streamText`) with read tools and change proposals
       test-key.ts            checks a provider key without spending tokens
       voices.ts              ElevenLabs voices
       text-model.ts          the chosen text model, called with the user's key
@@ -148,13 +149,13 @@ apps/desktop/src/
   app-protocol.ts            app:// handler for the web export
   window-state.ts
   database.ts                opens @tempi/db in userData
-  ai/                        encrypted key store, AI settings file, AI service behind `ai:*`
+  ai/                        encrypted key store, AI settings file, AI service and assistant chat behind `ai:*`
   ipc/                       one file per domain (events.ts), register-ipc.ts
   preload.ts                 exposes DesktopApi; no logic (bundled to dist/preload.cjs)
 
 apps/web/src/
   app/                       routes only (layout.tsx, page.tsx); thin, compose features
-  features/<feature>/        components/, hooks/ (calendar, events, settings)
+  features/<feature>/        components/, hooks/ (assistant, calendar, events, settings)
   components/                shared app components
   components/ui/             generated (shadcn); do not edit by hand
   providers/                 api (`useApi()`), query client, i18n and theme providers
@@ -201,6 +202,7 @@ apps/www/src/
 ## IPC
 
 - Use only `ipcRenderer.invoke` and `ipcMain.handle`. Don't use `send`/`sendSync` for request/response.
+- Exception, for streams: an assistant reply (`ai:chat`) starts with an invoke that passes the usual sender and payload checks and answers at once; its events then flow over one `MessagePort` per reply, which the main process sends to the calling frame on `PUSH_CHANNELS.ai.chatPort` (`senderFrame.postMessage`). The preload keeps the port (ports can't cross `contextBridge`) and forwards each message to the page's listener; the renderer validates every event with core's `assistantStreamEventSchema`. Closing the port (`stopChat`) aborts the reply. Use this pattern only for streams, never for plain request/response.
 - Name channels `domain:action`, for example `events:list` and `events:upsert`. Use one handler per channel.
 - The preload exposes small, typed functions with `contextBridge`, for example `window.desktop.events.list(range)`. Never expose `ipcRenderer`, Node modules or generic `invoke(channel, …)` passthroughs.
 - In every handler, check `event.senderFrame.url` against the trusted origin, then validate the payload at runtime with the core zod schemas. TypeScript types do not exist at runtime.

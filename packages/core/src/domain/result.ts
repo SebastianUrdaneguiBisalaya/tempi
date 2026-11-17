@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 import { ERROR_KEYS, type ErrorKey, isErrorKey } from './error-keys';
 
 export const DOMAIN_ERROR_CODES = ['validation', 'not_found', 'conflict', 'internal'] as const;
@@ -81,3 +81,16 @@ export const parseWith = <S extends z.ZodType>(schema: S, input: unknown): Resul
 	if (parsed.success) return ok(parsed.data);
 	return { error: { code: 'validation', issues: parsed.error.issues.map(toDomainIssue) }, ok: false };
 };
+
+const domainIssueSchema = z.object({
+	detail: z.string(),
+	field: z.string().optional(),
+	key: z.custom<ErrorKey>(value => typeof value === 'string' && isErrorKey(value)),
+	params: z.record(z.string(), z.union([z.number(), z.string()])).optional(),
+});
+
+/** A `DomainError` as it crosses a boundary (IPC answers, streamed assistant events). */
+export const domainErrorSchema = z.object({
+	code: z.enum(DOMAIN_ERROR_CODES),
+	issues: z.array(domainIssueSchema).min(1),
+}) satisfies z.ZodType<DomainError>;

@@ -1,8 +1,7 @@
 import type { CoreDeps, Settings } from '@tempi/core';
 import type { OccurrenceRef } from '@tempi/ipc';
-import type { AiService } from '../ai/ai-service';
 import type { UpdateService } from '../updates/update-service';
-import { registerAiHandlers } from './ai';
+import { type AiIo, registerAiHandlers } from './ai';
 import { registerAppHandlers } from './app';
 import { registerCalendarHandlers } from './calendars';
 import { type DataIo, registerDataHandlers } from './data';
@@ -15,6 +14,7 @@ import { registerProfileHandlers } from './profile';
 import { registerSettingsHandlers } from './settings';
 import { registerUpdateHandlers } from './updates';
 
+export type { AiIo } from './ai';
 export type { DataIo } from './data';
 export type { GoogleIo } from './google';
 export type { HandlerContext, IpcRegistrar, IpcSender } from './handle';
@@ -31,7 +31,7 @@ export type IpcListeners = {
 };
 
 /** The app's work outside the database behind some channels, injected so tests can stand in for dialogs, files, AI providers, Google and updates. */
-export type AppIo = { ai: AiService; data: DataIo; google: GoogleIo; ical: IcalIo; updates: UpdateService };
+export type AppIo = { ai: AiIo; data: DataIo; google: GoogleIo; ical: IcalIo; updates: UpdateService };
 
 /** Registers every channel of the `@tempi/ipc` contract, each running its core use case against `deps`. */
 

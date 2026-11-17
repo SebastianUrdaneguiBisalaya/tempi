@@ -5,13 +5,13 @@ import {
 	aiSettingsSchema,
 	aiVoiceSchema,
 	appUpdateStatusSchema,
+	assistantChatInputSchema,
 	calendarEventSchema,
 	calendarPatchSchema,
 	calendarSchema,
-	DOMAIN_ERROR_CODES,
 	dateRangeSchema,
 	deleteCalendarInputSchema,
-	type ErrorKey,
+	domainErrorSchema,
 	eventOccurrenceSchema,
 	eventPatchSchema,
 	eventSearchQuerySchema,
@@ -21,7 +21,6 @@ import {
 	googleConnectResultSchema,
 	googleSyncStatusSchema,
 	idSchema,
-	isErrorKey,
 	newCalendarInputSchema,
 	newEventInputSchema,
 	occurrenceTargetSchema,
@@ -36,7 +35,12 @@ import {
 import { z } from 'zod';
 import type { Channel } from './channels';
 
+export { domainErrorSchema };
+
 const noPayload = z.undefined();
+
+/** What the main process sends with an assistant reply's port, so the preload knows which request it belongs to. */
+export const chatPortMessageSchema = z.object({ requestId: z.uuid() });
 
 /** An occurrence to show: its listing key and start, enough to find it again in the renderer. */
 export const occurrenceRefSchema = z.object({ key: z.string().min(1), startAt: utcInstantSchema });
@@ -64,6 +68,7 @@ export const backupResultSchema = z.discriminatedUnion('status', [z.object({ sta
 export const restoreResultSchema = z.discriminatedUnion('status', [z.object({ status: z.literal('canceled') }), z.object({ status: z.literal('restarting') })]);
 
 export const payloadSchemas = {
+	'ai:chat': assistantChatInputSchema,
 	'ai:getSettings': noPayload,
 	'ai:listVoices': noPayload,
 	'ai:removeKey': aiProviderSchema,
@@ -107,6 +112,7 @@ export const payloadSchemas = {
 
 /** The value inside a successful result on each channel. The renderer parses responses with these. */
 export const responseValueSchemas = {
+	'ai:chat': z.null(),
 	'ai:getSettings': aiSettingsSchema,
 	'ai:listVoices': z.array(aiVoiceSchema),
 	'ai:removeKey': aiSettingsSchema,
@@ -153,18 +159,6 @@ export type ChannelInput<C extends Channel> = z.input<(typeof payloadSchemas)[C]
 /** What a handler receives on a channel, once parsed. */
 export type ChannelPayload<C extends Channel> = z.output<(typeof payloadSchemas)[C]>;
 export type ChannelValue<C extends Channel> = z.output<(typeof responseValueSchemas)[C]>;
-
-const domainIssueSchema = z.object({
-	detail: z.string(),
-	field: z.string().optional(),
-	key: z.custom<ErrorKey>(value => typeof value === 'string' && isErrorKey(value)),
-	params: z.record(z.string(), z.union([z.number(), z.string()])).optional(),
-});
-
-export const domainErrorSchema = z.object({
-	code: z.enum(DOMAIN_ERROR_CODES),
-	issues: z.array(domainIssueSchema).min(1),
-});
 
 /** A core `Result` carrying `value`, as it crosses IPC. */
 export const resultSchema = <S extends z.ZodType>(value: S) => z.discriminatedUnion('ok', [z.object({ ok: z.literal(true), value }), z.object({ error: domainErrorSchema, ok: z.literal(false) })]);

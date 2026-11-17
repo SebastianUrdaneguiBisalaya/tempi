@@ -1,6 +1,11 @@
 /** Every IPC channel, named `domain:action`. Each one runs a single core use case; one `ipcMain.handle` per channel. */
 export const CHANNELS = {
 	ai: {
+		/**
+		 * Starts one assistant reply. Its events don't come back in the answer: they stream over a `MessagePort` the main
+		 * process sends on `PUSH_CHANNELS.ai.chatPort`, tagged with the request's id. Closing the port stops the reply.
+		 */
+		chat: 'ai:chat',
 		/** The AI choices and which providers have a key. Keys never cross IPC towards the renderer. */
 		getSettings: 'ai:getSettings',
 		/** The ElevenLabs voices of the saved key's account. */
@@ -86,6 +91,10 @@ export const CHANNELS = {
  * payload the renderer validates with its schema in `pushSchemas`.
  */
 export const PUSH_CHANNELS = {
+	ai: {
+		/** Carries the `MessagePort` an `ai:chat` reply streams on, with `{ requestId }`. */
+		chatPort: 'ai:chatPort',
+	},
 	google: {
 		/** Sync started or ended: the new status. Data may have changed, so views refresh. */
 		syncStatus: 'google:syncStatusChanged',

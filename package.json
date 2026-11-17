@@ -14,6 +14,7 @@
       "@ai-sdk/google": "4.0.121",
       "@ai-sdk/groq": "4.0.84",
       "@ai-sdk/openai": "4.0.118",
+      "@ai-sdk/provider": "4.0.38",
       "@ai-sdk/xai": "5.0.46",
       "@elevenlabs/elevenlabs-js": "2.79.0",
       "@tailwindcss/turbopack": "4.3.3",

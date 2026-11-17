@@ -9,7 +9,7 @@ import type { GoogleAccountService } from '../google/google-account';
 import type { SyncRunner } from '../google/sync-runner';
 import { createUpdateService } from '../updates/update-service';
 import type { IpcSender } from './handle';
-import { type DataIo, type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
+import { type AiIo, type DataIo, type IcalIo, type IpcListeners, registerIpc } from './register-ipc';
 
 const TRUSTED = 'app://tempi';
 const T0 = '2026-11-15T10:00:00.000Z';
@@ -50,7 +50,7 @@ const aiView = async (): Promise<AiSettings> => ({
 	...DEFAULT_AI_SETTINGS,
 	keys: { anthropic: aiKeys.has('anthropic'), elevenlabs: aiKeys.has('elevenlabs'), google: aiKeys.has('google'), groq: aiKeys.has('groq'), openai: aiKeys.has('openai'), xai: aiKeys.has('xai') },
 });
-const ai: AiService = {
+const aiService: AiService = {
 	getSettings: aiView,
 	listVoices: async () => ok([]),
 	removeKey: async provider => {
@@ -64,6 +64,18 @@ const ai: AiService = {
 	},
 	saveSettings: async () => ok(await aiView()),
 	testKey: async provider => (aiKeys.has(provider) ? ok(null) : fail('not_found', 'ai.invalidKey')),
+};
+
+/** Assistant replies started, and the streams opened for them. */
+let chats: { input: unknown; requestId: string }[];
+const ai: AiIo = {
+	chat: (input, openSink) => {
+		openSink().send({ type: 'done' });
+		chats.push({ input, requestId: input.requestId });
+		return Promise.resolve(ok(null));
+	},
+	openStream: () => ({ close: () => undefined, send: () => undefined, signal: new AbortController().signal }),
+	service: aiService,
 };
 
 /** The fake Google service: one account at most, like the real one. */
@@ -134,6 +146,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	restoreSource = null;
 	dataCalls = [];
 	aiKeys = new Map();
+	chats = [];
 	googleEmail = null;
 	syncCalls = [];
 	exportPath = '/exports';
@@ -198,6 +211,15 @@ describe('registerIpc', () => {
 		expect(JSON.stringify(saved)).not.toContain('good-key');
 		expect(await invoke(CHANNELS.ai.testKey, 'openai')).toEqual({ ok: true, value: null });
 		expect(await invoke(CHANNELS.ai.saveKey, { key: 'bad-key', provider: 'groq' })).toMatchObject({ error: { issues: [{ key: 'ai.invalidKey' }] }, ok: false });
+	});
+
+	test('ai:chat validates the payload and only starts a reply for the app’s own frames', async () => {
+		const input = { messages: [{ role: 'user', text: 'Hola' }], provider: 'openai', requestId: '01890a5d-ac96-774b-bcce-b302099a8057' };
+		expect(await invoke(CHANNELS.ai.chat, { ...input, requestId: 'x' })).toMatchObject({ error: { code: 'validation' }, ok: false });
+		expect(await invoke(CHANNELS.ai.chat, input, 'https://evil.example/')).toMatchObject({ error: { issues: [{ key: 'system.unexpected' }] }, ok: false });
+		expect(chats).toEqual([]);
+		expect(await invoke(CHANNELS.ai.chat, input)).toEqual({ ok: true, value: null });
+		expect(chats).toEqual([{ input, requestId: input.requestId }]);
 	});
 
 	test('restores a deleted event', async () => {

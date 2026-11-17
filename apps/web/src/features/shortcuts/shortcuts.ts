@@ -36,6 +36,7 @@ export const SHORTCUTS = {
 	// that never reaches the page as a plain keypress.
 	toggleSidebar: { group: 'general', keys: '`', layout: 'physical', scope: HOTKEY_SCOPES.global },
 	togglePanel: { group: 'general', keys: 'p', scope: HOTKEY_SCOPES.grid },
+	toggleAssistant: { group: 'general', keys: 'mod+j', scope: HOTKEY_SCOPES.global },
 	close: { group: 'general', keys: 'escape', scope: HOTKEY_SCOPES.grid },
 } as const satisfies Record<string, ShortcutDefinition>;
 

@@ -20,9 +20,11 @@
     "@ai-sdk/xai": "catalog:",
     "@elevenlabs/elevenlabs-js": "catalog:",
     "@tempi/core": "workspace:*",
-    "ai": "catalog:"
+    "ai": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
+    "@ai-sdk/provider": "catalog:",
     "typescript": "catalog:"
   }
 }

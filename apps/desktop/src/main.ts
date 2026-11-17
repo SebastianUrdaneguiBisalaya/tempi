@@ -2,15 +2,31 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { listVoices, testKey } from '@tempi/ai';
+import { listVoices, runAssistant, testKey, textModel } from '@tempi/ai';
 import { type CoreDeps, getProfile, getSettings, initializeSettings, type Language, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
 import { resources } from '@tempi/i18n';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
 import { createGoogleCalendarApi, GoogleAuthError, GoogleOfflineError, type SyncDeps, syncGoogle } from '@tempi/sync-google';
-import { app, BrowserWindow, type BrowserWindowConstructorOptions, dialog, globalShortcut, ipcMain, nativeImage, nativeTheme, net, powerMonitor, protocol, safeStorage, shell } from 'electron';
+import {
+	app,
+	BrowserWindow,
+	type BrowserWindowConstructorOptions,
+	dialog,
+	globalShortcut,
+	ipcMain,
+	MessageChannelMain,
+	nativeImage,
+	nativeTheme,
+	net,
+	powerMonitor,
+	protocol,
+	safeStorage,
+	shell,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { createAiService } from './ai/ai-service.js';
+import { type AssistantSink, assistantContext, assistantPorts, createAssistantChat } from './ai/assistant-chat.js';
 import { createAiKeyStore } from './ai/key-store.js';
 import { createAiSettingsStore } from './ai/settings-store.js';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
@@ -24,7 +40,7 @@ import { oauthClientFrom } from './google/oauth.js';
 import { createSyncRunner, type SyncRunner } from './google/sync-runner.js';
 import { type Cipher, createTokenStore } from './google/token-store.js';
 import { createIcalWorker } from './ical-worker-client.js';
-import { type DataIo, type IcalIo, registerIpc } from './ipc/register-ipc.js';
+import { type AiIo, type DataIo, type IcalIo, type IpcSender, registerIpc } from './ipc/register-ipc.js';
 import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
 import { fileReminderCheckpoint } from './reminder-checkpoint.js';
 import { createReminderNotifier } from './reminder-notifier.js';
@@ -367,13 +383,32 @@ function googleAccount(): GoogleAccountService {
 }
 
 // AI provider keys, encrypted like the Google tokens; the choices beside them in plain JSON.
-function aiService() {
+function aiIo(deps: CoreDeps, transaction: TransactionQueue): AiIo {
 	const userData = app.getPath('userData');
-	return createAiService({
-		keys: createAiKeyStore(path.join(userData, 'ai-keys.bin'), safeStorageCipher),
-		providers: { listVoices: key => listVoices(key), testKey: (provider, key) => testKey(provider, key) },
-		settings: createAiSettingsStore(path.join(userData, 'ai-settings.json')),
-	});
+	const keys = createAiKeyStore(path.join(userData, 'ai-keys.bin'), safeStorageCipher);
+	const settings = createAiSettingsStore(path.join(userData, 'ai-settings.json'));
+	return {
+		chat: createAssistantChat({
+			context: assistantContext(deps, transaction, () => new Date()),
+			keys,
+			model: textModel,
+			ports: assistantPorts(deps, transaction),
+			run: runAssistant,
+			settings,
+		}),
+		openStream: openAssistantStream,
+		service: createAiService({ keys, providers: { listVoices: key => listVoices(key), testKey: (provider, key) => testKey(provider, key) }, settings }),
+	};
+}
+
+// One MessagePort per reply: the renderer reads events from its end, and closing it aborts the reply here.
+function openAssistantStream(sender: IpcSender, requestId: string): AssistantSink {
+	const { port1, port2 } = new MessageChannelMain();
+	const controller = new AbortController();
+	port1.on('close', () => controller.abort());
+	port1.start();
+	sender.senderFrame?.postMessage?.(PUSH_CHANNELS.ai.chatPort, { requestId }, [port2]);
+	return { close: () => port1.close(), send: event => port1.postMessage(event), signal: controller.signal };
 }
 
 // Two-way Google Calendar sync while an account is connected. Google is called between transactions, never inside one.
@@ -480,7 +515,7 @@ if (!gotLock) {
 		registerIpc(
 			{ ipc: ipcMain, isTrusted: isTrustedUrl, transaction },
 			deps,
-			{ ai: aiService(), data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo(), updates },
+			{ ai: aiIo(deps, transaction), data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo(), updates },
 			{
 				eventsChanged: () => {
 					void reminders?.reschedule();

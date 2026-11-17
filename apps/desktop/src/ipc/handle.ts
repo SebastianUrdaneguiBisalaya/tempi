@@ -1,9 +1,13 @@
 import { fail, parseWith, type Result } from '@tempi/core';
 import type { TransactionQueue } from '@tempi/db';
 import { type Channel, type ChannelPayload, type ChannelValue, payloadSchemas } from '@tempi/ipc';
+import type { MessagePortMain } from 'electron';
 
-/** The part of an invoke event a handler needs. Electron's `IpcMainInvokeEvent` satisfies it. */
-export type IpcSender = { senderFrame: { url: string } | null };
+/**
+ * The part of an invoke event a handler needs. Electron's `IpcMainInvokeEvent` satisfies it. `postMessage` lets a
+ * handler hand the sending frame a `MessagePort` (assistant replies stream on one).
+ */
+export type IpcSender = { senderFrame: { url: string; postMessage?: (channel: string, message: unknown, transfer?: MessagePortMain[]) => void } | null };
 
 /** The part of `ipcMain` handlers use, so tests can register against a fake. */
 export type IpcRegistrar = {
@@ -37,7 +41,7 @@ export type HandlerContext = {
  * schema, and turns a thrown error into a failed `Result`, so nothing raw crosses IPC. `respond` decides how the work
  * is split around transactions; most channels go through `handle`.
  */
-export const handleRequest = <C extends Channel>(context: HandlerContext, channel: C, respond: (payload: ChannelPayload<C>) => Promise<Result<ChannelValue<C>>>): void => {
+export const handleRequest = <C extends Channel>(context: HandlerContext, channel: C, respond: (payload: ChannelPayload<C>, event: IpcSender) => Promise<Result<ChannelValue<C>>>): void => {
 	context.ipc.handle(channel, async (event, payload): Promise<Result<ChannelValue<C>>> => {
 		const url = event.senderFrame?.url ?? '';
 		if (!context.isTrusted(url)) return fail('internal', 'system.unexpected', { detail: `Refused ${channel} from untrusted sender "${url}"` });
@@ -46,7 +50,7 @@ export const handleRequest = <C extends Channel>(context: HandlerContext, channe
 		if (!parsed.ok) return parsed;
 		try {
 			// TS loses the channel → schema correlation through the generic index; the schema was picked by the same `channel`.
-			return await respond(parsed.value as ChannelPayload<C>);
+			return await respond(parsed.value as ChannelPayload<C>, event);
 		} catch (error) {
 			console.error(`IPC ${channel} failed`, error);
 			return fail('internal', 'system.unexpected', { detail: `${channel} failed: ${error instanceof Error ? error.message : String(error)}` });
