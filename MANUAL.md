@@ -50,6 +50,24 @@ make dev-web     # web app on :3000
 make dev-desktop # Electron against the web dev server
 ```
 
+### Environment variables
+
+Only the desktop app reads environment variables; `apps/web` and `apps/www` need none. Copy the example and fill in what you need:
+
+```sh
+cp apps/desktop/.env.example apps/desktop/.env
+```
+
+| Variable                     | Needed for                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `TEMPI_GOOGLE_CLIENT_ID`     | Google Calendar sync (see [Google Calendar setup](#google-calendar-setup))   |
+| `TEMPI_GOOGLE_CLIENT_SECRET` | Google Calendar sync                                                         |
+| `TEMPI_WEB_URL`              | Optional, dev only: the web dev server URL (default `http://localhost:3000`) |
+
+The Google values are inlined into the main process when it's built, so restart `make dev-desktop` after changing them. Without them, the app works and Google sync stays off.
+
+To start over from the onboarding, close the app and run `make reset-desktop`: it deletes the dev database and keeps your AI keys and Google account.
+
 See [AGENTS.md](AGENTS.md) for the project rules and [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
 
 ## Releasing
@@ -65,3 +83,30 @@ See [AGENTS.md](AGENTS.md) for the project rules and [CONTRIBUTING.md](CONTRIBUT
 3. The **Release** workflow builds every platform, checks the Electron Fuses and creates a draft release with the installers. Review it on GitHub and publish it.
 
 Google Calendar sync needs the `TEMPI_GOOGLE_CLIENT_ID` and `TEMPI_GOOGLE_CLIENT_SECRET` repository secrets; without them the release builds ship with sync disabled.
+
+## Google Calendar setup
+
+Tempi connects to Google Calendar with its own OAuth client, which you register once in Google Cloud. Each user then signs in with their own Google account; their tokens stay encrypted on their computer.
+
+1. **Create a project.** In [Google Cloud Console](https://console.cloud.google.com/), create a project (for example `Tempi`) and select it.
+2. **Enable the Google Calendar API.** Go to **APIs & Services → Library**, search for **Google Calendar API** and click **Enable**. Without it, sign-in works but sync fails.
+3. **Configure the consent screen.** Go to **Google Auth Platform** (**APIs & Services → OAuth consent screen**):
+   - **Branding:** app name `Tempi`, a support email and a developer contact email.
+   - **Audience:** **External**. While the app is in **Testing**, add every Google account that will connect under **Test users** (up to 100).
+   - **Data access:** add these scopes:
+
+     | Scope                                                            | Why                                      |
+     | ---------------------------------------------------------------- | ---------------------------------------- |
+     | `openid`, `email`                                                | Show which account is connected          |
+     | `https://www.googleapis.com/auth/calendar.calendarlist.readonly` | List the account's calendars             |
+     | `https://www.googleapis.com/auth/calendar.events`                | Read and write events in those calendars |
+
+4. **Create the OAuth client.** Go to **Clients** (**APIs & Services → Credentials → Create credentials → OAuth client ID**), choose **Desktop app** and create it. Desktop clients need no redirect URI: Tempi receives the sign-in on a temporary `127.0.0.1` port.
+5. **Use the client ID and secret:**
+   - Local builds: put them in `apps/desktop/.env` (see [Environment variables](#environment-variables)).
+   - Releases: add them as the `TEMPI_GOOGLE_CLIENT_ID` and `TEMPI_GOOGLE_CLIENT_SECRET` repository secrets (**GitHub → Settings → Secrets and variables → Actions**).
+
+Things to know:
+
+- **Testing vs. production.** The calendar scopes are sensitive. While the app is in **Testing**, only test users can connect, and Google expires their sign-in after 7 days, so Tempi asks them to reconnect. To let anyone connect, click **Publish app** under **Audience** and complete Google's verification for sensitive scopes.
+- **The secret isn't secret.** Both values are built into the app and anyone can extract them. Google treats desktop clients' secrets as non-confidential; the sign-in is protected by PKCE and the user's consent, so the values give no access to anyone's calendar. They can still be misused against your quota or to impersonate Tempi's consent screen: watch usage in the Cloud Console, and if you see abuse, add a new secret to the client, update the repository secret, release, then delete the old one.
