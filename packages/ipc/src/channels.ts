@@ -72,6 +72,14 @@ export const CHANNELS = {
 	onboarding: {
 		complete: 'onboarding:complete',
 	},
+	permissions: {
+		/** Opens the OS privacy page for one permission. The main process picks the page; the renderer only names the permission. */
+		openSystemSettings: 'permissions:openSystemSettings',
+		/** What the OS allows for notifications and the microphone. Never prompts. */
+		status: 'permissions:status',
+		/** Shows one notification, which on macOS asks the user to allow them the first time. */
+		testNotification: 'permissions:testNotification',
+	},
 	profile: {
 		get: 'profile:get',
 		update: 'profile:update',

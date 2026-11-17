@@ -24,6 +24,7 @@ export const queryKeys = {
 	calendars: { all: ['calendars'] },
 	events: { all: ['events'], range: (range: DateRange) => ['events', range.start, range.end], search: (query: string) => ['events', 'search', query] },
 	google: { account: ['google', 'account'], calendars: ['google', 'calendars'], syncStatus: ['google', 'syncStatus'] },
+	permissions: { status: ['permissions', 'status'] },
 	profile: { all: ['profile'] },
 	settings: { all: ['settings'] },
 	updates: { status: ['updates', 'status'] },

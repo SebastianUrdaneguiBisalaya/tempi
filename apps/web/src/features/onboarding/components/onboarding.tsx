@@ -16,16 +16,18 @@ import { AvatarStep } from './avatar-step';
 import { LanguageStep } from './language-step';
 import { LocationStep } from './location-step';
 import { NameStep } from './name-step';
+import { RemindersStep } from './reminders-step';
 import { ThemeStep } from './theme-step';
 
 type OnboardingOutput = z.output<typeof onboardingInputSchema>;
 
-/** Steps in order, each with the fields it must validate before moving on. Only the avatar step is optional. */
+/** Steps in order, each with the fields it must validate before moving on. The avatar and reminders steps are optional. */
 const STEPS = [
 	{ fields: ['firstName', 'lastName'], name: 'name' },
 	{ fields: ['avatar'], name: 'avatar' },
 	{ fields: ['country', 'timeZone'], name: 'location' },
 	{ fields: ['theme'], name: 'theme' },
+	{ fields: ['notificationsEnabled'], name: 'reminders' },
 	{ fields: ['language'], name: 'language' },
 ] as const satisfies readonly { fields: readonly FieldPath<OnboardingInput>[]; name: string }[];
 
@@ -36,10 +38,19 @@ const isStepName = (value: string): value is StepName => STEPS.some(step => step
 const isFieldName = (value: string): value is FieldName => STEPS.some(step => step.fields.some(field => field === value));
 const stepOf = (field: FieldName): StepName => STEPS.find(step => step.fields.some(name => name === field))?.name ?? STEPS[0].name;
 
-/** Starts from the system time zone and its country, and the language and theme already in settings. */
+/** Starts from the system time zone and its country, and the language, theme and reminders already in settings. */
 const initialValues = (settings: Settings): OnboardingInput => {
 	const timeZone = systemTimeZone();
-	return { avatar: null, country: countryForTimeZone(timeZone) ?? '', firstName: '', language: settings.language, lastName: '', theme: settings.theme, timeZone };
+	return {
+		avatar: null,
+		country: countryForTimeZone(timeZone) ?? '',
+		firstName: '',
+		language: settings.language,
+		lastName: '',
+		notificationsEnabled: settings.notificationsEnabled,
+		theme: settings.theme,
+		timeZone,
+	};
 };
 
 const isTextEntry = (target: EventTarget) =>
@@ -92,6 +103,12 @@ export function Onboarding({ settings }: { settings: Settings }) {
 		else setStep(next.name);
 	};
 
+	// Skipping keeps the step's default: no photo, and reminders on (without the test notification, so nothing is asked).
+	const skip = () => {
+		if (step === 'avatar') form.setValue('avatar', null);
+		if (step === 'reminders') form.setValue('notificationsEnabled', true);
+	};
+
 	const onNavigate = (event: MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
 		void goNext();
@@ -134,10 +151,11 @@ export function Onboarding({ settings }: { settings: Settings }) {
 							<AvatarStep />
 							<LocationStep />
 							<ThemeStep />
+							<RemindersStep />
 							<LanguageStep />
 							<QuestionnaireActions>
 								<QuestionnairePrevious>{t('onboarding.actions.back')}</QuestionnairePrevious>
-								<QuestionnaireSkip onClick={() => form.setValue('avatar', null)}>{t('onboarding.actions.skip')}</QuestionnaireSkip>
+								<QuestionnaireSkip onClick={skip}>{t('onboarding.actions.skip')}</QuestionnaireSkip>
 								<QuestionnaireNext onClick={onNavigate}>{t('onboarding.actions.next')}</QuestionnaireNext>
 								<QuestionnaireSubmit disabled={completeOnboarding.isPending} onClick={onNavigate}>
 									{t('onboarding.actions.finish')}

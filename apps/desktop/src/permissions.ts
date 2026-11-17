@@ -9,6 +9,8 @@ const isAudioOnly = (mediaTypes: readonly string[] | undefined): boolean => medi
 
 export type PermissionPolicy = {
 	isTrusted: (url: string) => boolean;
+	/** The user's `microphoneEnabled` setting: while off, the app never uses the microphone nor asks the OS for it. */
+	microphoneEnabled: () => boolean;
 	/**
 	 * Whether the OS lets the app use the microphone, asking the user the first time (macOS). Resolves true where the OS
 	 * has no such prompt.
@@ -16,17 +18,22 @@ export type PermissionPolicy = {
 	microphoneAccess: () => Promise<boolean>;
 };
 
-/** For `session.setPermissionRequestHandler`: everything is denied except audio capture from the app's own origin. */
+/**
+ * For `session.setPermissionRequestHandler`: everything is denied except audio capture from the app's own origin, and
+ * that only while the user allows the microphone in Tempi.
+ */
 export const createPermissionRequestHandler =
-	({ isTrusted, microphoneAccess }: PermissionPolicy) =>
+	({ isTrusted, microphoneAccess, microphoneEnabled }: PermissionPolicy) =>
 	({ mediaTypes, permission, requestingUrl }: PermissionAsk): Promise<boolean> => {
-		if (permission !== 'media' || !isTrusted(requestingUrl) || !isAudioOnly(mediaTypes)) return Promise.resolve(false);
+		if (permission !== 'media' || !isTrusted(requestingUrl) || !isAudioOnly(mediaTypes) || !microphoneEnabled()) return Promise.resolve(false);
 		return microphoneAccess().catch(() => false);
 	};
 
 /** For `session.setPermissionCheckHandler`: the same rule, answered synchronously. */
-export const isPermissionCheckAllowed = ({ mediaType, permission, requestingOrigin }: PermissionCheck, isTrusted: (url: string) => boolean): boolean =>
-	permission === 'media' && mediaType === 'audio' && isTrusted(requestingOrigin);
+export const isPermissionCheckAllowed = (
+	{ mediaType, permission, requestingOrigin }: PermissionCheck,
+	{ isTrusted, microphoneEnabled }: Pick<PermissionPolicy, 'isTrusted' | 'microphoneEnabled'>
+): boolean => permission === 'media' && mediaType === 'audio' && isTrusted(requestingOrigin) && microphoneEnabled();
 
 /** The parts of Electron's `systemPreferences` the macOS microphone prompt needs. */
 export type MicrophonePreferences = {

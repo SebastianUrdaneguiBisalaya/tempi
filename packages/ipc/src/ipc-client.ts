@@ -92,6 +92,11 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 	onboarding: {
 		complete: input => call(CHANNELS.onboarding.complete, () => api.onboarding.complete(input)),
 	},
+	permissions: {
+		openSystemSettings: permission => call(CHANNELS.permissions.openSystemSettings, () => api.permissions.openSystemSettings(permission)),
+		status: () => call(CHANNELS.permissions.status, () => api.permissions.status()),
+		testNotification: () => call(CHANNELS.permissions.testNotification, () => api.permissions.testNotification()),
+	},
 	profile: {
 		get: () => call(CHANNELS.profile.get, () => api.profile.get()),
 		update: input => call(CHANNELS.profile.update, () => api.profile.update(input)),

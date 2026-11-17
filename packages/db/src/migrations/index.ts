@@ -7,6 +7,7 @@ import recurringEvents from './0003_recurring_events.sql' with { type: 'text' };
 import eventSearch from './0004_event_search.sql' with { type: 'text' };
 import icalUid from './0005_ical_uid.sql' with { type: 'text' };
 import googleSync from './0006_google_sync.sql' with { type: 'text' };
+import permissionPreferences from './0007_permission_preferences.sql' with { type: 'text' };
 
 export const MIGRATION_FILES: Record<string, string> = {
 	'0001_init.sql': init,
@@ -15,4 +16,5 @@ export const MIGRATION_FILES: Record<string, string> = {
 	'0004_event_search.sql': eventSearch,
 	'0005_ical_uid.sql': icalUid,
 	'0006_google_sync.sql': googleSync,
+	'0007_permission_preferences.sql': permissionPreferences,
 };

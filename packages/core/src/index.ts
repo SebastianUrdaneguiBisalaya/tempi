@@ -74,6 +74,8 @@ export type { WeekSegment } from './domain/month-layout';
 export { belongsInAllDayLane, fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './domain/month-layout';
 export type { OnboardingInput } from './domain/onboarding';
 export { onboardingInputSchema } from './domain/onboarding';
+export type { OsPermission, OsPermissionState, OsPermissionStatus, OsPermissionsStatus } from './domain/os-permission';
+export { OS_PERMISSION_STATES, OS_PERMISSIONS, osPermissionSchema, osPermissionsStatusSchema } from './domain/os-permission';
 export type { Recurrence, RecurrenceFrequency, RecurrencePreset, Weekday } from './domain/recurrence';
 export {
 	fromRrule,

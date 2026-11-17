@@ -10,6 +10,7 @@ import { profileInputSchema } from './user-profile';
 export const onboardingInputSchema = profileInputSchema.omit({ avatar: true }).extend({
 	avatar: avatarImageSchema.nullable(),
 	language: settingsValuesSchema.shape.language,
+	notificationsEnabled: settingsValuesSchema.shape.notificationsEnabled,
 	theme: settingsValuesSchema.shape.theme,
 });
 

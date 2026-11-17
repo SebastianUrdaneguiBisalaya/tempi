@@ -123,6 +123,11 @@ const desktop: DesktopApi = {
 	onboarding: {
 		complete: input => ipcRenderer.invoke(CHANNELS.onboarding.complete, input),
 	},
+	permissions: {
+		openSystemSettings: permission => ipcRenderer.invoke(CHANNELS.permissions.openSystemSettings, permission),
+		status: () => ipcRenderer.invoke(CHANNELS.permissions.status),
+		testNotification: () => ipcRenderer.invoke(CHANNELS.permissions.testNotification),
+	},
 	profile: {
 		get: () => ipcRenderer.invoke(CHANNELS.profile.get),
 		update: input => ipcRenderer.invoke(CHANNELS.profile.update, input),

@@ -11,7 +11,7 @@ const newEvent = { calendarId: 'cal-1', endAt: '2026-11-20T10:00:00-05:00', star
 
 const profile = { country: 'pe', firstName: 'Ada', lastName: 'Lovelace', timeZone: 'America/Lima' };
 
-const onboarding = { ...profile, avatar: { bytes: new Uint8Array([1, 2, 3]), type: 'image/webp' }, language: 'es', theme: 'dark' };
+const onboarding = { ...profile, avatar: { bytes: new Uint8Array([1, 2, 3]), type: 'image/webp' }, language: 'es', notificationsEnabled: true, theme: 'dark' };
 
 const fieldsOf = (result: ReturnType<typeof parseWith>) => (result.ok ? [] : result.error.issues.map(issue => issue.field ?? '').sort());
 
@@ -62,12 +62,18 @@ describe('payloadSchemas', () => {
 		['events:duplicate', 'evt-1'],
 		['onboarding:complete', onboarding],
 		['onboarding:complete', { ...onboarding, avatar: null }],
+		['onboarding:complete', { ...onboarding, notificationsEnabled: false }],
+		['permissions:openSystemSettings', 'microphone'],
+		['permissions:openSystemSettings', 'notifications'],
+		['permissions:status', undefined],
+		['permissions:testNotification', undefined],
 		['profile:get', undefined],
 		['profile:update', profile],
 		['profile:update', { ...profile, avatar: null }],
 		['profile:update', { ...profile, avatar: { bytes: new Uint8Array([1]), type: 'image/png' } }],
 		['settings:get', undefined],
 		['settings:save', { theme: 'dark' }],
+		['settings:save', { microphoneEnabled: false, notificationsEnabled: true }],
 	] as const)('%s accepts a valid payload', (channel, payload) => {
 		expect(parseWith(payloadSchemas[channel], payload).ok).toBe(true);
 	});
@@ -96,8 +102,13 @@ describe('payloadSchemas', () => {
 		['events:updateOccurrence', { originalStartAt: 'soon', scope: 'some', seriesId: 'evt-1', title: '' }, ['originalStartAt', 'scope', 'title']],
 		['events:deleteOccurrence', { originalStartAt: '2026-11-20T14:00:00Z', scope: 'this' }, ['seriesId']],
 		['onboarding:complete', { ...onboarding, avatar: { bytes: 'abc', type: 'image/gif' }, firstName: '', language: 'fr' }, ['avatar.bytes', 'avatar.type', 'firstName', 'language']],
+		['onboarding:complete', { ...onboarding, notificationsEnabled: 'yes' }, ['notificationsEnabled']],
+		['permissions:openSystemSettings', 'camera', ['']],
+		['permissions:openSystemSettings', 'x-apple.systempreferences:com.apple.preference.security', ['']],
+		['permissions:status', { kind: 'microphone' }, ['']],
 		['profile:update', { ...profile, avatar: '../../secrets.png', country: 'Peru' }, ['avatar', 'country']],
 		['settings:save', { defaultEventDuration: 0, theme: 'neon' }, ['defaultEventDuration', 'theme']],
+		['settings:save', { microphoneEnabled: 'off', notificationsEnabled: 1 }, ['microphoneEnabled', 'notificationsEnabled']],
 	] as const)('%s rejects an invalid payload, reporting every issue at form field paths', (channel, payload, fields) => {
 		const result = parseWith(payloadSchemas[channel], payload);
 		expect(result.ok).toBe(false);
@@ -199,5 +210,20 @@ describe('update answers', () => {
 
 	test('reject an unknown state', () => {
 		expect(status.safeParse({ ok: true, value: { ...available, state: 'installing' } }).success).toBe(false);
+	});
+});
+
+describe('permission answers', () => {
+	const status = resultSchema(responseValueSchemas['permissions:status']);
+	const value = { microphone: { canOpenSettings: true, state: 'denied' }, notifications: { canOpenSettings: true, state: 'unknown' } };
+
+	test('accept the state of each permission', () => {
+		expect(status.safeParse({ ok: true, value }).success).toBe(true);
+		expect(status.safeParse({ ok: true, value: { ...value, microphone: { canOpenSettings: false, state: 'unsupported' } } }).success).toBe(true);
+	});
+
+	test('reject an unknown state or a missing permission', () => {
+		expect(status.safeParse({ ok: true, value: { ...value, microphone: { canOpenSettings: true, state: 'restricted' } } }).success).toBe(false);
+		expect(status.safeParse({ ok: true, value: { microphone: value.microphone } }).success).toBe(false);
 	});
 });

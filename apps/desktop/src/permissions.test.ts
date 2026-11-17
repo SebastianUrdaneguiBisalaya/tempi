@@ -4,10 +4,11 @@ import { createPermissionRequestHandler, isPermissionCheckAllowed, microphoneAcc
 const APP = 'app://tempi';
 const isTrusted = (url: string) => url === APP || url.startsWith(`${APP}/`);
 
-const handler = (granted = true) => {
+const handler = (granted = true, enabled = true) => {
 	let asked = 0;
 	const request = createPermissionRequestHandler({
 		isTrusted,
+		microphoneEnabled: () => enabled,
 		microphoneAccess: () => {
 			asked++;
 			return Promise.resolve(granted);
@@ -40,17 +41,38 @@ describe('permission requests', () => {
 
 	test('deny audio when the OS refuses the microphone, or asking fails', async () => {
 		expect(await handler(false).request({ mediaTypes: ['audio'], permission: 'media', requestingUrl: `${APP}/` })).toBe(false);
-		const failing = createPermissionRequestHandler({ isTrusted, microphoneAccess: () => Promise.reject(new Error('no prompt')) });
+		const failing = createPermissionRequestHandler({ isTrusted, microphoneAccess: () => Promise.reject(new Error('no prompt')), microphoneEnabled: () => true });
 		expect(await failing({ mediaTypes: ['audio'], permission: 'media', requestingUrl: `${APP}/` })).toBe(false);
+	});
+
+	test('deny audio while the microphone is off in Tempi, without asking the OS', async () => {
+		const { asked, request } = handler(true, false);
+		expect(await request({ mediaTypes: ['audio'], permission: 'media', requestingUrl: `${APP}/` })).toBe(false);
+		expect(asked()).toBe(0);
+	});
+
+	test('follow the setting as it changes', async () => {
+		let enabled = false;
+		const request = createPermissionRequestHandler({ isTrusted, microphoneAccess: () => Promise.resolve(true), microphoneEnabled: () => enabled });
+		const ask = { mediaTypes: ['audio'], permission: 'media', requestingUrl: `${APP}/` };
+		expect(await request(ask)).toBe(false);
+		enabled = true;
+		expect(await request(ask)).toBe(true);
 	});
 });
 
 describe('permission checks', () => {
+	const on = { isTrusted, microphoneEnabled: () => true };
+
 	test('allow only audio for the app’s origin', () => {
-		expect(isPermissionCheckAllowed({ mediaType: 'audio', permission: 'media', requestingOrigin: APP }, isTrusted)).toBe(true);
-		expect(isPermissionCheckAllowed({ mediaType: 'video', permission: 'media', requestingOrigin: APP }, isTrusted)).toBe(false);
-		expect(isPermissionCheckAllowed({ mediaType: 'audio', permission: 'media', requestingOrigin: 'https://evil.example' }, isTrusted)).toBe(false);
-		expect(isPermissionCheckAllowed({ permission: 'notifications', requestingOrigin: APP }, isTrusted)).toBe(false);
+		expect(isPermissionCheckAllowed({ mediaType: 'audio', permission: 'media', requestingOrigin: APP }, on)).toBe(true);
+		expect(isPermissionCheckAllowed({ mediaType: 'video', permission: 'media', requestingOrigin: APP }, on)).toBe(false);
+		expect(isPermissionCheckAllowed({ mediaType: 'audio', permission: 'media', requestingOrigin: 'https://evil.example' }, on)).toBe(false);
+		expect(isPermissionCheckAllowed({ permission: 'notifications', requestingOrigin: APP }, on)).toBe(false);
+	});
+
+	test('deny audio while the microphone is off in Tempi', () => {
+		expect(isPermissionCheckAllowed({ mediaType: 'audio', permission: 'media', requestingOrigin: APP }, { isTrusted, microphoneEnabled: () => false })).toBe(false);
 	});
 });
 

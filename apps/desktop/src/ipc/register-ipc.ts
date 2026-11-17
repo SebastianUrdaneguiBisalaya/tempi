@@ -10,6 +10,7 @@ import { type GoogleIo, registerGoogleHandlers } from './google';
 import type { HandlerContext } from './handle';
 import { type IcalIo, registerIcalHandlers } from './ical';
 import { registerOnboardingHandlers } from './onboarding';
+import { type PermissionsIo, registerPermissionHandlers } from './permissions';
 import { registerProfileHandlers } from './profile';
 import { registerSettingsHandlers } from './settings';
 import { registerUpdateHandlers } from './updates';
@@ -19,6 +20,7 @@ export type { DataIo } from './data';
 export type { GoogleIo } from './google';
 export type { HandlerContext, IpcRegistrar, IpcSender } from './handle';
 export type { IcalIo } from './ical';
+export type { PermissionsIo } from './permissions';
 
 /** Main-process reactions to committed changes made from the renderer. */
 export type IpcListeners = {
@@ -30,8 +32,8 @@ export type IpcListeners = {
 	showEvent?: (ref: OccurrenceRef) => void;
 };
 
-/** The app's work outside the database behind some channels, injected so tests can stand in for dialogs, files, AI providers, Google and updates. */
-export type AppIo = { ai: AiIo; data: DataIo; google: GoogleIo; ical: IcalIo; updates: UpdateService };
+/** The app's work outside the database behind some channels, injected so tests can stand in for dialogs, files, AI providers, Google, OS permissions and updates. */
+export type AppIo = { ai: AiIo; data: DataIo; google: GoogleIo; ical: IcalIo; permissions: PermissionsIo; updates: UpdateService };
 
 /** Registers every channel of the `@tempi/ipc` contract, each running its core use case against `deps`. */
 
@@ -44,6 +46,7 @@ export const registerIpc = (context: HandlerContext, deps: CoreDeps, io: AppIo, 
 	registerDataHandlers(context, io.data);
 	registerGoogleHandlers(context, deps, io.google, listeners.eventsChanged);
 	registerOnboardingHandlers(context, deps, listeners.settingsSaved);
+	registerPermissionHandlers(context, io.permissions);
 	registerProfileHandlers(context, deps);
 	registerSettingsHandlers(context, deps, listeners.settingsSaved);
 	registerUpdateHandlers(context, io.updates);

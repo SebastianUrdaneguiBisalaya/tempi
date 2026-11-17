@@ -14,9 +14,10 @@ import { AppearanceSettings } from './appearance-settings';
 import { CalendarSettings } from './calendar-settings';
 import { DataSettings } from './data-settings';
 import { IntegrationsSettings } from './integrations-settings';
+import { PermissionsSettings } from './permissions-settings';
 import { ProfileSettings } from './profile-settings';
 
-const TABS = ['profile', 'appearance', 'calendar', 'integrations', 'shortcuts', 'data', 'about'] as const;
+const TABS = ['profile', 'appearance', 'calendar', 'permissions', 'integrations', 'shortcuts', 'data', 'about'] as const;
 
 export type SettingsTab = (typeof TABS)[number];
 
@@ -65,6 +66,9 @@ export function SettingsDialog({ initialTab, onOpenChange, open }: SettingsDialo
 								</TabsContent>
 								<TabsContent value='calendar'>
 									<CalendarSettings settings={settings} />
+								</TabsContent>
+								<TabsContent value='permissions'>
+									<PermissionsSettings settings={settings} />
 								</TabsContent>
 								<TabsContent value='integrations'>
 									<IntegrationsSettings />

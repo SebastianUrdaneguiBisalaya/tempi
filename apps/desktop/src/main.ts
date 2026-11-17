@@ -16,6 +16,7 @@ import {
 	globalShortcut,
 	ipcMain,
 	MessageChannelMain,
+	Notification,
 	nativeImage,
 	nativeTheme,
 	net,
@@ -43,11 +44,12 @@ import { oauthClientFrom } from './google/oauth.js';
 import { createSyncRunner, type SyncRunner } from './google/sync-runner.js';
 import { type Cipher, createTokenStore } from './google/token-store.js';
 import { createIcalWorker } from './ical-worker-client.js';
-import { type AiIo, type DataIo, type IcalIo, type IpcSender, registerIpc } from './ipc/register-ipc.js';
+import { type AiIo, type DataIo, type IcalIo, type IpcSender, type PermissionsIo, registerIpc } from './ipc/register-ipc.js';
 import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
+import { osPermissionsStatus, systemSettingsUrl } from './os-permissions.js';
 import { createPermissionRequestHandler, isPermissionCheckAllowed, microphoneAccess } from './permissions.js';
 import { fileReminderCheckpoint } from './reminder-checkpoint.js';
-import { createReminderNotifier } from './reminder-notifier.js';
+import { createReminderNotifier, type NotificationApi } from './reminder-notifier.js';
 import { createReminderScheduler, type ReminderScheduler } from './reminder-scheduler.js';
 import { fetchLatestRelease } from './updates/latest-release.js';
 import { createUpdateService, type Downloader, type UpdateService, type UpdateStrategy } from './updates/update-service.js';
@@ -87,6 +89,8 @@ let googleSync: SyncRunner | null = null;
 let appUpdates: UpdateService | null = null;
 // The stored language, for text the main process shows itself (the browser page after Google sign-in).
 let language: Language = 'en';
+// The stored permission preferences, read synchronously by the permission check handler and each reminder.
+let preferences: Pick<Settings, 'microphoneEnabled' | 'notificationsEnabled'> = { microphoneEnabled: true, notificationsEnabled: true };
 
 function isTrustedUrl(url: string) {
 	return url === WEB_URL || url.startsWith(`${WEB_URL}/`);
@@ -101,8 +105,9 @@ function loadWebApp() {
 }
 
 // The renderer's `prefers-color-scheme`, native menus and dialogs all follow `themeSource`.
-function applySettings(settings: Pick<Settings, 'language' | 'menuBarEnabled' | 'theme'>) {
+function applySettings(settings: Settings) {
 	language = settings.language;
+	preferences = { microphoneEnabled: settings.microphoneEnabled, notificationsEnabled: settings.notificationsEnabled };
 	nativeTheme.themeSource = settings.theme;
 	menuBar.setEnabled(settings.menuBarEnabled, settings.language);
 }
@@ -250,6 +255,11 @@ function showInMainWindow(ref: OccurrenceRef) {
 	else send();
 }
 
+const electronNotifications: NotificationApi = {
+	create: options => new Notification(options),
+	isSupported: () => Notification.isSupported(),
+};
+
 function startReminders(deps: CoreDeps, transaction: TransactionQueue) {
 	const notify = createReminderNotifier({
 		display: async () => {
@@ -259,13 +269,15 @@ function startReminders(deps: CoreDeps, transaction: TransactionQueue) {
 			// Like the calendar: the profile's zone, or the system's before onboarding.
 			return { language: settings.language, timeFormat: settings.timeFormat, timeZone: profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone };
 		},
+		enabled: () => preferences.notificationsEnabled,
 		icon: process.platform === 'darwin' ? undefined : ICON_PNG,
+		notifications: electronNotifications,
 		onClick: ({ occurrence }) => showInMainWindow({ key: occurrence.key, startAt: occurrence.startAt }),
 	});
 	const scheduler = createReminderScheduler({
 		checkpoint: fileReminderCheckpoint(path.join(app.getPath('userData'), 'reminders.json')),
 		listReminders: range => transaction(() => listReminders(deps, range)),
-		notify,
+		notify: reminder => void notify(reminder),
 		now: () => new Date(),
 		setTimer: (callback, ms) => {
 			const timer = setTimeout(callback, ms);
@@ -434,15 +446,37 @@ function aiIo(deps: CoreDeps, transaction: TransactionQueue): AiIo {
 	};
 }
 
-// Deny every permission by default; only dictation's microphone, for the app itself, is allowed (asking macOS first).
+// The OS side of the permissions settings. The privacy pages are fixed per platform; the renderer only names a permission.
+function permissionsIo(): PermissionsIo {
+	return {
+		openSystemSettings: async permission => {
+			const url = systemSettingsUrl(process.platform, permission);
+			if (url === null) return false;
+			await shell.openExternal(url);
+			return true;
+		},
+		status: () => osPermissionsStatus(process.platform, systemPreferences, Notification.isSupported()),
+		// The first notification is what makes macOS ask whether Tempi may show them.
+		testNotification: () => {
+			if (!Notification.isSupported()) return false;
+			const texts = resources[language].common.onboarding.reminders;
+			new Notification({ body: texts.testBody, title: texts.testTitle, ...(process.platform === 'darwin' ? {} : { icon: ICON_PNG }) }).show();
+			return true;
+		},
+	};
+}
+
+// Deny every permission by default; only dictation's microphone, for the app itself and while the user allows it in
+// Tempi, is allowed (asking macOS first).
 function restrictPermissions() {
-	const request = createPermissionRequestHandler({ isTrusted: isTrustedUrl, microphoneAccess: microphoneAccess(process.platform, systemPreferences) });
+	const microphoneEnabled = () => preferences.microphoneEnabled;
+	const request = createPermissionRequestHandler({ isTrusted: isTrustedUrl, microphoneAccess: microphoneAccess(process.platform, systemPreferences), microphoneEnabled });
 	session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback, details) => {
 		const mediaTypes = 'mediaTypes' in details ? details.mediaTypes : undefined;
 		void request({ mediaTypes, permission, requestingUrl: details.requestingUrl }).then(callback);
 	});
 	session.defaultSession.setPermissionCheckHandler((_webContents, permission, requestingOrigin, details) =>
-		isPermissionCheckAllowed({ mediaType: details.mediaType, permission, requestingOrigin }, isTrustedUrl)
+		isPermissionCheckAllowed({ mediaType: details.mediaType, permission, requestingOrigin }, { isTrusted: isTrustedUrl, microphoneEnabled })
 	);
 }
 
@@ -562,7 +596,7 @@ if (!gotLock) {
 		registerIpc(
 			{ ipc: ipcMain, isTrusted: isTrustedUrl, transaction },
 			deps,
-			{ ai: aiIo(deps, transaction), data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo(), updates },
+			{ ai: aiIo(deps, transaction), data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo(), permissions: permissionsIo(), updates },
 			{
 				eventsChanged: () => {
 					void reminders?.reschedule();
