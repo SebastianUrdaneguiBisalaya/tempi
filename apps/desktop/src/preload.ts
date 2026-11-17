@@ -66,6 +66,7 @@ const desktop: DesktopApi = {
 		saveSettings: patch => ipcRenderer.invoke(CHANNELS.ai.saveSettings, patch),
 		stopChat,
 		testKey: provider => ipcRenderer.invoke(CHANNELS.ai.testKey, provider),
+		transcribe: input => ipcRenderer.invoke(CHANNELS.ai.transcribe, input),
 	},
 	app: {
 		onShowEvent: listener => {

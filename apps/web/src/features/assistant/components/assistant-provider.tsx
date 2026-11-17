@@ -1,22 +1,56 @@
 'use client';
 
-import type { TextProvider } from '@tempi/core';
-import { createContext, type ReactNode, use, useState, useSyncExternalStore } from 'react';
+import { resolveLanguage, type TextProvider } from '@tempi/core';
+import { createContext, type ReactNode, use, useEffect, useEffectEvent, useState, useSyncExternalStore } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { useApi } from '@/providers/api-provider';
 import { type AssistantState, type AssistantStore, type AssistantTab, createAssistantStore, type ProposalStatus } from '../assistant-store';
+import { createDictationStore, type DictationAudio, type DictationStore } from '../dictation-store';
+import { useTranscribe } from '../hooks/use-transcribe';
 
-type AssistantContextValue = { open: boolean; setOpen: (open: boolean) => void; store: AssistantStore };
+type AssistantContextValue = { dictation: DictationStore; open: boolean; setOpen: (open: boolean) => void; store: AssistantStore };
 
 const AssistantContext = createContext<AssistantContextValue | null>(null);
 
 /** Owns the assistant for the session: its conversation and whether the panel is open. ⌘J toggles it. */
 export function AssistantProvider({ children }: { children: ReactNode }) {
+	const { i18n } = useTranslation();
 	const [store] = useState(createAssistantStore);
+	const [dictation] = useState(createDictationStore);
 	const [open, setOpen] = useState(false);
+	const transcribe = useTranscribe();
 	useShortcut('toggleAssistant', () => setOpen(current => !current));
-	return <AssistantContext value={{ open, setOpen, store }}>{children}</AssistantContext>;
+
+	// Each finished recording is transcribed here, above the panel, so it lands in the prompt even if the panel collapsed.
+	const onAudio = useEffectEvent(({ audio, mimeType }: DictationAudio) => {
+		// The app's language hints the transcription; ElevenLabs still recognizes another one if spoken.
+		const language = resolveLanguage([i18n.language]);
+		transcribe.mutate({ audio, language, mimeType }, { onSettled: dictation.finishTranscribing, onSuccess: store.appendDraft });
+	});
+	// Connects the recorder (an external store) to this tree; leaving the app view drops any recording in progress.
+	useEffect(() => {
+		dictation.setAudioHandler(audio => onAudio(audio));
+		return () => {
+			dictation.setAudioHandler(null);
+			dictation.cancel();
+		};
+	}, [dictation]);
+
+	return <AssistantContext value={{ dictation, open, setOpen, store }}>{children}</AssistantContext>;
 }
+
+/** The recorder's state and its live levels, read separately so only the waveform redraws with the microphone. */
+export const useDictation = () => {
+	const { dictation } = useAssistantContext();
+	const state = useSyncExternalStore(dictation.subscribe, dictation.getState, dictation.getState);
+	return { ...state, start: dictation.start, stop: dictation.stop };
+};
+
+export const useDictationMeter = () => {
+	const { dictation } = useAssistantContext();
+	return useSyncExternalStore(dictation.subscribeMeter, dictation.getMeter, dictation.getMeter);
+};
 
 const useAssistantContext = (): AssistantContextValue => {
 	const context = use(AssistantContext);

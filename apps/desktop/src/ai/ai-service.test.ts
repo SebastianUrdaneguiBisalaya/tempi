@@ -19,14 +19,19 @@ const none = { anthropic: false, elevenlabs: false, google: false, groq: false, 
 /** Providers that accept only `good-key`, recording every key test. */
 const fakeProviders = () => {
 	const tested: [AiProvider, string][] = [];
+	const transcribed: unknown[] = [];
 	const providers: AiProviders = {
 		listVoices: key => Promise.resolve(key === 'good-key' ? ok([{ id: 'v1', name: 'Ada' }]) : fail('validation', 'ai.invalidKey')),
 		testKey: (provider, key) => {
 			tested.push([provider, key]);
 			return Promise.resolve(key === 'good-key' ? ok(null) : fail('validation', 'ai.invalidKey', { field: 'key' }));
 		},
+		transcribe: (key, request) => {
+			transcribed.push({ key, ...request });
+			return Promise.resolve(ok('crea una reunión con Ana el viernes a las 10'));
+		},
 	};
-	return { providers, tested };
+	return { providers, tested, transcribed };
 };
 
 let dir: string;
@@ -44,7 +49,7 @@ const service = (options: { available?: boolean } = {}) => {
 		providers: fake.providers,
 		settings: createAiSettingsStore(path.join(dir, 'ai-settings.json')),
 	});
-	return { ai, tested: fake.tested };
+	return { ai, tested: fake.tested, transcribed: fake.transcribed };
 };
 
 const keyOf = (result: { ok: boolean; error?: { issues: { key: string }[] } }) => (result.ok ? null : result.error?.issues[0]?.key);
@@ -100,5 +105,23 @@ describe('AI service', () => {
 		const settings = await service().ai.getSettings();
 		expect(settings.models.anthropic).toBe('claude-haiku-5-5');
 		expect(settings.elevenlabs.voices).toEqual({ en: 'voice-en', es: 'voice-es' });
+	});
+});
+
+describe('dictation', () => {
+	const audio = new Uint8Array([26, 69, 223, 163]);
+
+	test('needs an ElevenLabs key, and sends nothing without one', async () => {
+		const { ai, transcribed } = service();
+		expect(keyOf(await ai.transcribe({ audio, language: 'es', mimeType: 'audio/webm' }))).toBe('ai.invalidKey');
+		expect(transcribed).toEqual([]);
+	});
+
+	test('transcribes with the saved key, the speech-to-text model from Settings and the app language', async () => {
+		const { ai, transcribed } = service();
+		await ai.saveKey({ key: 'good-key', provider: 'elevenlabs' });
+		await ai.saveSettings({ elevenlabs: { sttModel: 'scribe_v2_turbo' } });
+		expect(await ai.transcribe({ audio, language: 'es', mimeType: 'audio/webm' })).toEqual({ ok: true, value: { text: 'crea una reunión con Ana el viernes a las 10' } });
+		expect(transcribed).toEqual([{ audio, key: 'good-key', language: 'es', mimeType: 'audio/webm', model: 'scribe_v2_turbo' }]);
 	});
 });

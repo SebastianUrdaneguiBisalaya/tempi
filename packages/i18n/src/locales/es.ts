@@ -4,6 +4,13 @@ import type { en } from './en';
 export const es = {
 	common: {
 		assistant: {
+			dictation: {
+				recording: 'Grabando',
+				start: 'Dictar',
+				stop: 'Detener y transcribir',
+				transcribing: 'Transcribiendo…',
+				unavailable: 'Agrega una clave de ElevenLabs en Ajustes › Integraciones para dictar',
+			},
 			empty: {
 				action: 'Abrir Integraciones',
 				description: 'Agrega una clave de API de OpenAI, Anthropic, Google, xAI o Groq en Ajustes › Integraciones para conversar con tu calendario.',
@@ -527,9 +534,13 @@ export const es = {
 		ai: {
 			encryptionUnavailable: 'Tu sistema no puede guardar claves de API de forma segura, así que Tempi no la guardará.',
 			invalidKey: 'El proveedor rechazó esta clave de API. Revísala e inténtalo de nuevo.',
+			microphoneDenied:
+				'Tempi no puede usar el micrófono. Permítelo para Tempi en los ajustes de privacidad de tu sistema (en macOS: Ajustes del Sistema › Privacidad y seguridad › Micrófono) e inténtalo de nuevo.',
 			network: 'No se puede conectar con el proveedor. Revisa tu conexión e inténtalo de nuevo.',
 			providerError: 'El proveedor devolvió un error. Inténtalo más tarde.',
 			rateLimited: 'El proveedor está limitando las solicitudes de esta clave o se agotó su cuota. Inténtalo más tarde.',
+			recordingTooLong: 'La grabación es demasiado larga. Los dictados pueden durar hasta un minuto.',
+			transcriptionFailed: 'No se pudo entender la grabación. Inténtalo de nuevo hablando un poco más cerca del micrófono.',
 		},
 		avatar: {
 			fileName: 'No se encuentra esta foto.',

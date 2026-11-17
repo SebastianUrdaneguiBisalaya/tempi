@@ -1,4 +1,17 @@
-import { type AiKeyInput, type AiProvider, type AiSettings, type AiVoice, aiSettingsPatchSchema, applyAiSettingsPatch, fail, ok, type Result } from '@tempi/core';
+import type { TranscriptionRequest } from '@tempi/ai';
+import {
+	type AiKeyInput,
+	type AiProvider,
+	type AiSettings,
+	type AiVoice,
+	aiSettingsPatchSchema,
+	applyAiSettingsPatch,
+	fail,
+	ok,
+	type Result,
+	type Transcription,
+	type transcriptionInputSchema,
+} from '@tempi/core';
 import type { z } from 'zod';
 import type { AiKeyStore } from './key-store';
 import type { AiSettingsStore } from './settings-store';
@@ -7,6 +20,7 @@ import type { AiSettingsStore } from './settings-store';
 export type AiProviders = {
 	testKey: (provider: AiProvider, key: string) => Promise<Result<null>>;
 	listVoices: (key: string) => Promise<Result<AiVoice[]>>;
+	transcribe: (key: string, request: TranscriptionRequest) => Promise<Result<string>>;
 };
 
 export type AiServiceDeps = { keys: AiKeyStore; settings: AiSettingsStore; providers: AiProviders };
@@ -22,6 +36,8 @@ export type AiService = {
 	testKey: (provider: AiProvider) => Promise<Result<null>>;
 	/** The voices of the saved ElevenLabs key's account. */
 	listVoices: () => Promise<Result<AiVoice[]>>;
+	/** Transcribes a dictation with the saved ElevenLabs key and the speech-to-text model from Settings. Nothing is stored. */
+	transcribe: (input: z.output<typeof transcriptionInputSchema>) => Promise<Result<Transcription>>;
 };
 
 const noKey = (provider: AiProvider) => fail<never>('not_found', 'ai.invalidKey', { detail: `No key is saved for ${provider}` });
@@ -50,6 +66,13 @@ export const createAiService = ({ keys, providers, settings }: AiServiceDeps): A
 		saveSettings: async patch => {
 			await settings.write(applyAiSettingsPatch(await settings.read(), patch));
 			return ok(await view());
+		},
+		transcribe: async ({ audio, language, mimeType }) => {
+			const key = await keys.get('elevenlabs');
+			if (key === null) return noKey('elevenlabs');
+			const { elevenlabs } = await settings.read();
+			const text = await providers.transcribe(key, { audio, language, mimeType, model: elevenlabs.sttModel });
+			return text.ok ? ok({ text: text.value }) : text;
 		},
 		testKey: async provider => {
 			const key = await keys.get(provider);

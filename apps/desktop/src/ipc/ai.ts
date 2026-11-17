@@ -20,6 +20,7 @@ export const registerAiHandlers = (context: HandlerContext, { chat, openStream, 
 	handleRequest(context, CHANNELS.ai.removeKey, provider => ai.removeKey(provider));
 	handleRequest(context, CHANNELS.ai.testKey, provider => ai.testKey(provider));
 	handleRequest(context, CHANNELS.ai.listVoices, () => ai.listVoices());
+	handleRequest(context, CHANNELS.ai.transcribe, input => ai.transcribe(input));
 	// The answer only says the reply started; its events stream on a MessagePort (see AGENTS.md › IPC).
 	handleRequest(context, CHANNELS.ai.chat, (input, sender) => chat(input, () => openStream(sender, input.requestId)));
 };

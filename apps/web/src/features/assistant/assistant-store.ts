@@ -127,6 +127,11 @@ export const createAssistantStore = () => {
 			};
 		},
 		setDraft: (draft: string) => set({ ...state, draft }),
+		/** Adds dictated text after whatever the prompt already holds, for the user to review before sending. */
+		appendDraft: (text: string) => {
+			const current = state.draft.trimEnd();
+			set({ ...state, draft: current === '' ? text : `${current} ${text}` });
+		},
 		setProvider: (provider: TextProvider) => set({ ...state, provider }),
 		setTab: (tab: AssistantTab) => set({ ...state, tab }),
 		setProposalStatus: (turnId: string, proposalId: string, status: ProposalStatus) =>

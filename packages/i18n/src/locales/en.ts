@@ -2,6 +2,13 @@
 export const en = {
 	common: {
 		assistant: {
+			dictation: {
+				recording: 'Recording',
+				start: 'Dictate',
+				stop: 'Stop and transcribe',
+				transcribing: 'Transcribing…',
+				unavailable: 'Add an ElevenLabs key in Settings › Integrations to dictate',
+			},
 			empty: {
 				action: 'Open Integrations',
 				description: 'Add an API key for OpenAI, Anthropic, Google, xAI or Groq in Settings › Integrations to chat with your calendar.',
@@ -526,9 +533,12 @@ export const en = {
 		ai: {
 			encryptionUnavailable: 'Your system can’t store API keys securely, so Tempi won’t save it.',
 			invalidKey: 'The provider rejected this API key. Check it and try again.',
+			microphoneDenied: 'Tempi can’t use the microphone. Allow it for Tempi in your system’s privacy settings (on macOS: System Settings › Privacy & Security › Microphone), then try again.',
 			network: 'The provider can’t be reached. Check your connection and try again.',
 			providerError: 'The provider returned an error. Try again later.',
 			rateLimited: 'The provider is limiting requests for this key, or its quota is used up. Try again later.',
+			recordingTooLong: 'The recording is too long. Dictations can last up to a minute.',
+			transcriptionFailed: 'Couldn’t understand the recording. Try again, speaking a bit closer to the microphone.',
 		},
 		avatar: {
 			fileName: 'This photo can’t be found.',

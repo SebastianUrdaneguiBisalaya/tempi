@@ -193,7 +193,7 @@ apps/www/src/
 
 - Keep `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false` and `webSecurity: true`. Never relax them.
 - Load only `app://tempi` (packaged) or the dev server. Send every other URL to `shell.openExternal` through `setWindowOpenHandler` and `will-navigate`.
-- Deny permission requests by default (`session.setPermissionRequestHandler`).
+- Deny permission requests and checks by default (`session.setPermissionRequestHandler`, `setPermissionCheckHandler`). The only exception is audio-only `media` from the trusted origin, for dictation (`permissions.ts`); on macOS it also asks the OS (`systemPreferences.askForMediaAccess`).
 - Set a strict Content-Security-Policy. Never load remote scripts, and never use `eval` or `new Function`.
 - Never weaken the `app://` protocol handler's path-traversal guard.
 - Enable Electron Fuses in release builds: disable `RunAsNode` and `EnableNodeOptionsEnvironmentVariable`, and enable `OnlyLoadAppFromAsar`.

@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { listVoices, runAssistant, testKey, textModel } from '@tempi/ai';
+import { listVoices, runAssistant, testKey, textModel, transcribe } from '@tempi/ai';
 import { type CoreDeps, getProfile, getSettings, initializeSettings, type Language, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
 import { resources } from '@tempi/i18n';
@@ -22,7 +22,9 @@ import {
 	powerMonitor,
 	protocol,
 	safeStorage,
+	session,
 	shell,
+	systemPreferences,
 } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { createAiService } from './ai/ai-service.js';
@@ -42,6 +44,7 @@ import { type Cipher, createTokenStore } from './google/token-store.js';
 import { createIcalWorker } from './ical-worker-client.js';
 import { type AiIo, type DataIo, type IcalIo, type IpcSender, registerIpc } from './ipc/register-ipc.js';
 import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
+import { createPermissionRequestHandler, isPermissionCheckAllowed, microphoneAccess } from './permissions.js';
 import { fileReminderCheckpoint } from './reminder-checkpoint.js';
 import { createReminderNotifier } from './reminder-notifier.js';
 import { createReminderScheduler, type ReminderScheduler } from './reminder-scheduler.js';
@@ -397,8 +400,24 @@ function aiIo(deps: CoreDeps, transaction: TransactionQueue): AiIo {
 			settings,
 		}),
 		openStream: openAssistantStream,
-		service: createAiService({ keys, providers: { listVoices: key => listVoices(key), testKey: (provider, key) => testKey(provider, key) }, settings }),
+		service: createAiService({
+			keys,
+			providers: { listVoices: key => listVoices(key), testKey: (provider, key) => testKey(provider, key), transcribe: (key, request) => transcribe(key, request) },
+			settings,
+		}),
 	};
+}
+
+// Deny every permission by default; only dictation's microphone, for the app itself, is allowed (asking macOS first).
+function restrictPermissions() {
+	const request = createPermissionRequestHandler({ isTrusted: isTrustedUrl, microphoneAccess: microphoneAccess(process.platform, systemPreferences) });
+	session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback, details) => {
+		const mediaTypes = 'mediaTypes' in details ? details.mediaTypes : undefined;
+		void request({ mediaTypes, permission, requestingUrl: details.requestingUrl }).then(callback);
+	});
+	session.defaultSession.setPermissionCheckHandler((_webContents, permission, requestingOrigin, details) =>
+		isPermissionCheckAllowed({ mediaType: details.mediaType, permission, requestingOrigin }, isTrustedUrl)
+	);
 }
 
 // One MessagePort per reply: the renderer reads events from its end, and closing it aborts the reply here.
@@ -502,6 +521,7 @@ if (!gotLock) {
 			if (!dockIcon.isEmpty()) app.dock?.setIcon(dockIcon);
 		}
 		if (app.isPackaged) handleAppProtocol(WEB_DIR);
+		restrictPermissions();
 		const avatarsDir = path.join(app.getPath('userData'), 'avatars');
 		handleAvatarProtocol(avatarsDir);
 		database = openAppDatabase();
