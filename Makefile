@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install dev-web dev-www dev-desktop build build-desktop dist-mac dist-win dist-linux test typecheck lint format check clean
+.PHONY: help install dev-web dev-www dev-desktop reset-desktop build build-desktop dist-mac dist-win dist-linux test typecheck lint format check clean
 
 help: ## List available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -15,6 +15,9 @@ dev-www: ## Run the landing page (Next dev server, :3001)
 
 dev-desktop: ## Run Electron against the web dev server (start dev-web first)
 	bun run dev:desktop
+
+reset-desktop: ## Delete the dev database to redo the onboarding (close the app first)
+	bun run reset:desktop
 
 build: ## Build every app
 	bun run build
