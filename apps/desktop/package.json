@@ -21,6 +21,7 @@
     "dist:linux": "bun run build && bun run build:csp && electron-builder --linux --publish never",
     "dist:mac": "bun run build && bun run build:csp && electron-builder --mac --publish never",
     "dist:win": "bun run build && bun run build:csp && electron-builder --win --publish never",
+    "reset:dev": "bun scripts/reset-dev-data.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "verify:fuses": "bun scripts/verify-fuses.ts"

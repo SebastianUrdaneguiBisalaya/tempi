@@ -43,6 +43,7 @@
     "format": "biome format --write .",
     "lint": "biome check .",
     "prepare": "husky",
+    "reset:desktop": "bun run --filter @tempi/desktop reset:dev",
     "test": "bun test --pass-with-no-tests",
     "typecheck": "bun run --filter '@tempi/*' typecheck"
   },
