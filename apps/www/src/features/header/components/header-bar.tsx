@@ -15,7 +15,7 @@ import { LanguageSwitcher } from './language-switcher';
 export type HeaderCopy = {
 	home: string;
 	navLabel: string;
-	nav: Record<keyof typeof SECTION_IDS, string>;
+	nav: Record<(typeof NAV_ORDER)[number], string>;
 	github: string;
 	language: string;
 	openMenu: string;

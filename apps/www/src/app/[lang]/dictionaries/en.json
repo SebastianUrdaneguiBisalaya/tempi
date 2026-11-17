@@ -15,5 +15,13 @@
     "language": "Change language",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
+  },
+  "hero": {
+    "title": "A local-first desktop calendar for macOS, Windows and Linux.",
+    "subtitle": "No account, no cloud, no tracking: your calendars live in a database on your own computer, and Tempi works the same with or without a connection.",
+    "download": "Download",
+    "downloadForPlatform": "Download for {os}",
+    "learnMore": "Learn more",
+    "imageAlt": "Two people working on laptops on a beach at sunset"
   }
 }
