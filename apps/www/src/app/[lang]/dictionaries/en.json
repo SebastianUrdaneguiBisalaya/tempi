@@ -218,5 +218,10 @@
   "footer": {
     "license": "ISC License",
     "madeBy": "Made by"
+  },
+  "notFound": {
+    "title": "This page took the day off.",
+    "body": "The address may be mistyped, or the page may have moved. Your calendar is still where you left it.",
+    "back": "Back to home"
   }
 }

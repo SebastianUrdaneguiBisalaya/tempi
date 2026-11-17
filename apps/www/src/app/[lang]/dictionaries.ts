@@ -17,6 +17,9 @@ export async function getLocale(): Promise<Locale> {
 	return locale;
 }
 
+/** For metadata routes (Open Graph images), where root params aren't available and the locale comes from `params`. */
+export const loadDictionary = (locale: Locale): Promise<Dictionary> => dictionaries[locale]();
+
 export async function getDictionary(): Promise<Dictionary> {
-	return dictionaries[await getLocale()]();
+	return loadDictionary(await getLocale());
 }

@@ -218,5 +218,10 @@
   "footer": {
     "license": "Licencia ISC",
     "madeBy": "Hecho por"
+  },
+  "notFound": {
+    "title": "Esta página se tomó el día libre.",
+    "body": "Puede que la dirección esté mal escrita o que la página se haya movido. Tu calendario sigue donde lo dejaste.",
+    "back": "Volver al inicio"
   }
 }
