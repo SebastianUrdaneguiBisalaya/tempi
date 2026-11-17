@@ -125,5 +125,46 @@
         "body": "New versions install in the background on Windows and Linux; macOS tells you when one is out."
       }
     }
+  },
+  "keyboard": {
+    "eyebrow": "Keyboard first",
+    "title": "Your hands never leave the keyboard.",
+    "subtitle": "Open the command menu to run any action, or move through your weeks with single-key shortcuts. Press ? in Tempi to see them all.",
+    "query": "week",
+    "commandMenu": {
+      "label": "Animated demo: the command menu filters its commands as a word is typed",
+      "placeholder": "Type a command or search…",
+      "groups": {
+        "actions": "Actions",
+        "appearance": "Appearance",
+        "events": "Events"
+      },
+      "importIcs": "Import .ics into…",
+      "exportAll": "Export all calendars (.ics)…",
+      "setTheme": "Set theme to",
+      "setLanguage": "Set language to",
+      "searchEvents": "Search events for “{query}”"
+    },
+    "groups": {
+      "navigation": "Navigation",
+      "views": "Views",
+      "events": "Events",
+      "general": "General"
+    },
+    "actions": {
+      "goToToday": "Go to today",
+      "next": "Next period",
+      "previous": "Previous period",
+      "goToDate": "Go to date",
+      "dayView": "Day view",
+      "weekView": "Week view",
+      "monthView": "Month view",
+      "newEvent": "New event",
+      "undo": "Undo",
+      "openCommandMenu": "Open command menu",
+      "openSettings": "Open settings",
+      "showShortcuts": "Show keyboard shortcuts",
+      "togglePanel": "Toggle details panel"
+    }
   }
 }

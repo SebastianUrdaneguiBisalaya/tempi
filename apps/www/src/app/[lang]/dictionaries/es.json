@@ -125,5 +125,46 @@
         "body": "Las nuevas versiones se instalan en segundo plano en Windows y Linux; en macOS Tempi te avisa cuando hay una."
       }
     }
+  },
+  "keyboard": {
+    "eyebrow": "Teclado primero",
+    "title": "Tus manos nunca dejan el teclado.",
+    "subtitle": "Abre el menú de comandos para ejecutar cualquier acción, o recorre tus semanas con atajos de una sola tecla. Pulsa ? en Tempi para verlos todos.",
+    "query": "semana",
+    "commandMenu": {
+      "label": "Demostración animada: el menú de comandos filtra sus comandos mientras se escribe una palabra",
+      "placeholder": "Escribe un comando o busca…",
+      "groups": {
+        "actions": "Acciones",
+        "appearance": "Apariencia",
+        "events": "Eventos"
+      },
+      "importIcs": "Importar .ics en…",
+      "exportAll": "Exportar todos los calendarios (.ics)…",
+      "setTheme": "Cambiar tema a",
+      "setLanguage": "Cambiar idioma a",
+      "searchEvents": "Buscar eventos con «{query}»"
+    },
+    "groups": {
+      "navigation": "Navegación",
+      "views": "Vistas",
+      "events": "Eventos",
+      "general": "General"
+    },
+    "actions": {
+      "goToToday": "Ir a hoy",
+      "next": "Periodo siguiente",
+      "previous": "Periodo anterior",
+      "goToDate": "Ir a una fecha",
+      "dayView": "Vista de día",
+      "weekView": "Vista de semana",
+      "monthView": "Vista de mes",
+      "newEvent": "Nuevo evento",
+      "undo": "Deshacer",
+      "openCommandMenu": "Abrir menú de comandos",
+      "openSettings": "Abrir ajustes",
+      "showShortcuts": "Mostrar atajos de teclado",
+      "togglePanel": "Mostrar u ocultar panel de detalles"
+    }
   }
 }
