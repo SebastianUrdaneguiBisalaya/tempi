@@ -2,6 +2,7 @@ import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { type CustomScheme, net, protocol } from 'electron';
+import { CSP_HEADER } from './csp.js';
 
 // The packaged app serves the static export of @tempi/web (apps/web/out, copied by electron-builder's
 // extraResources into <resources>/web) from app://tempi/ instead of file://, so absolute paths
@@ -29,11 +30,20 @@ function candidates(target: string) {
 	return path.extname(target) ? [target] : [path.join(target, 'index.html'), `${target}.html`];
 }
 
-// Must run after the app's `ready` event.
-export function handleAppProtocol(root: string) {
+// Custom-protocol responses never pass through `session.webRequest`, so the policy is set here, on every response.
+const withPolicy = (response: Response, policy: string): Response => {
+	const headers = new Headers(response.headers);
+	headers.set(CSP_HEADER, policy);
+	return new Response(response.body, { headers, status: response.status, statusText: response.statusText });
+};
+
+// Must run after the app's `ready` event. `contentSecurityPolicy` goes out with every response.
+export function handleAppProtocol(root: string, contentSecurityPolicy: string) {
 	const webRoot = path.resolve(root);
 
-	protocol.handle(APP_SCHEME, async request => {
+	protocol.handle(APP_SCHEME, async request => withPolicy(await serve(request), contentSecurityPolicy));
+
+	async function serve(request: Request): Promise<Response> {
 		const { host, pathname } = new URL(request.url);
 		if (host !== APP_HOST) return new Response('Not found', { status: 404 });
 
@@ -60,5 +70,5 @@ export function handleAppProtocol(root: string) {
 			return new Response(response.body, { headers: response.headers, status: 404 });
 		}
 		return new Response('Not found', { status: 404 });
-	});
+	}
 }

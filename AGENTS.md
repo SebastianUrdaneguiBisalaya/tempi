@@ -195,6 +195,9 @@ apps/www/src/
 - Load only `app://tempi` (packaged) or the dev server. Send every other URL to `shell.openExternal` through `setWindowOpenHandler` and `will-navigate`.
 - Deny permission requests and checks by default (`session.setPermissionRequestHandler`, `setPermissionCheckHandler`). The only exception is audio-only `media` from the trusted origin, for dictation (`permissions.ts`); on macOS it also asks the OS (`systemPreferences.askForMediaAccess`).
 - Set a strict Content-Security-Policy. Never load remote scripts, and never use `eval` or `new Function`.
+  - The policies live in `apps/desktop/src/csp.ts` and go out as a response header: the `app://` handler sets the production policy on every response, and in dev `session.webRequest.onHeadersReceived` sets a separate dev policy on the dev server's responses. Never add a `<meta>` CSP or loosen the production policy to fix dev.
+  - Production `script-src` is `'self'` plus the `sha256-…` hashes of the static export's inline scripts. `bun run build:csp` (part of `dist:*`, after `next build`) writes them to `apps/desktop/dist/csp-hashes.json`; never hardcode hashes. A missing or invalid file blocks every inline script.
+  - Only the dev policy may hold `'unsafe-eval'`, `'unsafe-inline'` scripts or the HMR websocket.
 - Never weaken the `app://` protocol handler's path-traversal guard.
 - Enable Electron Fuses in release builds: disable `RunAsNode` and `EnableNodeOptionsEnvironmentVariable`, and enable `OnlyLoadAppFromAsar`.
 - Keep Electron on a supported major version.

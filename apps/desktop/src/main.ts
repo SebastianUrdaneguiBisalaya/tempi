@@ -34,6 +34,7 @@ import { createAiSettingsStore } from './ai/settings-store.js';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
 import { avatarPath, createFileAvatarStore } from './avatar-store.js';
+import { CSP_HASHES_FILE, cspHashesSchema, developmentCsp, productionCsp, withCsp } from './csp.js';
 import { appDatabasePath, openAppDatabase } from './database.js';
 import { openExternalUrl } from './external-links.js';
 import { createGoogleAccountService, type GoogleAccountService } from './google/google-account.js';
@@ -111,6 +112,26 @@ async function loadSettings(deps: CoreDeps, transaction: TransactionQueue) {
 	const result = await transaction(() => initializeSettings(deps, app.getPreferredSystemLanguages()));
 	if (result.ok) applySettings(result.value);
 	else console.error('Failed to initialize settings', result.error);
+}
+
+// The build hashes the export's inline scripts next to this bundle (`build:csp`). Without a valid file the app still
+// starts, but every inline script is blocked: a broken build fails closed, never open.
+async function packagedCsp(): Promise<string> {
+	try {
+		return productionCsp(cspHashesSchema.parse(JSON.parse(await readFile(path.join(__dirname, CSP_HASHES_FILE), 'utf8'))));
+	} catch (error) {
+		console.error('Failed to read the inline script hashes; inline scripts will be blocked', error);
+		return productionCsp([]);
+	}
+}
+
+// Packaged, the app protocol sets the policy itself. In dev, the Next server's pages get the dev policy here.
+function applyDevelopmentCsp() {
+	const policy = developmentCsp(DEV_WEB_URL);
+	// Matched against the trusted origin (port included), so only the dev server's own answers get the policy.
+	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+		callback(isTrustedUrl(details.url) ? { responseHeaders: withCsp(details.responseHeaders ?? {}, policy) } : {});
+	});
 }
 
 // Every window gets the same hardened renderer and navigation rules: the menu bar calendar is as locked down as the main window.
@@ -525,7 +546,8 @@ if (!gotLock) {
 			const dockIcon = nativeImage.createFromPath(ICON_MAC_PNG);
 			if (!dockIcon.isEmpty()) app.dock?.setIcon(dockIcon);
 		}
-		if (app.isPackaged) handleAppProtocol(WEB_DIR);
+		if (app.isPackaged) handleAppProtocol(WEB_DIR, await packagedCsp());
+		else applyDevelopmentCsp();
 		restrictPermissions();
 		const avatarsDir = path.join(app.getPath('userData'), 'avatars');
 		handleAvatarProtocol(avatarsDir);
