@@ -82,5 +82,48 @@
         "holiday": "Feriado"
       }
     }
+  },
+  "features": {
+    "eyebrow": "Funciones",
+    "title": "Todo lo que necesitas, nada que sobre.",
+    "subtitle": "El calendario que esperas, sin cuenta, sin anuncios y sin esperas.",
+    "items": {
+      "views": {
+        "title": "Vistas de día, semana y mes",
+        "body": "Cambia de vista con una tecla, con el mini calendario y “ir a fecha” siempre a mano."
+      },
+      "googleSync": {
+        "title": "Sincronización con Google Calendar",
+        "body": "Sincronización opcional en ambos sentidos, incluso con calendarios de solo lectura como los feriados."
+      },
+      "recurrence": {
+        "title": "Recurrencia y recordatorios",
+        "body": "Repite eventos con reglas RFC 5545 y recibe recordatorios como notificaciones del sistema."
+      },
+      "timeZones": {
+        "title": "Zonas horarias y eventos de todo el día",
+        "body": "Cada evento guarda su propia zona horaria, además de eventos de todo el día y de varios días."
+      },
+      "importExport": {
+        "title": "Importar, exportar y respaldos",
+        "body": "Mueve eventos con archivos iCalendar (.ics) y guarda respaldos completos que puedes restaurar."
+      },
+      "tray": {
+        "title": "Tu día en la barra de menús",
+        "body": "Activa la agenda de hoy en la barra de menús de macOS o en la bandeja de Windows y Linux."
+      },
+      "keyboard": {
+        "title": "Búsqueda y atajos",
+        "body": "Encuentra cualquier evento, abre el menú de comandos y hazlo todo desde el teclado."
+      },
+      "languages": {
+        "title": "Inglés y español, claro y oscuro",
+        "body": "Elige tu idioma y tema; por defecto Tempi sigue a tu sistema."
+      },
+      "updates": {
+        "title": "Actualizaciones automáticas",
+        "body": "Las nuevas versiones se instalan en segundo plano en Windows y Linux; en macOS Tempi te avisa cuando hay una."
+      }
+    }
   }
 }

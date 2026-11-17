@@ -82,5 +82,48 @@
         "holiday": "Public holiday"
       }
     }
+  },
+  "features": {
+    "eyebrow": "Features",
+    "title": "Everything you need, nothing you don't.",
+    "subtitle": "The calendar you expect, without the account, the ads or the wait.",
+    "items": {
+      "views": {
+        "title": "Day, week and month views",
+        "body": "Switch views in a keystroke, with a mini calendar and “go to date” always at hand."
+      },
+      "googleSync": {
+        "title": "Google Calendar sync",
+        "body": "Optional two-way sync, including read-only calendars such as holidays."
+      },
+      "recurrence": {
+        "title": "Recurrence and reminders",
+        "body": "Repeat events with RFC 5545 rules and get reminders as system notifications."
+      },
+      "timeZones": {
+        "title": "Time zones and all-day events",
+        "body": "Every event keeps its own time zone, plus all-day and multi-day events."
+      },
+      "importExport": {
+        "title": "Import, export and backups",
+        "body": "Move events with iCalendar (.ics) files and keep full backups you can restore."
+      },
+      "tray": {
+        "title": "Today in your menu bar",
+        "body": "Turn on today's agenda in the macOS menu bar or the Windows and Linux tray."
+      },
+      "keyboard": {
+        "title": "Search and shortcuts",
+        "body": "Find any event, open the command menu and do everything from the keyboard."
+      },
+      "languages": {
+        "title": "English and Spanish, light and dark",
+        "body": "Pick your language and theme; Tempi follows your system by default."
+      },
+      "updates": {
+        "title": "Automatic updates",
+        "body": "New versions install in the background on Windows and Linux; macOS tells you when one is out."
+      }
+    }
   }
 }
