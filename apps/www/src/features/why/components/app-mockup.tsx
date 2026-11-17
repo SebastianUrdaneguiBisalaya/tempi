@@ -48,7 +48,7 @@ type EventKey = (typeof EVENTS)[number]['key'] | typeof ALL_DAY.key;
 
 const FIRST_HOUR = 8;
 const LAST_HOUR = 17;
-const HOUR_REM = 3;
+const HOUR_REM = 4;
 // "Now" is fixed at 12:35 so the panel always reads "Upcoming in 25 minutes" for the team sync.
 const NOW_HOUR = 12 + 35 / 60;
 const UPCOMING = EVENTS.find(event => event.key === 'teamSync');
@@ -295,7 +295,11 @@ function WeekGrid({ locale, copy, today }: PartProps) {
 							<div
 								key={`${event.day}-${event.key}`}
 								data-mockup-event
-								className='absolute inset-x-0.5 flex flex-col overflow-hidden rounded-md border-l-[3px] px-1.5 py-0.5 text-[0.7rem]/tight shadow-[0_0_0_1px_var(--background)]'
+								// Like the app, events shorter than an hour put the time next to the title so both fit on one line.
+								className={cn(
+									'absolute inset-x-0.5 flex overflow-hidden rounded-md border-l-[3px] px-1.5 py-0.5 text-[0.7rem]/tight shadow-[0_0_0_1px_var(--background)]',
+									event.end - event.start < 1 ? 'flex-row items-baseline gap-1' : 'flex-col'
+								)}
 								style={{ top: top(event.start), height: `${(event.end - event.start) * HOUR_REM}rem`, ...eventStyle(CALENDARS[event.calendar]) }}
 							>
 								<span className='truncate font-medium'>{copy.events[event.key]}</span>
