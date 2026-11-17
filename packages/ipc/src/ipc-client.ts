@@ -37,6 +37,7 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 		stopChat: requestId => api.ai.stopChat(requestId),
 		saveKey: input => call(CHANNELS.ai.saveKey, () => api.ai.saveKey(input)),
 		saveSettings: patch => call(CHANNELS.ai.saveSettings, () => api.ai.saveSettings(patch)),
+		speak: input => call(CHANNELS.ai.speak, () => api.ai.speak(input)),
 		testKey: provider => call(CHANNELS.ai.testKey, () => api.ai.testKey(provider)),
 		transcribe: input => call(CHANNELS.ai.transcribe, () => api.ai.transcribe(input)),
 	},

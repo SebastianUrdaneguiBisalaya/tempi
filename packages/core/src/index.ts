@@ -95,6 +95,8 @@ export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } f
 export { DOMAIN_ERROR_CODES, domainErrorSchema, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
 export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, WeekStart } from './domain/settings';
 export { DEFAULT_SETTINGS, LANGUAGES, resolveLanguage, settingsPatchSchema, settingsSchema, settingsValuesSchema, THEMES, TIME_FORMATS, WEEK_STARTS } from './domain/settings';
+export type { Speech, SpeechInput } from './domain/speech';
+export { MAX_SPEECH_LENGTH, SPEECH_AUDIO_TYPE, speechInputSchema, speechSchema } from './domain/speech';
 export type { Timestamps } from './domain/timestamps';
 export { singletonTimestampsSchema, storedEntitySchema, timestampsSchema } from './domain/timestamps';
 export { UPCOMING_WINDOW_DAYS, upcomingEvent } from './domain/upcoming';

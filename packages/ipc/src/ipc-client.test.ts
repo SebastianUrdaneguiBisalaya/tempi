@@ -30,6 +30,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 			saveSettings: answer,
 			stopChat: requestId => void stopped.push(requestId),
 			testKey: answer,
+			speak: answer,
 			transcribe: answer,
 		},
 		app: {

@@ -64,6 +64,7 @@ const aiService: AiService = {
 	},
 	saveSettings: async () => ok(await aiView()),
 	testKey: async provider => (aiKeys.has(provider) ? ok(null) : fail('not_found', 'ai.invalidKey')),
+	speak: () => Promise.resolve(ok({ audio: new Uint8Array([73, 68, 51]), mimeType: 'audio/mpeg' as const })),
 	transcribe: () => Promise.resolve(ok({ text: 'hola' })),
 };
 

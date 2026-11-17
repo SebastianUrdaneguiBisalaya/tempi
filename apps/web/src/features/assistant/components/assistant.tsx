@@ -11,6 +11,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import type { AssistantTab } from '../assistant-store';
 import { useAssistant, useAssistantPanel } from './assistant-provider';
 import { ChatTab } from './chat-tab';
+import { VoiceTab } from './voice-tab';
 
 // Tailwind's `md`: below it the panel opens as a bottom drawer instead of floating.
 const FLOATING_QUERY = '(min-width: 48rem)';
@@ -38,8 +39,8 @@ function AssistantPanel({ onEdit, onMinimize }: { onEdit: () => void; onMinimize
 			<TabsContent className='flex min-h-0 flex-1 flex-col' value='chat'>
 				<ChatTab onEdit={onEdit} />
 			</TabsContent>
-			<TabsContent className='flex flex-1 items-center justify-center p-6 text-center text-muted-foreground' value='voice'>
-				{t('assistant.voiceSoon')}
+			<TabsContent className='flex min-h-0 flex-1 flex-col' value='voice'>
+				<VoiceTab onEdit={onEdit} />
 			</TabsContent>
 		</Tabs>
 	);

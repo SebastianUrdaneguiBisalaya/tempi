@@ -40,13 +40,13 @@ export type AssistantChat = (input: z.output<typeof assistantChatInputSchema>, o
 
 export const createAssistantChat =
 	(deps: AssistantChatDeps): AssistantChat =>
-	async ({ messages, provider }, openSink) => {
+	async ({ messages, provider, voice = false }, openSink) => {
 		// Checked before anything streams, so a provider without a key fails the request itself.
 		const key = await deps.keys.get(provider);
 		if (key === null) return fail('not_found', 'ai.invalidKey', { detail: `No key is saved for ${provider}` });
 		const [settings, context] = await Promise.all([deps.settings.read(), deps.context()]);
 		const sink = openSink();
-		void deps.run({ context, emit: sink.send, messages, model: deps.model(provider, key, settings.models), ports: deps.ports, provider, signal: sink.signal }).finally(sink.close);
+		void deps.run({ context, emit: sink.send, messages, model: deps.model(provider, key, settings.models), ports: deps.ports, provider, signal: sink.signal, voice }).finally(sink.close);
 		return ok(null);
 	};
 

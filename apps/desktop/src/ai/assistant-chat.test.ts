@@ -78,4 +78,11 @@ describe('assistant chat', () => {
 		expect(sent).toEqual([{ type: 'done' }]);
 		expect(closed()).toBe(1);
 	});
+
+	test('a reply for the Voice tab is run to be read aloud', async () => {
+		const { chat, keys, openSink, runs } = setup();
+		await keys.save('anthropic', 'sk-ant');
+		await chat({ ...input, voice: true }, openSink);
+		expect(runs[0]?.voice).toBe(true);
+	});
 });

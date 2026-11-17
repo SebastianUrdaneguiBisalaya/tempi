@@ -28,6 +28,8 @@ export const es = {
 			},
 			proposal: {
 				calendar: 'Calendario',
+				cancel: 'Cancelar',
+				canceled: 'Cancelado',
 				confirm: 'Confirmar',
 				create: 'Nuevo evento',
 				delete: 'Eliminar evento',
@@ -57,7 +59,31 @@ export const es = {
 				updateEvent: 'Preparando los cambios',
 			},
 			toolsUsed: 'Pasos realizados: {{count}}',
-			voiceSoon: 'Las conversaciones por voz llegarán pronto.',
+			voice: {
+				empty: {
+					description:
+						'Para hablar con el asistente necesitas una clave de ElevenLabs, para escuchar y hablar, y una de OpenAI, Anthropic, Google, xAI o Groq, para responder. Agrégalas en Ajustes › Integraciones.',
+					title: 'Configura la voz',
+				},
+				orb: {
+					listening: 'Detener y enviar',
+					speaking: 'Dejar de hablar',
+					talk: 'Hablar con el asistente',
+					thinking: 'Cancelar',
+				},
+				proposals: 'Cambios por confirmar',
+				proposed: {
+					create: 'Preparé «{{title}}». Confírmalo o cancélalo en la pantalla.',
+					delete: 'Preparé la eliminación de «{{title}}». Confírmala o cancélala en la pantalla.',
+					update: 'Preparé cambios en «{{title}}». Confírmalos o cancélalos en la pantalla.',
+				},
+				status: {
+					idle: 'Toca para hablar',
+					listening: 'Escuchando… toca para enviar',
+					speaking: 'Hablando… toca para detener',
+					thinking: 'Pensando…',
+				},
+			},
 			welcome: 'Pídeme buscar, agregar, cambiar o eliminar eventos. Nada se guarda hasta que lo confirmes.',
 		},
 		actions: {
@@ -540,6 +566,7 @@ export const es = {
 			providerError: 'El proveedor devolvió un error. Inténtalo más tarde.',
 			rateLimited: 'El proveedor está limitando las solicitudes de esta clave o se agotó su cuota. Inténtalo más tarde.',
 			recordingTooLong: 'La grabación es demasiado larga. Los dictados pueden durar hasta un minuto.',
+			speechFailed: 'No se pudo leer la respuesta en voz alta. Revisa tus voces de ElevenLabs en Ajustes › Integraciones, o léela en la pestaña Chat.',
 			transcriptionFailed: 'No se pudo entender la grabación. Inténtalo de nuevo hablando un poco más cerca del micrófono.',
 		},
 		avatar: {

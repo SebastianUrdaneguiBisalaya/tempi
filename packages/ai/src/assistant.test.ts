@@ -91,10 +91,10 @@ const textStep = (text: string): LanguageModelV4StreamPart[] => [
 /** A model that plays `steps` in order, one per call, recording the prompts it was sent. */
 const scriptedModel = (...steps: LanguageModelV4StreamPart[][]) => new MockLanguageModelV4({ doStream: steps.map(chunks => ({ stream: convertArrayToReadableStream(chunks) })) });
 
-const run = async (model: MockLanguageModelV4, text = 'Dentista mañana a las 3pm') => {
+const run = async (model: MockLanguageModelV4, text = 'Dentista mañana a las 3pm', voice?: boolean) => {
 	const events: AssistantStreamEvent[] = [];
 	const { calls, ports } = fakePorts();
-	await runAssistant({ context, emit: event => events.push(event), messages: [{ role: 'user', text }], model, ports, provider: 'openai' });
+	await runAssistant({ context, emit: event => events.push(event), messages: [{ role: 'user', text }], model, ports, provider: 'openai', ...(voice === undefined ? {} : { voice }) });
 	return { calls, events };
 };
 
@@ -112,6 +112,16 @@ describe('runAssistant', () => {
 		expect(system).toContain('monday');
 		expect(system).toContain('Personal (id: personal)');
 		expect(system).toContain('read-only');
+	});
+
+	test('a reply to be read aloud is asked for in plain spoken sentences; a written one is not', async () => {
+		const spoken = scriptedModel(textStep('Hola'));
+		await run(spoken, '¿Qué tengo mañana?', true);
+		expect(JSON.stringify(spoken.doStreamCalls[0]?.prompt[0])).toContain('hears your reply read aloud');
+
+		const written = scriptedModel(textStep('Hola'));
+		await run(written);
+		expect(JSON.stringify(written.doStreamCalls[0]?.prompt[0])).not.toContain('read aloud');
 	});
 
 	test('a valid new event becomes a proposal, and nothing is written', async () => {

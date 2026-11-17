@@ -12,6 +12,8 @@ export type AssistantRequest = {
 	ports: AssistantPorts;
 	/** Aborts the reply, e.g. when the user presses Stop. */
 	signal?: AbortSignal;
+	/** The reply will be read aloud, so it is written to be heard. */
+	voice?: boolean;
 	/** Receives every event of the reply, in order; the last one is `done` or `error`. */
 	emit: (event: AssistantStreamEvent) => void;
 };
@@ -34,7 +36,7 @@ const providerFailure = (provider: TextProvider, error: unknown): DomainError =>
  * One assistant reply: streams the model's text, runs read tools against the calendar and emits proposals for any
  * change, which the user confirms in the app. Never writes and never throws; failures arrive as an `error` event.
  */
-export const runAssistant = async ({ context, emit, messages, model, ports, provider, signal }: AssistantRequest): Promise<void> => {
+export const runAssistant = async ({ context, emit, messages, model, ports, provider, signal, voice = false }: AssistantRequest): Promise<void> => {
 	// A tool runs before the stream reports its call, so its proposal waits for the result to keep events in order.
 	const proposals = new Map<string, AssistantProposal>();
 	const started = new Set<string>();
@@ -55,7 +57,7 @@ export const runAssistant = async ({ context, emit, messages, model, ports, prov
 	try {
 		const result = streamText({
 			...(signal === undefined ? {} : { abortSignal: signal }),
-			instructions: assistantInstructions(context),
+			instructions: assistantInstructions(context, { voice }),
 			maxRetries: 1,
 			messages: messages.map(({ role, text }) => ({ content: text, role })),
 			model,
