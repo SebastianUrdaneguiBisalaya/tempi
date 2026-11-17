@@ -59,7 +59,7 @@ export function HeroContent({ copy }: { copy: HeroCopy }) {
 					</p>
 					<div data-hero-fade className='mt-9 flex flex-col gap-3 sm:flex-row'>
 						<DownloadButton label={copy.download} labelForPlatform={copy.downloadForPlatform} className={PILL} />
-						<a href={`#${SECTION_IDS.why}`} className={buttonVariants({ variant: 'outline', className: `${PILL} bg-background/20! backdrop-blur-sm` })}>
+						<a href={`#${SECTION_IDS.why}`} className={cn(buttonVariants({ variant: 'outline', className: `${PILL} bg-background/20! backdrop-blur-sm` }))}>
 							{copy.learnMore}
 							<ArrowDownIcon data-icon='inline-end' />
 						</a>

@@ -8,6 +8,11 @@ import type { RefObject } from 'react';
 // Registered once here so every section imports GSAP from this module and never repeats the setup.
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+// Web fonts swap in after the triggers measure the page, shifting every section; measure again once they're in.
+if (typeof document !== 'undefined') {
+	document.fonts.ready.then(() => ScrollTrigger.refresh());
+}
+
 const MOTION_ALLOWED = '(prefers-reduced-motion: no-preference)';
 
 /**
