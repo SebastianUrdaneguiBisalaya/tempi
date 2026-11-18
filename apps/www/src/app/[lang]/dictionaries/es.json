@@ -99,7 +99,9 @@
       },
       "googleSync": {
         "title": "Sincronización con Google Calendar",
-        "body": "Sincronización opcional en ambos sentidos, incluso con calendarios de solo lectura como los feriados."
+        "body": "Sincronización opcional en ambos sentidos, incluso con calendarios de solo lectura como los feriados.",
+        "badge": "Acceso anticipado",
+        "note": "Por ahora solo pueden conectarse cuentas de Google invitadas, mientras Google revisa Tempi."
       },
       "recurrence": {
         "title": "Recurrencia y recordatorios",
@@ -248,7 +250,11 @@
       },
       "account": {
         "question": "¿Necesito una cuenta de Google?",
-        "answer": "No. Tempi funciona por completo sin ninguna cuenta. La sincronización con Google Calendar es opcional: conéctala desde Ajustes → Integraciones cuando quieras sincronizar en ambos sentidos."
+        "answer": "No. Tempi funciona por completo sin ninguna cuenta. La sincronización con Google Calendar es opcional y, por ahora, está limitada a cuentas invitadas (ver abajo)."
+      },
+      "googleAccess": {
+        "question": "¿Por qué todavía no puedo conectar Google Calendar?",
+        "answer": "Google aún está revisando Tempi y, hasta que apruebe la app, solo pueden conectarse cuentas de Google invitadas; cualquier otra cuenta ve un error de “acceso denegado” de Google. Todo lo demás funciona sin Google, y puedes traer tus eventos importando un archivo iCalendar (.ics) en cualquier calendario. La sincronización se abrirá para todos cuando Google apruebe Tempi."
       },
       "offline": {
         "question": "¿Funciona sin conexión?",
