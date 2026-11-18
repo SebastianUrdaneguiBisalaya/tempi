@@ -77,6 +77,7 @@ type Api<Raw extends boolean> = {
 	};
 	settings: {
 		get: CallWithoutInput<'settings:get', Raw>;
+		previewTheme: Call<'settings:previewTheme', Raw>;
 		save: Call<'settings:save', Raw>;
 	};
 	updates: {

@@ -86,6 +86,8 @@ export const CHANNELS = {
 	},
 	settings: {
 		get: 'settings:get',
+		/** Shows an unsaved theme in native UI and the renderer's `prefers-color-scheme`; null goes back to the saved one. */
+		previewTheme: 'settings:previewTheme',
 		save: 'settings:save',
 	},
 	updates: {

@@ -72,6 +72,8 @@ describe('payloadSchemas', () => {
 		['profile:update', { ...profile, avatar: null }],
 		['profile:update', { ...profile, avatar: { bytes: new Uint8Array([1]), type: 'image/png' } }],
 		['settings:get', undefined],
+		['settings:previewTheme', 'system'],
+		['settings:previewTheme', null],
 		['settings:save', { theme: 'dark' }],
 		['settings:save', { microphoneEnabled: false, notificationsEnabled: true }],
 	] as const)('%s accepts a valid payload', (channel, payload) => {
@@ -107,6 +109,7 @@ describe('payloadSchemas', () => {
 		['permissions:openSystemSettings', 'x-apple.systempreferences:com.apple.preference.security', ['']],
 		['permissions:status', { kind: 'microphone' }, ['']],
 		['profile:update', { ...profile, avatar: '../../secrets.png', country: 'Peru' }, ['avatar', 'country']],
+		['settings:previewTheme', 'neon', ['']],
 		['settings:save', { defaultEventDuration: 0, theme: 'neon' }, ['defaultEventDuration', 'theme']],
 		['settings:save', { microphoneEnabled: 'off', notificationsEnabled: 1 }, ['microphoneEnabled', 'notificationsEnabled']],
 	] as const)('%s rejects an invalid payload, reporting every issue at form field paths', (channel, payload, fields) => {

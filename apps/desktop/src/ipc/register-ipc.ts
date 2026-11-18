@@ -1,4 +1,4 @@
-import type { CoreDeps, Settings } from '@tempi/core';
+import type { CoreDeps, Settings, Theme } from '@tempi/core';
 import type { OccurrenceRef } from '@tempi/ipc';
 import type { UpdateService } from '../updates/update-service';
 import { type AiIo, registerAiHandlers } from './ai';
@@ -28,6 +28,8 @@ export type IpcListeners = {
 	eventsChanged?: () => void;
 	/** The settings were saved, e.g. to sync `nativeTheme` with the selected theme. */
 	settingsSaved?: (settings: Settings) => void;
+	/** The renderer previews an unsaved theme, or drops the preview (null), e.g. to sync `nativeTheme` with it. */
+	themePreviewed?: (theme: Theme | null) => void;
 	/** A window asked to show an occurrence in the main window. */
 	showEvent?: (ref: OccurrenceRef) => void;
 };
@@ -48,6 +50,6 @@ export const registerIpc = (context: HandlerContext, deps: CoreDeps, io: AppIo, 
 	registerOnboardingHandlers(context, deps, listeners.settingsSaved);
 	registerPermissionHandlers(context, io.permissions);
 	registerProfileHandlers(context, deps);
-	registerSettingsHandlers(context, deps, listeners.settingsSaved);
+	registerSettingsHandlers(context, deps, listeners.settingsSaved, listeners.themePreviewed);
 	registerUpdateHandlers(context, io.updates);
 };

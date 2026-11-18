@@ -47,7 +47,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 		onboarding: { complete: answer },
 		permissions: { openSystemSettings: answer, status: answer, testNotification: answer },
 		profile: { get: answer, update: answer },
-		settings: { get: answer, save: answer },
+		settings: { get: answer, previewTheme: answer, save: answer },
 		updates: {
 			check: answer,
 			install: answer,
