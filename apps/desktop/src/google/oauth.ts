@@ -32,7 +32,10 @@ export const oauthClientFrom = (values: { id: string | undefined; secret: string
 };
 
 /** The subset of `fetch` the flow uses, so tests can stand in for Google. */
-export type Fetch = (url: string, init: { body: URLSearchParams; method: 'POST' }) => Promise<{ json: () => Promise<unknown>; ok: boolean; status: number }>;
+/** How long a call to Google's OAuth endpoints may take before Google counts as unreachable. */
+export const OAUTH_TIMEOUT_MS = 30_000;
+
+export type Fetch = (url: string, init: { body: URLSearchParams; method: 'POST'; signal: AbortSignal }) => Promise<{ json: () => Promise<unknown>; ok: boolean; status: number }>;
 
 const base64Url = (bytes: Buffer): string => bytes.toString('base64url');
 
@@ -108,6 +111,7 @@ export const exchangeCode = async (fetch: Fetch, client: OAuthClient, grant: { c
 			redirect_uri: grant.redirectUri,
 		}),
 		method: 'POST',
+		signal: AbortSignal.timeout(OAUTH_TIMEOUT_MS),
 	});
 	const body: unknown = await response.json().catch(() => null);
 	if (!response.ok) throw new OAuthError(`Token exchange failed with ${response.status}: ${JSON.stringify(body)}`);
@@ -140,18 +144,26 @@ export class GrantRevokedError extends OAuthError {
 export const refreshAccessToken = async (
 	fetch: Fetch,
 	client: OAuthClient,
-	grant: { now: Date; refreshToken: string }
+	grant: { now: Date; refreshToken: string },
+	timeoutMs = OAUTH_TIMEOUT_MS
 ): Promise<{ accessToken: string; expiresAt: string; scope: string | undefined }> => {
+	// Every sync starts here when the token is old: without a deadline, a dropped connection would hold the sync forever.
+	const signal = AbortSignal.timeout(timeoutMs);
 	let response: Awaited<ReturnType<Fetch>>;
+	let body: unknown;
 	try {
 		response = await fetch(TOKEN_ENDPOINT, {
 			body: new URLSearchParams({ client_id: client.id, client_secret: client.secret, grant_type: 'refresh_token', refresh_token: grant.refreshToken }),
 			method: 'POST',
+			signal,
+		});
+		body = await response.json().catch((error: unknown) => {
+			if (signal.aborted) throw error;
+			return null;
 		});
 	} catch (error) {
 		throw new OAuthNetworkError(`Google could not be reached to refresh the token: ${error instanceof Error ? error.message : String(error)}`);
 	}
-	const body: unknown = await response.json().catch(() => null);
 	if (!response.ok) {
 		const detail = `Refreshing failed with ${response.status}: ${JSON.stringify(body)}`;
 		throw response.status === 400 && JSON.stringify(body).includes('invalid_grant') ? new GrantRevokedError(detail) : new OAuthError(detail);
@@ -166,6 +178,6 @@ export const refreshAccessToken = async (
  * (400) is already as good as revoked.
  */
 export const revokeToken = async (fetch: Fetch, token: string): Promise<void> => {
-	const response = await fetch(REVOKE_ENDPOINT, { body: new URLSearchParams({ token }), method: 'POST' });
+	const response = await fetch(REVOKE_ENDPOINT, { body: new URLSearchParams({ token }), method: 'POST', signal: AbortSignal.timeout(OAUTH_TIMEOUT_MS) });
 	if (!response.ok && response.status !== 400) throw new OAuthError(`Revoking failed with ${response.status}`);
 };
