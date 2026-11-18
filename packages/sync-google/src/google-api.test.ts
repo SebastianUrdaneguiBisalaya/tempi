@@ -13,7 +13,29 @@ const fakeFetch = (...responses: { body?: unknown; status: number }[]) => {
 	return { api: createGoogleCalendarApi({ accessToken: () => Promise.resolve('token-1'), fetch }), requests };
 };
 
+/** A fetch that never answers on its own, only rejects when its request is aborted. */
+const hangingFetch: GoogleFetch = (_url, init) =>
+	new Promise((_resolve, reject) => {
+		init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true });
+	});
+
 describe('Google Calendar API client', () => {
+	test('a request Google never answers ends as offline at the deadline instead of hanging', async () => {
+		const api = createGoogleCalendarApi({ accessToken: () => Promise.resolve('token-1'), fetch: hangingFetch, timeoutMs: 10 });
+		await expect(api.listCalendars()).rejects.toBeInstanceOf(GoogleOfflineError);
+	});
+
+	test('a body cut off by the deadline is offline too, not an empty answer', async () => {
+		const fetch: GoogleFetch = (_url, init) =>
+			Promise.resolve({
+				json: () => new Promise((_resolve, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true })),
+				ok: true,
+				status: 200,
+			});
+		const api = createGoogleCalendarApi({ accessToken: () => Promise.resolve('token-1'), fetch, timeoutMs: 10 });
+		await expect(api.listCalendars()).rejects.toBeInstanceOf(GoogleOfflineError);
+	});
+
 	test('reads every page and returns the final sync token', async () => {
 		const { api, requests } = fakeFetch(
 			{ body: { items: [{ etag: '"1"', id: 'a' }], nextPageToken: 'p2' }, status: 200 },
