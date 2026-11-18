@@ -35,6 +35,11 @@ describe('moveRange', () => {
 		});
 	});
 
+	test('accepts the fractional minutes a pointer drag produces', () => {
+		expect(moveRange(range, { days: 0, minutes: 22.37 }, LIMA)).toEqual({ endAt: '2026-03-10T15:15:00Z', startAt: '2026-03-10T14:15:00Z' });
+		expect(moveRange(range, { days: 0, minutes: -8.6 }, LIMA).startAt).toBe('2026-03-10T13:45:00Z');
+	});
+
 	test('keeps the wall-clock time when moving across a DST change', () => {
 		// 2026-03-07 9:00 EST → 2026-03-09 9:00 EDT.
 		const moved = moveRange({ endAt: '2026-03-07T15:00:00Z', startAt: '2026-03-07T14:00:00Z' }, { days: 2, minutes: 0 }, NEW_YORK);

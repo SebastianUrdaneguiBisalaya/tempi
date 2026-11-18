@@ -26,7 +26,8 @@ export const wallTime = (day: Temporal.PlainDate, minute: number, timeZone: stri
 export const moveRange = (range: TimeRange, by: { days: number; minutes: number }, timeZone: string): TimeRange => {
 	const start = Temporal.Instant.from(range.startAt).toZonedDateTimeISO(timeZone);
 	const duration = Temporal.Instant.from(range.startAt).until(Temporal.Instant.from(range.endAt));
-	const moved = snap(start.add({ days: by.days }).add({ minutes: by.minutes }));
+	// Temporal only adds whole units; pointer drags measure fractional minutes.
+	const moved = snap(start.add({ days: Math.round(by.days) }).add({ minutes: Math.round(by.minutes) }));
 	return toRange(moved, moved.add(duration));
 };
 
