@@ -9,10 +9,11 @@ import { useVoiceLevels } from './assistant-provider';
 /** How fast the gradient turns in each phase, relative to idle. */
 const SPIN_SPEED = { idle: 1, listening: 2.5, speaking: 2, thinking: 6 } as const satisfies Record<VoicePhase, number>;
 
-// Soft color fields that blend into a mesh; two layers turning in opposite directions keep it from looking like a wheel.
+// Soft fields from white to near black that blend into a mesh; two layers turning in opposite directions keep it from
+// looking like a wheel. Without hue, the motion reads only through the contrast between light and dark.
 const MESH_A =
-	'radial-gradient(circle at 25% 30%, oklch(0.72 0.19 295) 0%, transparent 45%), radial-gradient(circle at 75% 25%, oklch(0.78 0.14 225) 0%, transparent 45%), radial-gradient(circle at 70% 78%, oklch(0.76 0.17 350) 0%, transparent 45%), radial-gradient(circle at 25% 75%, oklch(0.82 0.13 190) 0%, transparent 45%)';
-const MESH_B = 'radial-gradient(circle at 60% 40%, oklch(0.85 0.12 80 / 0.8) 0%, transparent 35%), radial-gradient(circle at 35% 60%, oklch(0.66 0.2 275 / 0.9) 0%, transparent 40%)';
+	'radial-gradient(circle at 25% 30%, oklch(0.97 0 0) 0%, transparent 45%), radial-gradient(circle at 75% 25%, oklch(0.62 0 0) 0%, transparent 45%), radial-gradient(circle at 70% 78%, oklch(0.25 0 0) 0%, transparent 45%), radial-gradient(circle at 25% 75%, oklch(0.8 0 0) 0%, transparent 45%)';
+const MESH_B = 'radial-gradient(circle at 60% 40%, oklch(1 0 0 / 0.8) 0%, transparent 35%), radial-gradient(circle at 35% 60%, oklch(0.15 0 0 / 0.9) 0%, transparent 40%)';
 
 type VoiceOrbProps = {
 	phase: VoicePhase;
@@ -93,7 +94,7 @@ export function VoiceOrb({ disabled, label, onTap, phase }: VoiceOrbProps) {
 				className='relative block size-full overflow-hidden rounded-full shadow-lg ring-1 ring-black/5 transition-[box-shadow] group-focus-visible:ring-4 group-focus-visible:ring-ring/60 motion-reduce:transition-none dark:ring-white/10'
 				data-orb='core'
 			>
-				<span className='absolute -inset-1/4 bg-[oklch(0.7_0.15_270)] blur-md' data-orb='mesh-a' style={{ backgroundImage: MESH_A }} />
+				<span className='absolute -inset-1/4 bg-[oklch(0.5_0_0)] blur-md' data-orb='mesh-a' style={{ backgroundImage: MESH_A }} />
 				<span className='absolute -inset-1/4 mix-blend-soft-light blur-lg' data-orb='mesh-b' style={{ backgroundImage: MESH_B }} />
 				{/* Grain: fractal noise over the gradient, so it reads as a surface rather than a flat blur. */}
 				<svg className='absolute inset-0 size-full opacity-40 mix-blend-overlay' preserveAspectRatio='none'>
