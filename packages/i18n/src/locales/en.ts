@@ -584,11 +584,11 @@ export const en = {
 			showAgenda: 'Show agenda',
 		},
 		upcoming: {
-			empty: 'No upcoming event',
+			empty: 'No events in the next 24 hours',
 			label: 'Upcoming',
 			location: 'Location',
 			ongoing: 'Now · ends {{relative}}',
-			startsIn: 'Upcoming {{relative}}',
+			startsIn: 'Starts {{relative}}',
 		},
 	},
 	// Keys mirror core's ERROR_KEYS. Interpolation values come from `DomainIssue.params`.

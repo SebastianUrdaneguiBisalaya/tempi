@@ -18,7 +18,7 @@ import { SearchablePanel } from '@/features/events/components/event-search';
 import { EventShortcuts } from '@/features/events/components/event-shortcuts';
 import { ShowEventRequests } from '@/features/events/components/show-event-requests';
 
-import { UpcomingEvent } from '@/features/events/components/upcoming-event';
+import { UpcomingEvents } from '@/features/events/components/upcoming-events';
 import { GoogleSyncWatcher } from '@/features/settings/components/google-sync-watcher';
 import { SettingsDialogProvider } from '@/features/settings/components/settings-dialog-provider';
 import { UpdateWatcher } from '@/features/settings/components/update-watcher';
@@ -85,7 +85,7 @@ function ShellLayout() {
 	const panelContent =
 		selection === null ? (
 			<SearchablePanel footer={<ShortcutsHint />}>
-				<UpcomingEvent />
+				<UpcomingEvents />
 			</SearchablePanel>
 		) : (
 			<EventPanel />

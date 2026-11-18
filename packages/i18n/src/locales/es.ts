@@ -586,11 +586,11 @@ export const es = {
 			showAgenda: 'Mostrar agenda',
 		},
 		upcoming: {
-			empty: 'No hay próximos eventos',
-			label: 'Próximo',
+			empty: 'No hay eventos en las próximas 24 horas',
+			label: 'Próximos',
 			location: 'Ubicación',
 			ongoing: 'Ahora · termina {{relative}}',
-			startsIn: 'Próximo {{relative}}',
+			startsIn: 'Empieza {{relative}}',
 		},
 	},
 	errors: {
