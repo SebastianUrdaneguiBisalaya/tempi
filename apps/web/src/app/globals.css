@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* In a lower layer than Tailwind's utilities, so the app's classes on the tour popover override driver.js's defaults. */
+@import "driver.js/dist/driver.css" layer(components);
 
 @custom-variant dark (&:is(.dark *));
 
@@ -81,6 +83,8 @@
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.708 0 0);
+	/* Dims the app around the guided tour's highlight. */
+	--tour-overlay: oklch(0 0 0 / 50%);
 }
 
 .dark {
@@ -115,6 +119,7 @@
 	--sidebar-accent-foreground: oklch(0.985 0 0);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.556 0 0);
+	--tour-overlay: oklch(0 0 0 / 70%);
 }
 
 @layer base {
@@ -159,6 +164,16 @@
 		content: "*" / "";
 		color: var(--destructive);
 		margin-inline-start: 0.125rem;
+	}
+}
+
+/*
+ * The guided tour's popover (driver.js) looks like the app's popovers, which have no arrow. Its classes come from
+ * `use-guided-tour.ts`; this only covers what driver.js sets on elements those classes can't reach.
+ */
+@layer components {
+	.tempi-tour .driver-popover-arrow {
+		display: none;
 	}
 }
 

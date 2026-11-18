@@ -575,6 +575,69 @@ export const es = {
 			restoring: 'Restaurando copia de seguridad…',
 			settingsSaved: 'Configuración guardada.',
 		},
+		tour: {
+			close: 'Cerrar recorrido',
+			done: 'Listo',
+			next: 'Siguiente',
+			previous: 'Atrás',
+			progress: '{{current}} de {{total}}',
+			replay: 'Hacer el recorrido de nuevo',
+			steps: {
+				welcome: {
+					description: 'Tempi es un calendario local: tus eventos se quedan en esta computadora. Este breve recorrido te muestra dónde está todo. Dura alrededor de un minuto.',
+					title: 'Te damos la bienvenida a Tempi',
+				},
+				calendar: {
+					description: 'Haz clic o arrastra sobre espacios vacíos para crear un evento. Arrastra una tarjeta para moverla o su borde inferior para cambiar su duración.',
+					title: 'Tu calendario',
+				},
+				navigation: {
+					description: 'Vuelve a hoy, pasa al periodo anterior o siguiente, o ve directo a cualquier fecha.',
+					title: 'Muévete en el tiempo',
+				},
+				views: {
+					description: 'Cambia entre las vistas de día, semana y mes.',
+					title: 'Vistas',
+				},
+				miniCalendar: {
+					description: 'Elige cualquier día aquí para ir a él.',
+					title: 'Minicalendario',
+				},
+				calendars: {
+					description: 'Muestra u oculta los eventos de cada calendario. Su menú ⋯ lo edita, importa o exporta archivos .ics, lo hace predeterminado o lo elimina.',
+					title: 'Calendarios',
+				},
+				addCalendar: {
+					description: 'Crea un calendario nuevo con su propio nombre y color.',
+					title: 'Agregar un calendario',
+				},
+				google: {
+					description: 'Tus calendarios de Google se sincronizan aquí. Administra la conexión desde esta sección.',
+					notConnected: 'Sincroniza, si quieres, con tu cuenta de Google. Conéctala en Ajustes › Integraciones.',
+					title: 'Google Calendar',
+				},
+				panel: {
+					description: 'Busca tus eventos y mira lo que viene en las próximas 24 horas.',
+					title: 'Búsqueda y próximos',
+				},
+				assistant: {
+					description: 'Un asistente opcional que funciona con tu propia clave de API. Háblale por chat o por voz.',
+					title: 'Asistente de IA',
+				},
+				commandMenu: {
+					description: 'Ejecuta cualquier acción desde el teclado: crea eventos, cambia de vista, cambia el tema y más.',
+					title: 'Menú de comandos',
+				},
+				shortcuts: {
+					description: 'Cada acción tiene un atajo. Míralos todos cuando quieras.',
+					title: 'Atajos de teclado',
+				},
+				settings: {
+					description: 'Aquí están tu perfil, la apariencia, las integraciones y los permisos. ¡Todo listo!',
+					title: 'Ajustes',
+				},
+			},
+		},
 		tray: {
 			allDay: 'Todo el día',
 			empty: 'No hay eventos.',

@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
+import { TOUR_TARGETS } from '@/features/tour/tour-steps';
 import { cn } from '@/lib/utils';
 import { useSetCalendarVisible, useUpdateCalendar } from '../hooks/use-calendar-mutations';
 import { useExportCalendars, useImportCalendar } from '../hooks/use-calendar-transfer';
@@ -110,10 +111,11 @@ export function CalendarList() {
 
 	return (
 		<>
-			<SidebarGroup>
+			<SidebarGroup data-tour={TOUR_TARGETS.calendars}>
 				<SidebarGroupLabel>{t('calendars.title')}</SidebarGroupLabel>
 				<SidebarGroupAction
 					aria-label={t('calendars.add')}
+					data-tour={TOUR_TARGETS.addCalendar}
 					onClick={() => setEditing({ calendar: null, color: pickCalendarColor(calendars.map(calendar => calendar.color)) })}
 					title={t('calendars.add')}
 				>
@@ -122,7 +124,7 @@ export function CalendarList() {
 				{rows(local)}
 			</SidebarGroup>
 			{google.length > 0 && (
-				<SidebarGroup>
+				<SidebarGroup data-tour={TOUR_TARGETS.google}>
 					<SidebarGroupLabel>{t('calendars.google')}</SidebarGroupLabel>
 					<SidebarGroupAction aria-label={t('calendars.manageGoogle')} onClick={() => openSettings('integrations')} title={t('calendars.manageGoogle')}>
 						<Settings2Icon />

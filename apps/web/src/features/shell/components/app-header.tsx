@@ -10,6 +10,7 @@ import { useCalendarNavigation } from '@/features/calendar/components/calendar-n
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { ShortcutKeys } from '@/features/shortcuts/components/shortcut-keys';
 import { SHORTCUTS } from '@/features/shortcuts/shortcuts';
+import { TOUR_TARGETS } from '@/features/tour/tour-steps';
 import { formatMonthYear } from '@/lib/date-format';
 import { toUtcDate } from '@/lib/plain-date';
 import { UserAvatarButton } from './user-avatar';
@@ -38,7 +39,7 @@ export function AppHeader({ onTogglePanel, onToggleSidebar, panelOpen, sidebarOp
 					</TooltipContent>
 				</Tooltip>
 				<UserAvatarButton label={t('settings.open')} onClick={() => openSettings()} />
-				<nav aria-label={t('shell.header.label')} className='flex items-center gap-1'>
+				<nav aria-label={t('shell.header.label')} className='flex items-center gap-1' data-tour={TOUR_TARGETS.navigation}>
 					<Button onClick={goToToday} variant='outline'>
 						{t('shell.header.today')}
 					</Button>
@@ -56,6 +57,7 @@ export function AppHeader({ onTogglePanel, onToggleSidebar, panelOpen, sidebarOp
 			<div className='flex items-center gap-2'>
 				<ToggleGroup
 					aria-label={t('shell.views.label')}
+					data-tour={TOUR_TARGETS.views}
 					onValueChange={([selected]) => {
 						// Pressing the active view again empties the group; keep the current view instead.
 						if (isCalendarView(selected)) setView(selected);
@@ -70,7 +72,7 @@ export function AppHeader({ onTogglePanel, onToggleSidebar, panelOpen, sidebarOp
 					))}
 				</ToggleGroup>
 				<Tooltip>
-					<TooltipTrigger render={<Button aria-label={t('settings.open')} onClick={() => openSettings()} size='icon' variant='ghost' />}>
+					<TooltipTrigger render={<Button aria-label={t('settings.open')} data-tour={TOUR_TARGETS.settings} onClick={() => openSettings()} size='icon' variant='ghost' />}>
 						<SettingsIcon />
 					</TooltipTrigger>
 					<TooltipContent>

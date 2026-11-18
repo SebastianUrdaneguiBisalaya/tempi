@@ -12,20 +12,16 @@ import { EventSearchItems } from '@/features/events/components/event-search';
 import { useNewEvent } from '@/features/events/hooks/use-new-event';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { useSaveSettings, useSettings } from '@/features/settings/hooks/use-settings';
+import { useTour } from '@/features/tour/components/tour-provider';
 import { nativeLanguageName } from '@/lib/language-name';
 import { useDialogShortcutScope, useShortcut } from '../hooks/use-shortcut';
-import { SHORTCUTS, type ShortcutAction } from '../shortcuts';
+import { type ShortcutAction, shortcutKeysOf } from '../shortcuts';
 import { ShortcutKeys } from './shortcut-keys';
 
 /** Root lists every command; the others are the choices behind "Set theme to ›", "Set language to ›", "Import .ics into ›" and the event search. */
 type Page = 'import' | 'language' | 'root' | 'search' | 'theme';
 
 const VIEW_ACTIONS = { day: 'dayView', month: 'monthView', week: 'weekView' } as const satisfies Record<CalendarView, ShortcutAction>;
-
-const keysOf = (action: ShortcutAction): readonly string[] => {
-	const { keys } = SHORTCUTS[action];
-	return typeof keys === 'string' ? [keys] : keys;
-};
 
 /**
  * ⌘K: runs any main action from the keyboard. Typing filters the commands and offers to search events for the text.
@@ -47,6 +43,7 @@ export function CommandMenu() {
 	const { data: calendars } = useCalendars();
 	const importCalendar = useImportCalendar();
 	const exportCalendars = useExportCalendars();
+	const { startTour } = useTour();
 
 	useShortcut('openCommandMenu', () => setOpen(true));
 	useDialogShortcutScope(open);
@@ -76,7 +73,7 @@ export function CommandMenu() {
 			<CommandItem key={action} onSelect={run(command)} value={label}>
 				{label}
 				<CommandShortcut>
-					<ShortcutKeys keys={keysOf(action)} />
+					<ShortcutKeys keys={shortcutKeysOf(action)} />
 				</CommandShortcut>
 			</CommandItem>
 		);
@@ -112,6 +109,9 @@ export function CommandMenu() {
 								</CommandItem>
 								<CommandItem onSelect={run(() => exportCalendars.mutate(null))} value={t('commandMenu.exportAll')}>
 									{t('commandMenu.exportAll')}
+								</CommandItem>
+								<CommandItem onSelect={run(startTour)} value={t('tour.replay')}>
+									{t('tour.replay')}
 								</CommandItem>
 							</CommandGroup>
 							<CommandGroup heading={t('commandMenu.groups.appearance')}>

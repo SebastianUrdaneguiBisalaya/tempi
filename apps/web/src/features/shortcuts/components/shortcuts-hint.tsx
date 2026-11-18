@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
+import { TOUR_TARGETS } from '@/features/tour/tour-steps';
 import { SHORTCUTS } from '../shortcuts';
 import { ShortcutKeys } from './shortcut-keys';
 
@@ -8,7 +9,7 @@ import { ShortcutKeys } from './shortcut-keys';
 export function ShortcutsHint() {
 	const { t } = useTranslation();
 	return (
-		<p className='flex w-full items-center justify-between gap-1.5 text-xs text-muted-foreground'>
+		<p className='flex w-full items-center justify-between gap-1.5 text-xs text-muted-foreground' data-tour={TOUR_TARGETS.shortcutsHint}>
 			{t('shortcuts.hint')} <ShortcutKeys keys={[SHORTCUTS.showShortcuts.keys]} />
 		</p>
 	);
