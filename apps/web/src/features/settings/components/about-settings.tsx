@@ -1,7 +1,7 @@
 'use client';
 
 import type { AppUpdateStatus } from '@tempi/core';
-import { BugIcon, DownloadIcon, GlobeIcon, type LucideIcon, MapIcon, NotebookTextIcon, RefreshCwIcon, RotateCwIcon, SquareCodeIcon } from 'lucide-react';
+import { BugIcon, DownloadIcon, FileTextIcon, GlobeIcon, type LucideIcon, MapIcon, NotebookTextIcon, RefreshCwIcon, RotateCwIcon, ShieldIcon, SquareCodeIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { useTour } from '@/features/tour/components/tour-provider';
 import { formatDateTime } from '@/lib/date-format';
-import { WEBSITE_URL } from '@/lib/site';
+import { legalPageUrl, WEBSITE_URL } from '@/lib/site';
 import { useAppUpdateStatus, useCheckForUpdates, useInstallUpdate } from '../hooks/use-app-update';
 import { useSettings } from '../hooks/use-settings';
 import { useSettingsDialog } from './settings-dialog-provider';
@@ -30,7 +30,7 @@ function ExternalLink({ href, icon: Icon, label }: { href: string; icon: LucideI
 
 /** What Tempi is and who makes it, the installed version and its updates: where they stand, a manual check, and installing or downloading a new one. */
 export function AboutSettings() {
-	const { t } = useTranslation();
+	const { i18n, t } = useTranslation();
 	const { data: status } = useAppUpdateStatus();
 	const { data: settings } = useSettings();
 	const timeZone = useTimeZone();
@@ -110,6 +110,8 @@ export function AboutSettings() {
 					<ExternalLink href={REPO_URL} icon={SquareCodeIcon} label={t('settings.about.links.source')} />
 					<ExternalLink href={`${REPO_URL}/releases`} icon={NotebookTextIcon} label={t('settings.about.links.releases')} />
 					<ExternalLink href={`${REPO_URL}/issues/new`} icon={BugIcon} label={t('settings.about.links.issue')} />
+					<ExternalLink href={legalPageUrl('terms', i18n.language)} icon={FileTextIcon} label={t('settings.integrations.legal.terms')} />
+					<ExternalLink href={legalPageUrl('privacy', i18n.language)} icon={ShieldIcon} label={t('settings.integrations.legal.privacy')} />
 				</div>
 			</nav>
 			<p className='text-muted-foreground'>{t('settings.about.license', { year: new Date().getFullYear(), name: AUTHOR.name })}</p>
