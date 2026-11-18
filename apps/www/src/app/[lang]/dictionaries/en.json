@@ -22,8 +22,7 @@
     "subtitle": "A local-first desktop calendar for macOS, Windows and Linux. No account, no cloud, no tracking: your schedule lives on your computer and works with or without a connection.",
     "download": "Download",
     "downloadForPlatform": "Download for {os}",
-    "learnMore": "Learn more",
-    "imageAlt": "Two people working on laptops on a beach at sunset"
+    "learnMore": "Learn more"
   },
   "why": {
     "eyebrow": "Why Tempi",
