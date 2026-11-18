@@ -430,8 +430,6 @@ export const es = {
 					voicePlaceholder: 'Elige una voz',
 					voicesLoading: 'Cargando voces…',
 				},
-				browserDone: 'Sesión iniciada. Puedes cerrar esta pestaña y volver a Tempi.',
-				browserFailed: 'No se completó el inicio de sesión. Puedes cerrar esta pestaña y volver a Tempi.',
 				calendarsDescription: 'Elige qué calendarios de esta cuenta aparecen en Tempi. Desmarcar uno lo quita de Tempi, no de Google.',
 				calendarsEmpty: 'Tus calendarios aparecen aquí después de la primera sincronización.',
 				calendarsTitle: 'Calendarios para sincronizar',

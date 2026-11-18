@@ -26,8 +26,8 @@ export type GoogleAccountDeps = {
 	listen: (options: LoopbackOptions) => Promise<LoopbackRedirect>;
 	/** Opens the sign-in page in the system browser, never inside the app. */
 	openBrowser: (url: string) => Promise<void>;
-	/** The browser page shown once Google redirects back. */
-	page: (succeeded: boolean) => string;
+	/** Where the browser goes once Google redirects back. */
+	landingUrl: (succeeded: boolean) => string;
 	now: () => Date;
 };
 
@@ -65,7 +65,7 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 		const { signal } = controller;
 		const state = randomToken();
 		const verifier = randomToken();
-		const { outcome, redirectUri } = await deps.listen({ page: deps.page, signal, state, timeoutMs: SIGN_IN_TIMEOUT_MS });
+		const { outcome, redirectUri } = await deps.listen({ landingUrl: deps.landingUrl, signal, state, timeoutMs: SIGN_IN_TIMEOUT_MS });
 		try {
 			await deps.openBrowser(authorizationUrl(client, { redirectUri, state, verifier }));
 		} catch (error) {

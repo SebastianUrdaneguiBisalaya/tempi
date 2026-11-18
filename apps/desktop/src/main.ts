@@ -39,8 +39,9 @@ import { CSP_HASHES_FILE, cspHashesSchema, developmentCsp, productionCsp, withCs
 import { appDatabasePath, openAppDatabase } from './database.js';
 import { openExternalUrl } from './external-links.js';
 import { createGoogleAccountService, type GoogleAccountService } from './google/google-account.js';
-import { listenForRedirect, redirectPage } from './google/loopback.js';
+import { listenForRedirect } from './google/loopback.js';
 import { oauthClientFrom } from './google/oauth.js';
+import { signInLandingUrl } from './google/sign-in-landing.js';
 import { createSyncRunner, type SyncRunner } from './google/sync-runner.js';
 import { type Cipher, createTokenStore } from './google/token-store.js';
 import { createIcalWorker } from './ical-worker-client.js';
@@ -87,7 +88,7 @@ let database: DatabaseSync | null = null;
 let reminders: ReminderScheduler | null = null;
 let googleSync: SyncRunner | null = null;
 let appUpdates: UpdateService | null = null;
-// The stored language, for text the main process shows itself (the browser page after Google sign-in).
+// The stored language, for text the main process shows itself and the page the Google sign-in ends on.
 let language: Language = 'en';
 // The stored permission preferences, read synchronously by the permission check handler and each reminder.
 let preferences: Pick<Settings, 'microphoneEnabled' | 'notificationsEnabled'> = { microphoneEnabled: true, notificationsEnabled: true };
@@ -415,10 +416,7 @@ function googleAccount(): GoogleAccountService {
 		listen: listenForRedirect,
 		now: () => new Date(),
 		openBrowser: url => shell.openExternal(url),
-		page: succeeded => {
-			const texts = resources[language].common.settings.integrations;
-			return redirectPage('Tempi', succeeded ? texts.browserDone : texts.browserFailed);
-		},
+		landingUrl: succeeded => signInLandingUrl(language, succeeded),
 		store: createTokenStore(path.join(app.getPath('userData'), 'google-account.bin'), safeStorageCipher),
 	});
 }

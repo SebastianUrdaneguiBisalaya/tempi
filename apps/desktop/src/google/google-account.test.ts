@@ -64,7 +64,7 @@ const service = (overrides: Partial<GoogleAccountDeps> = {}) =>
 			opened.push(url);
 			return Promise.resolve();
 		},
-		page: () => '',
+		landingUrl: () => 'https://example.com/',
 		store,
 		...overrides,
 	});

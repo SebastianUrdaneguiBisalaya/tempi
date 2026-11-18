@@ -428,8 +428,6 @@ export const en = {
 					voicePlaceholder: 'Choose a voice',
 					voicesLoading: 'Loading voices…',
 				},
-				browserDone: 'You’re signed in. You can close this tab and go back to Tempi.',
-				browserFailed: 'Sign-in didn’t finish. You can close this tab and go back to Tempi.',
 				calendarsDescription: 'Choose which calendars of this account appear in Tempi. Unchecking one removes it from Tempi, not from Google.',
 				calendarsEmpty: 'Your calendars appear here after the first sync.',
 				calendarsTitle: 'Calendars to sync',
