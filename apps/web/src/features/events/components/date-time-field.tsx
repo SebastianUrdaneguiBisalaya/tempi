@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useDayPickerOptions } from '@/features/calendar/hooks/use-day-picker-options';
 import { formatDate } from '@/lib/date-format';
 import { fromLocalDate, toLocalDate, toUtcDate } from '@/lib/plain-date';
+import { cn } from '@/lib/utils';
 
 // A new start or end that only had a day gets this time when it gains one.
 const DEFAULT_TIME = '09:00';
@@ -69,8 +70,11 @@ export function DateTimeField({ allDay, dateLabel, disabled = false, id, invalid
 					<span className='truncate'>{day === null ? dateLabel : formatDate(toUtcDate(day), { language: resolveLanguage([i18n.language]), timeZone: 'UTC' }, 'medium')}</span>
 					<ChevronDownIcon data-icon='inline-end' />
 				</PopoverTrigger>
-				<PopoverContent align='start' className='w-auto overflow-hidden p-0'>
+				{/* As wide as the whole row: the date button, plus the time input and the gap when shown (`w-24`, `gap-2`).
+				    The generated popover can't anchor to the row, and the generated calendar root is `w-fit`. */}
+				<PopoverContent align='start' className={cn('min-w-fit overflow-hidden p-0', allDay ? 'w-(--anchor-width)' : 'w-[calc(var(--anchor-width)+6.5rem)]')}>
 					<Calendar
+						className='w-full!'
 						{...dayPickerOptions}
 						defaultMonth={day === null ? undefined : toLocalDate(day)}
 						mode='single'

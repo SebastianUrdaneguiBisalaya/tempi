@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { listVoices, runAssistant, speak, testKey, textModel, transcribe } from '@tempi/ai';
-import { type CoreDeps, getProfile, getSettings, initializeSettings, type Language, listReminders, ok, type Reminder, type Settings, systemClock, uuidv7Ids } from '@tempi/core';
+import { type CoreDeps, getProfile, getSettings, initializeSettings, type Language, listReminders, ok, type Reminder, type Settings, systemClock, type Theme, uuidv7Ids } from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
 import { resources } from '@tempi/i18n';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
@@ -91,6 +91,8 @@ let appUpdates: UpdateService | null = null;
 let language: Language = 'en';
 // The stored permission preferences, read synchronously by the permission check handler and each reminder.
 let preferences: Pick<Settings, 'microphoneEnabled' | 'notificationsEnabled'> = { microphoneEnabled: true, notificationsEnabled: true };
+// The saved theme, which a dropped preview goes back to.
+let savedTheme: Theme = 'system';
 
 function isTrustedUrl(url: string) {
 	return url === WEB_URL || url.startsWith(`${WEB_URL}/`);
@@ -108,6 +110,7 @@ function loadWebApp() {
 function applySettings(settings: Settings) {
 	language = settings.language;
 	preferences = { microphoneEnabled: settings.microphoneEnabled, notificationsEnabled: settings.notificationsEnabled };
+	savedTheme = settings.theme;
 	nativeTheme.themeSource = settings.theme;
 	menuBar.setEnabled(settings.menuBarEnabled, settings.language);
 }
@@ -225,8 +228,10 @@ function createTrayWindow() {
 		resizable: false,
 		skipTaskbar: true,
 	});
-	// Opens over whatever space or full-screen app is in front, like other menu bar extras.
-	if (process.platform === 'darwin') window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+	// Opens over whatever space or full-screen app is in front, like other menu bar extras. Without
+	// `skipTransformProcessType`, macOS turns Tempi into a menu bar-only app for a moment, which hides the main window
+	// and drops the Dock icon.
+	if (process.platform === 'darwin') window.setVisibleOnAllWorkspaces(true, { skipTransformProcessType: true, visibleOnFullScreen: true });
 	window.loadURL(`${WEB_URL}/tray`).catch(error => console.error('Failed to load the menu bar calendar', error));
 	return window;
 }
@@ -601,6 +606,10 @@ if (!gotLock) {
 					googleSync?.schedule();
 				},
 				settingsSaved: applySettings,
+				// Previewing "system" must show the OS theme, which the renderer only sees once `themeSource` follows the preview.
+				themePreviewed: theme => {
+					nativeTheme.themeSource = theme ?? savedTheme;
+				},
 				showEvent: showInMainWindow,
 			}
 		);

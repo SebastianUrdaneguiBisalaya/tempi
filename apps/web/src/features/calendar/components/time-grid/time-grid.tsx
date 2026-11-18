@@ -193,7 +193,9 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 				{...drag.gridHandlers}
 			>
 				<div className='contents' role='row'>
-					<div className='sticky top-0 left-0 z-30 border-b bg-background' role='columnheader'>
+					{/* The header cells sit at explicit positions: the all-day lane overlaps them in row 1, and auto-placement
+					    would otherwise push them (and every slot after them) out of the cells the lane takes. */}
+					<div className='sticky top-0 left-0 z-30 border-b bg-background' role='columnheader' style={{ gridColumn: 1, gridRow: 1 }}>
 						{collapsible && <AllDayToggle collapsed={allDayCollapsed} onToggle={() => setAllDayCollapsed.mutate(!allDayCollapsed)} />}
 					</div>
 					{days.map((day, index) => {
@@ -207,6 +209,7 @@ export function TimeGrid({ days, timeZone, today }: TimeGridProps) {
 								className='sticky top-0 z-20 flex items-start justify-center gap-1.5 border-b border-l bg-background text-sm'
 								key={day.toString()}
 								role='columnheader'
+								style={{ gridColumn: index + 2, gridRow: 1 }}
 							>
 								<div className='flex items-center gap-1.5' style={{ height: `${DAY_HEADER_REM}rem` }}>
 									<span className={cn('text-muted-foreground', isToday && 'font-medium text-foreground')}>{formatWeekday(toUtcDate(day), { language, timeZone: 'UTC' })}</span>

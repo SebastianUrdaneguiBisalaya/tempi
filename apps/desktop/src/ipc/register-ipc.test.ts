@@ -444,6 +444,19 @@ describe('settingsSaved listener', () => {
 	});
 });
 
+describe('themePreviewed listener', () => {
+	test('receives each previewed theme and null when the preview is dropped, storing nothing', async () => {
+		const previewed: (string | null)[] = [];
+		setup(undefined, { themePreviewed: theme => previewed.push(theme) });
+		const before = await invoke(CHANNELS.settings.get);
+		expect(await invoke(CHANNELS.settings.previewTheme, 'system')).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.settings.previewTheme, null)).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.settings.previewTheme, 'neon')).toMatchObject({ ok: false });
+		expect(previewed).toEqual(['system', null]);
+		expect(await invoke(CHANNELS.settings.get)).toEqual(before);
+	});
+});
+
 describe('eventsChanged listener', () => {
 	let changes: number;
 	const listeners: IpcListeners = { eventsChanged: () => changes++ };

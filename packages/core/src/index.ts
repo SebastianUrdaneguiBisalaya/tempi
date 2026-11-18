@@ -101,7 +101,7 @@ export type { Speech, SpeechInput } from './domain/speech';
 export { MAX_SPEECH_LENGTH, SPEECH_AUDIO_TYPE, speechInputSchema, speechSchema } from './domain/speech';
 export type { Timestamps } from './domain/timestamps';
 export { singletonTimestampsSchema, storedEntitySchema, timestampsSchema } from './domain/timestamps';
-export { UPCOMING_WINDOW_DAYS, upcomingEvent } from './domain/upcoming';
+export { UPCOMING_WINDOW_HOURS, upcomingEvents } from './domain/upcoming';
 export type { ProfileInput, ProfileUpdateInput, UserProfile } from './domain/user-profile';
 export { profileInputSchema, profileUpdateInputSchema, userProfileSchema } from './domain/user-profile';
 export { uuidv7 } from './domain/uuidv7';

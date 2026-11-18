@@ -6,7 +6,8 @@ import { trayWindowPosition } from './tray-window-position.js';
 /** ⌥⌘K on macOS, Alt+Ctrl+K on Windows and Linux. */
 export const MENU_BAR_SHORTCUT = 'Alt+CommandOrControl+K';
 
-export const TRAY_WINDOW_SIZE = { height: 480, width: 320 };
+// Tall enough for a six-week month at full width and a few of the day's events below it.
+export const TRAY_WINDOW_SIZE = { height: 540, width: 320 };
 
 // Clicking the tray icon while the window is open first blurs (hiding it), then clicks: without this the click
 // would reopen what the user just meant to close.

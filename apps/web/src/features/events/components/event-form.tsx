@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { asOccurrence, type Calendar, EVENT_STATUSES, type EventOccurrence, type EventPatch, zodErrorKeyMap } from '@tempi/core';
 import { Trash2Icon, VideoIcon, XIcon } from 'lucide-react';
-import { useEffect, useEffectEvent, useId } from 'react';
+import { useEffect, useEffectEvent, useId, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormFieldError } from '@/components/form-field-error';
@@ -91,8 +91,12 @@ export function EventForm({ calendars, changes, defaultValues, event }: EventFor
 		if (scope !== null) updateOccurrence.mutate({ occurrence: { ...event, series: event.series }, patch, scope }, { onError: showFieldErrors, onSuccess: openEvent });
 	});
 
+	// The hours before switching to all day, restored when switching back.
+	const timedTimes = useRef<Pick<EventFormValues, 'endAt' | 'startAt'>>(undefined);
 	const toggleAllDay = (checked: boolean) => {
-		const times = convertFormTimes(getValues(), checked);
+		const values = getValues();
+		if (checked) timedTimes.current = { endAt: values.endAt, startAt: values.startAt };
+		const times = convertFormTimes(values, checked, timedTimes.current);
 		setValue('allDay', checked, { shouldDirty: true });
 		setValue('startAt', times.startAt, { shouldDirty: true });
 		setValue('endAt', times.endAt, { shouldDirty: true });

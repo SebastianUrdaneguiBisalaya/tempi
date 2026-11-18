@@ -64,8 +64,11 @@ function TrayContent() {
 		<main className='flex h-svh flex-col bg-background'>
 			<Calendar
 				aria-label={t('shell.sidebar.datePicker')}
-				className='mx-auto shrink-0 bg-transparent p-3 [--cell-size:--spacing(8)]'
+				// Full width with the day list's inset (`px-4`), so both line up (the generated root is `w-fit`).
+				className='w-full! shrink-0 bg-transparent px-4 py-3 [--cell-size:--spacing(8)]'
 				{...dayPickerOptions}
+				// Always six weeks, like the sidebar's calendar, so the day list below doesn't jump between months.
+				fixedWeeks
 				mode='single'
 				onSelect={day => goToDate(fromLocalDate(day))}
 				// Keeps a day selected: picking the selected day again doesn't clear it.
