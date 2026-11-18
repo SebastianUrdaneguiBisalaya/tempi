@@ -3,9 +3,8 @@
 import { LockIcon, type LucideIcon, RefreshCwIcon, ShieldCheckIcon, ZapIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { gsap, useMotion } from '@/lib/gsap';
-import type { Locale } from '@/lib/i18n';
 import { SECTION_IDS } from '@/lib/site';
-import { AppMockup, type MockupCopy } from './app-mockup';
+import type { MockupCopy } from './app-mockup';
 
 const PILLARS = [
 	{ key: 'local', icon: LockIcon },
@@ -21,20 +20,17 @@ export type WhyCopy = {
 	title: string;
 	subtitle: string;
 	pillars: Record<(typeof PILLARS)[number]['key'], Pillar>;
+	/** Rendered by the hero; it stays here so the dictionary keeps its shape. */
 	mockup: MockupCopy;
 };
 
-export function WhyContent({ locale, copy }: { locale: Locale; copy: WhyCopy }) {
+export function WhyContent({ copy }: { copy: WhyCopy }) {
 	const ref = useRef<HTMLElement>(null);
 
 	useMotion(ref, () => {
 		const reveal = { trigger: ref.current, start: 'top 70%' };
 		gsap.from('[data-why-intro]', { y: 24, autoAlpha: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out', scrollTrigger: reveal });
 		gsap.from('[data-why-pillar]', { y: 24, autoAlpha: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out', delay: 0.2, scrollTrigger: { trigger: '[data-why-pillar]', start: 'top 85%' } });
-		gsap.timeline({ scrollTrigger: { trigger: '[data-why-mockup]', start: 'top 80%' } })
-			.from('[data-why-mockup]', { y: 60, autoAlpha: 0, duration: 1, ease: 'power3.out' })
-			.from('[data-mockup-event]', { x: -12, autoAlpha: 0, duration: 0.5, stagger: 0.18, ease: 'power2.out' }, '-=0.4')
-			.from('[data-mockup-now]', { scaleX: 0, transformOrigin: 'left center', duration: 0.6, ease: 'power2.inOut' }, '-=0.2');
 	});
 
 	return (
@@ -65,9 +61,6 @@ export function WhyContent({ locale, copy }: { locale: Locale; copy: WhyCopy }) 
 					</li>
 				))}
 			</ul>
-			<div data-why-mockup className='mt-12'>
-				<AppMockup locale={locale} copy={copy.mockup} />
-			</div>
 		</section>
 	);
 }
