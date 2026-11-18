@@ -42,6 +42,12 @@ export const SHORTCUTS = {
 
 export type ShortcutAction = keyof typeof SHORTCUTS;
 
+/** An action's keys as a list, for `ShortcutKeys`. */
+export const shortcutKeysOf = (action: ShortcutAction): readonly string[] => {
+	const { keys } = SHORTCUTS[action];
+	return typeof keys === 'string' ? [keys] : keys;
+};
+
 export const isShortcutAction = (action: string): action is ShortcutAction => Object.hasOwn(SHORTCUTS, action);
 
 /** The registry as the engine's keymap, so bindings and `useShortcuts` share the same keys. */

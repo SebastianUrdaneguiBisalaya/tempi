@@ -573,6 +573,69 @@ export const en = {
 			restoring: 'Restoring backup…',
 			settingsSaved: 'Settings saved.',
 		},
+		tour: {
+			close: 'Close tour',
+			done: 'Done',
+			next: 'Next',
+			previous: 'Back',
+			progress: '{{current}} of {{total}}',
+			replay: 'Take the tour again',
+			steps: {
+				welcome: {
+					description: 'Tempi is a local-first calendar: your events stay on this computer. This quick tour shows where everything is. It takes about a minute.',
+					title: 'Welcome to Tempi',
+				},
+				calendar: {
+					description: 'Click or drag across empty slots to create an event. Drag a card to move it, or drag its bottom edge to change its length.',
+					title: 'Your calendar',
+				},
+				navigation: {
+					description: 'Jump back to today, move to the previous or next period, or go straight to any date.',
+					title: 'Move through time',
+				},
+				views: {
+					description: 'Switch between the day, week and month views.',
+					title: 'Views',
+				},
+				miniCalendar: {
+					description: 'Pick any day here to jump to it.',
+					title: 'Mini calendar',
+				},
+				calendars: {
+					description: 'Show or hide each calendar’s events. Its ⋯ menu edits it, imports or exports .ics files, makes it the default or deletes it.',
+					title: 'Calendars',
+				},
+				addCalendar: {
+					description: 'Create a new calendar with its own name and color.',
+					title: 'Add a calendar',
+				},
+				google: {
+					description: 'Your Google calendars sync here. Manage the connection from this section.',
+					notConnected: 'Optionally sync with your Google account. Connect it in Settings › Integrations.',
+					title: 'Google Calendar',
+				},
+				panel: {
+					description: 'Search your events and see what’s coming in the next 24 hours.',
+					title: 'Search and upcoming',
+				},
+				assistant: {
+					description: 'An optional assistant that works with your own API key. Talk to it by chat or by voice.',
+					title: 'AI assistant',
+				},
+				commandMenu: {
+					description: 'Run any action from the keyboard: create events, switch views, change the theme and more.',
+					title: 'Command menu',
+				},
+				shortcuts: {
+					description: 'Every action has a shortcut. See them all at any time.',
+					title: 'Keyboard shortcuts',
+				},
+				settings: {
+					description: 'Your profile, appearance, integrations and permissions live here. You’re ready to go!',
+					title: 'Settings',
+				},
+			},
+		},
 		tray: {
 			allDay: 'All day',
 			empty: 'No events.',

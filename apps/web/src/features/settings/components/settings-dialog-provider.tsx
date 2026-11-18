@@ -5,7 +5,7 @@ import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { useAppearancePreview } from '@/providers/appearance-preview-provider';
 import { SettingsDialog, type SettingsTab } from './settings-dialog';
 
-type SettingsDialogControls = { openSettings: (tab?: SettingsTab) => void };
+type SettingsDialogControls = { closeSettings: () => void; openSettings: (tab?: SettingsTab) => void };
 
 const SettingsDialogContext = createContext<SettingsDialogControls | null>(null);
 
@@ -27,7 +27,7 @@ export function SettingsDialogProvider({ children }: { children: ReactNode }) {
 	};
 
 	return (
-		<SettingsDialogContext value={{ openSettings }}>
+		<SettingsDialogContext value={{ closeSettings: () => changeOpen(false), openSettings }}>
 			{children}
 			<SettingsDialog initialTab={tab} onOpenChange={changeOpen} open={open} />
 		</SettingsDialogContext>

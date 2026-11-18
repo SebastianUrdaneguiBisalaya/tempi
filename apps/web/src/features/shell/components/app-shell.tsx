@@ -26,6 +26,8 @@ import { CommandMenu } from '@/features/shortcuts/components/command-menu';
 import { ShortcutsDialog } from '@/features/shortcuts/components/shortcuts-dialog';
 import { ShortcutsHint } from '@/features/shortcuts/components/shortcuts-hint';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
+import { TourProvider, useTour, useTourLayout } from '@/features/tour/components/tour-provider';
+import { TOUR_TARGETS } from '@/features/tour/tour-steps';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { AppHeader } from './app-header';
 
@@ -38,20 +40,22 @@ export function AppShell() {
 	return (
 		<CalendarNavigationProvider>
 			<EventPanelProvider>
-				<SettingsDialogProvider>
-					<GoToDateProvider>
-						<AssistantProvider>
-							<CalendarShortcuts />
-							<EventShortcuts />
-							<ShowEventRequests />
-							<GoogleSyncWatcher />
-							<UpdateWatcher />
-							<ShellLayout />
-							<ShortcutsDialog />
-							<CommandMenu />
-						</AssistantProvider>
-					</GoToDateProvider>
-				</SettingsDialogProvider>
+				<TourProvider>
+					<SettingsDialogProvider>
+						<GoToDateProvider>
+							<AssistantProvider>
+								<CalendarShortcuts />
+								<EventShortcuts />
+								<ShowEventRequests />
+								<GoogleSyncWatcher />
+								<UpdateWatcher />
+								<ShellLayout />
+								<ShortcutsDialog />
+								<CommandMenu />
+							</AssistantProvider>
+						</GoToDateProvider>
+					</SettingsDialogProvider>
+				</TourProvider>
 			</EventPanelProvider>
 		</CalendarNavigationProvider>
 	);
@@ -80,6 +84,38 @@ function ShellLayout() {
 		else setPanelDrawerOpen(false);
 	};
 	useShortcut('togglePanel', togglePanel);
+	const tour = useTour();
+	useTourLayout({
+		reveal: area => {
+			let moving = false;
+			// The panel shows its default sections (search, upcoming, shortcuts) during the tour.
+			if (selection !== null && (area === 'panel' || !panelInline)) {
+				close();
+				moving = !panelInline;
+			}
+			if (area === 'sidebar') {
+				moving ||= sidebarInline ? !sidebarExpanded : !sidebarDrawerOpen;
+				if (sidebarInline) setSidebarExpanded(true);
+				else setSidebarDrawerOpen(true);
+			} else if (!sidebarInline && sidebarDrawerOpen) {
+				moving = true;
+				setSidebarDrawerOpen(false);
+			}
+			if (area === 'panel') {
+				moving ||= panelInline ? !panelExpanded : !panelDrawerOpen;
+				if (panelInline) setPanelExpanded(true);
+				else setPanelDrawerOpen(true);
+			} else if (!panelInline && panelDrawerOpen) {
+				moving = true;
+				setPanelDrawerOpen(false);
+			}
+			return moving;
+		},
+		reset: () => {
+			setSidebarDrawerOpen(false);
+			setPanelDrawerOpen(false);
+		},
+	});
 	// The assistant floats beside its sidebar entry while that is on screen; otherwise it opens as a bottom drawer.
 	const assistantAnchored = sidebarInline && sidebarExpanded;
 	const panelContent =
@@ -96,28 +132,35 @@ function ShellLayout() {
 			{sidebarInline ? (
 				<Sidebar aria-label={t('shell.sidebar.label')} role='complementary'>
 					<SidebarContent>
-						<SidebarGroup>
+						<SidebarGroup data-tour={TOUR_TARGETS.miniCalendar}>
 							<MiniCalendar />
 						</SidebarGroup>
 						<CalendarList />
 					</SidebarContent>
-					<SidebarFooter>
+					<SidebarFooter data-tour={TOUR_TARGETS.assistant}>
 						<AssistantEntry anchored={sidebarExpanded} />
 					</SidebarFooter>
 				</Sidebar>
 			) : (
-				<Drawer onOpenChange={setSidebarDrawerOpen} open={sidebarDrawerOpen} swipeDirection='left'>
+				<Drawer
+					// During the tour its popover sits outside the drawer: keep the drawer open and the popover usable.
+					disablePointerDismissal={tour.active}
+					modal={!tour.active}
+					onOpenChange={setSidebarDrawerOpen}
+					open={sidebarDrawerOpen}
+					swipeDirection='left'
+				>
 					<DrawerContent>
 						<DrawerHeader className='sr-only'>
 							<DrawerTitle>{t('shell.sidebar.label')}</DrawerTitle>
 						</DrawerHeader>
 						<SidebarContent>
-							<SidebarGroup>
+							<SidebarGroup data-tour={TOUR_TARGETS.miniCalendar}>
 								<MiniCalendar />
 							</SidebarGroup>
 							<CalendarList />
 						</SidebarContent>
-						<SidebarFooter>
+						<SidebarFooter data-tour={TOUR_TARGETS.assistant}>
 							<AssistantEntry anchored={false} onOpenDrawer={() => setSidebarDrawerOpen(false)} />
 						</SidebarFooter>
 					</DrawerContent>
@@ -126,17 +169,19 @@ function ShellLayout() {
 			<SidebarInset className='min-h-0 min-w-0'>
 				<AppHeader onTogglePanel={togglePanel} onToggleSidebar={toggleSidebar} panelOpen={panelOpen} sidebarOpen={sidebarInline ? sidebarExpanded : sidebarDrawerOpen} />
 				<div className='flex min-h-0 flex-1'>
-					<div className='min-w-0 flex-1'>
+					<div className='min-w-0 flex-1' data-tour={TOUR_TARGETS.calendar}>
 						<CalendarMain />
 					</div>
 					{panelInline ? (
 						panelOpen && (
-							<aside aria-label={t('shell.panel.label')} className='w-72 shrink-0 border-l'>
+							<aside aria-label={t('shell.panel.label')} className='w-72 shrink-0 border-l' data-tour={TOUR_TARGETS.panel}>
 								{panelContent}
 							</aside>
 						)
 					) : (
 						<Drawer
+							disablePointerDismissal={tour.active}
+							modal={!tour.active}
 							onOpenChange={open => {
 								if (open) return;
 								setPanelDrawerOpen(false);
@@ -146,7 +191,7 @@ function ShellLayout() {
 							open={panelOpen}
 							swipeDirection='right'
 						>
-							<DrawerContent>
+							<DrawerContent data-tour={TOUR_TARGETS.panel}>
 								<DrawerHeader className='sr-only'>
 									<DrawerTitle>{t('shell.panel.label')}</DrawerTitle>
 								</DrawerHeader>

@@ -1,17 +1,19 @@
 'use client';
 
 import type { AppUpdateStatus } from '@tempi/core';
-import { BugIcon, DownloadIcon, GlobeIcon, type LucideIcon, NotebookTextIcon, RefreshCwIcon, RotateCwIcon, SquareCodeIcon } from 'lucide-react';
+import { BugIcon, DownloadIcon, GlobeIcon, type LucideIcon, MapIcon, NotebookTextIcon, RefreshCwIcon, RotateCwIcon, SquareCodeIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
+import { useTour } from '@/features/tour/components/tour-provider';
 import { formatDateTime } from '@/lib/date-format';
 import { WEBSITE_URL } from '@/lib/site';
 import { useAppUpdateStatus, useCheckForUpdates, useInstallUpdate } from '../hooks/use-app-update';
 import { useSettings } from '../hooks/use-settings';
+import { useSettingsDialog } from './settings-dialog-provider';
 
 const AUTHOR = { name: 'Sebastian Marat Urdanegui Bisalaya', url: 'https://sebastianurdanegui.com' } as const;
 const REPO_URL = 'https://github.com/SebastianUrdaneguiBisalaya/tempi';
@@ -34,6 +36,8 @@ export function AboutSettings() {
 	const timeZone = useTimeZone();
 	const check = useCheckForUpdates();
 	const install = useInstallUpdate();
+	const { startTour } = useTour();
+	const { closeSettings } = useSettingsDialog();
 
 	const statusText = (current: AppUpdateStatus) => t(`settings.about.status.${current.state}`, { version: current.latestVersion ?? '' });
 	const busy = check.isPending || status?.state === 'checking' || status?.state === 'downloading';
@@ -49,6 +53,18 @@ export function AboutSettings() {
 				</div>
 			</div>
 			<p className='max-w-prose text-muted-foreground'>{t('settings.about.description')}</p>
+			<Button
+				onClick={() => {
+					// The tour walks the main screen, so the dialog gets out of the way first.
+					closeSettings();
+					startTour();
+				}}
+				size='sm'
+				variant='outline'
+			>
+				<MapIcon data-icon='inline-start' />
+				{t('tour.replay')}
+			</Button>
 			<p>
 				{t('settings.about.madeBy')}{' '}
 				<a className='font-medium underline underline-offset-4 hover:text-foreground' href={AUTHOR.url} rel='noreferrer' target='_blank'>
