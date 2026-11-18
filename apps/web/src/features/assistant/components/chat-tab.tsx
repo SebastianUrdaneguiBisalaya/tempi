@@ -5,6 +5,7 @@ import { issueTranslation } from '@tempi/i18n';
 import { ArrowUpIcon, CircleAlertIcon, CircleStopIcon, KeyRoundIcon, SquareIcon, WrenchIcon } from 'lucide-react';
 import { type KeyboardEvent, useId } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Streamdown } from 'streamdown';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button } from '@/components/ui/button';
 import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
@@ -105,7 +106,13 @@ function AssistantReply({ onEdit, turn }: { onEdit: () => void; turn: AssistantT
 				<Traces turn={turn} />
 				{turn.text !== '' && (
 					<Bubble variant='muted'>
-						<BubbleContent className='whitespace-pre-wrap'>{turn.text}</BubbleContent>
+						<BubbleContent>
+							{/* Models answer in Markdown whatever the prompt says. Streamdown sanitizes it (no raw HTML) and closes
+							    half-written syntax while streaming; links open in the system browser through the main process. */}
+							<Streamdown controls={false} isAnimating={turn.status === 'streaming'} linkSafety={{ enabled: false }} mode={turn.status === 'streaming' ? 'streaming' : 'static'}>
+								{turn.text}
+							</Streamdown>
+						</BubbleContent>
 					</Bubble>
 				)}
 				{thinking && (

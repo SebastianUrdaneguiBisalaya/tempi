@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 /* In a lower layer than Tailwind's utilities, so the app's classes on the tour popover override driver.js's defaults. */
 @import "driver.js/dist/driver.css" layer(components);
+/* Streamdown styles its Markdown with Tailwind classes inside its bundle; Tailwind must scan it to emit them. */
+@source "../../node_modules/streamdown/dist/*.js";
 
 @custom-variant dark (&:is(.dark *));
 
