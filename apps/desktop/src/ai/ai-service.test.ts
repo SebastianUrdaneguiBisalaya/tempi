@@ -9,9 +9,9 @@ import { createAiKeyStore } from './key-store';
 import { createAiSettingsStore } from './settings-store';
 
 const cipher = (available = true): Cipher => ({
-	decrypt: data => Buffer.from(data.toString('utf8'), 'base64').reverse().toString('utf8'),
-	encrypt: text => Buffer.from(Buffer.from(text, 'utf8').reverse().toString('base64'), 'utf8'),
-	isAvailable: () => available,
+	decrypt: data => Promise.resolve(Buffer.from(data.toString('utf8'), 'base64').reverse().toString('utf8')),
+	encrypt: text => Promise.resolve(Buffer.from(Buffer.from(text, 'utf8').reverse().toString('base64'), 'utf8')),
+	isAvailable: () => Promise.resolve(available),
 });
 
 const none = { anthropic: false, elevenlabs: false, google: false, groq: false, openai: false, xai: false };

@@ -4,9 +4,9 @@ import { z } from 'zod';
 /** What `safeStorage` offers: encryption with a key the OS keeps (Keychain, DPAPI, the Secret Service). */
 export type Cipher = {
 	/** False when the OS can't really protect the key; tokens are then never stored. */
-	isAvailable: () => boolean;
-	encrypt: (text: string) => Buffer;
-	decrypt: (data: Buffer) => string;
+	isAvailable: () => Promise<boolean>;
+	encrypt: (text: string) => Promise<Buffer>;
+	decrypt: (data: Buffer) => Promise<string>;
 };
 
 const storedAccountSchema = z.object({
@@ -22,7 +22,7 @@ const storedAccountSchema = z.object({
 export type StoredAccount = z.output<typeof storedAccountSchema>;
 
 export type TokenStore = {
-	isAvailable: () => boolean;
+	isAvailable: () => Promise<boolean>;
 	/** The stored account, or null if there is none or it can't be read (another OS user's key, a damaged file). */
 	read: () => Promise<StoredAccount | null>;
 	/** Replaces the stored account. Throws when encryption is unavailable instead of writing plain text. */
@@ -45,7 +45,7 @@ export const createTokenStore = (file: string, cipher: Cipher): TokenStore => ({
 			throw error;
 		}
 		try {
-			const parsed = storedAccountSchema.safeParse(JSON.parse(cipher.decrypt(data)));
+			const parsed = storedAccountSchema.safeParse(JSON.parse(await cipher.decrypt(data)));
 			if (parsed.success) return parsed.data;
 			console.error('The stored Google account is malformed; treating it as disconnected', parsed.error.message);
 		} catch (error) {
@@ -54,8 +54,8 @@ export const createTokenStore = (file: string, cipher: Cipher): TokenStore => ({
 		return null;
 	},
 	write: async account => {
-		if (!cipher.isAvailable()) throw new Error('Refusing to store Google tokens: encryption is unavailable');
-		const data = cipher.encrypt(JSON.stringify(storedAccountSchema.parse(account)));
+		if (!(await cipher.isAvailable())) throw new Error('Refusing to store Google tokens: encryption is unavailable');
+		const data = await cipher.encrypt(JSON.stringify(storedAccountSchema.parse(account)));
 		// Written aside and renamed over, so a crash never leaves half a file; readable by this OS user only.
 		const staged = `${file}.tmp`;
 		await writeFile(staged, data, { mode: 0o600 });

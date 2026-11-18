@@ -120,7 +120,7 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 		},
 		connect: async () => {
 			if (deps.client === null) return fail('internal', 'google.notConfigured');
-			if (!deps.store.isAvailable()) return fail('internal', 'google.encryptionUnavailable');
+			if (!(await deps.store.isAvailable())) return fail('internal', 'google.encryptionUnavailable');
 			if (await isFullyConnected()) return fail('conflict', 'google.alreadyConnected');
 
 			pending?.abort();

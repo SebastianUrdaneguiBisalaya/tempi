@@ -66,7 +66,7 @@ export const createAiService = ({ keys, providers, settings }: AiServiceDeps): A
 		},
 		saveKey: async ({ key, provider }) => {
 			// Checked before calling the provider, so an unprotected system never sends a key it can't keep.
-			if (!keys.isAvailable()) return fail('internal', 'ai.encryptionUnavailable');
+			if (!(await keys.isAvailable())) return fail('internal', 'ai.encryptionUnavailable');
 			const tested = await providers.testKey(provider, key);
 			if (!tested.ok) return tested;
 			await keys.save(provider, key);
