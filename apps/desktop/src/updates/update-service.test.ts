@@ -155,6 +155,14 @@ describe('fetchLatestRelease', () => {
 		(status: number, body: unknown): ReleaseFetch =>
 		async () => ({ json: async () => body, ok: status >= 200 && status < 300, status });
 
+	test('a GitHub that never answers fails the check at the deadline instead of leaving it checking', async () => {
+		const hanging: ReleaseFetch = (_url, init) =>
+			new Promise((_resolve, reject) => {
+				init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true });
+			});
+		await expect(fetchLatestRelease(hanging, 'o/r', 10)).rejects.toThrow();
+	});
+
 	test('reads the version without the tag prefix and the release page', async () => {
 		const release = await fetchLatestRelease(answer(200, { html_url: 'https://github.com/o/r/releases/tag/v1.2.0', tag_name: 'v1.2.0' }), 'o/r');
 		expect(release).toEqual({ url: 'https://github.com/o/r/releases/tag/v1.2.0', version: '1.2.0' });

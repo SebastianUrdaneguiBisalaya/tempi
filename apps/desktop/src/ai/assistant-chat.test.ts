@@ -10,9 +10,9 @@ import { createAiKeyStore } from './key-store';
 import { createAiSettingsStore } from './settings-store';
 
 const cipher: Cipher = {
-	decrypt: data => Buffer.from(data.toString('utf8'), 'base64').reverse().toString('utf8'),
-	encrypt: text => Buffer.from(Buffer.from(text, 'utf8').reverse().toString('base64'), 'utf8'),
-	isAvailable: () => true,
+	decrypt: data => Promise.resolve(Buffer.from(data.toString('utf8'), 'base64').reverse().toString('utf8')),
+	encrypt: text => Promise.resolve(Buffer.from(Buffer.from(text, 'utf8').reverse().toString('base64'), 'utf8')),
+	isAvailable: () => Promise.resolve(true),
 };
 
 const context: AssistantContext = { calendars: [], defaultEventDuration: 60, language: 'en', now: new Date('2026-11-17T14:30:00Z'), timeZone: 'America/Lima', weekStart: 'monday' };

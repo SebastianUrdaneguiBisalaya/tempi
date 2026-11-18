@@ -6,9 +6,9 @@ import { type Cipher, createTokenStore, type StoredAccount } from './token-store
 
 // Stands in for safeStorage: reversible, and the result never contains the plain text.
 const cipher = (available = true): Cipher => ({
-	decrypt: data => Buffer.from(data.toString('utf8'), 'base64').reverse().toString('utf8'),
-	encrypt: text => Buffer.from(Buffer.from(text, 'utf8').reverse().toString('base64'), 'utf8'),
-	isAvailable: () => available,
+	decrypt: data => Promise.resolve(Buffer.from(data.toString('utf8'), 'base64').reverse().toString('utf8')),
+	encrypt: text => Promise.resolve(Buffer.from(Buffer.from(text, 'utf8').reverse().toString('base64'), 'utf8')),
+	isAvailable: () => Promise.resolve(available),
 });
 
 const account: StoredAccount = {
@@ -56,7 +56,7 @@ describe('token store', () => {
 		const store = createTokenStore(file, cipher());
 		await writeFile(file, 'not encrypted');
 		expect(await store.read()).toBeNull();
-		await writeFile(file, cipher().encrypt(JSON.stringify({ email: 'ada@example.com' })));
+		await writeFile(file, await cipher().encrypt(JSON.stringify({ email: 'ada@example.com' })));
 		expect(await store.read()).toBeNull();
 	});
 

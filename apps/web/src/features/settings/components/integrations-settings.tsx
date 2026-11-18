@@ -1,7 +1,6 @@
 'use client';
 
 import { GoogleCalendar } from '@ridemountainpig/svgl-react';
-import { resolveLanguage } from '@tempi/core';
 import { LogOutIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
-import { WEBSITE_URL } from '@/lib/site';
+import { legalPageUrl } from '@/lib/site';
 import { useConnectGoogle, useDisconnectGoogle, useGoogleAccount } from '../hooks/use-google-account';
 import { AiIntegrations } from './ai-integrations';
 import { GoogleSyncSettings } from './google-sync-settings';
@@ -71,7 +70,7 @@ export function IntegrationsSettings() {
 									// Opens in the system browser: the main process sends new-window links there.
 									<a
 										className='rounded-sm underline-offset-4 hover:text-foreground hover:underline'
-										href={`${WEBSITE_URL}/${resolveLanguage([i18n.language])}/${page}`}
+										href={legalPageUrl(page, i18n.language)}
 										key={page}
 										rel='noreferrer'
 										target='_blank'

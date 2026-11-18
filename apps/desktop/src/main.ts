@@ -401,10 +401,11 @@ function dataIo(db: DatabaseSync, deps: CoreDeps, transaction: TransactionQueue,
 }
 
 // On Linux without a keyring, safeStorage falls back to a hardcoded key; that protects nothing, so tokens aren't stored.
+// The async API: the sync one is deprecated, and it can read what the sync one wrote.
 const safeStorageCipher: Cipher = {
-	decrypt: data => safeStorage.decryptString(data),
-	encrypt: text => safeStorage.encryptString(text),
-	isAvailable: () => safeStorage.isEncryptionAvailable() && (process.platform !== 'linux' || safeStorage.getSelectedStorageBackend() !== 'basic_text'),
+	decrypt: async data => (await safeStorage.decryptStringAsync(data)).result,
+	encrypt: text => safeStorage.encryptStringAsync(text),
+	isAvailable: async () => (await safeStorage.isAsyncEncryptionAvailable()) && (process.platform !== 'linux' || safeStorage.getSelectedStorageBackend() !== 'basic_text'),
 };
 
 // The OAuth client is inlined at build time (`bun build --env`) from the maintainer's environment, never committed.

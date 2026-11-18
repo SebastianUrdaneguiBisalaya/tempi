@@ -1,6 +1,7 @@
 import { ElevenLabsClient, ElevenLabsError } from '@elevenlabs/elevenlabs-js';
 import { fail, ok, type Result } from '@tempi/core';
 import { networkFailure, statusFailure } from './failures';
+import { spokenText } from './spoken-text';
 import type { AiRequestOptions } from './voices';
 
 export type SpeechRequest = {
@@ -22,7 +23,7 @@ export const speak = async (key: string, { model, text, voiceId }: SpeechRequest
 	const client = new ElevenLabsClient({ apiKey: key, maxRetries: 1, timeoutInSeconds: SPEECH_TIMEOUT_SECONDS, ...(options.fetch === undefined ? {} : { fetch: options.fetch }) });
 	try {
 		// No language code: most models refuse one and detect the language from the text.
-		const stream = await client.textToSpeech.convert(voiceId, { modelId: model, outputFormat: OUTPUT_FORMAT, text });
+		const stream = await client.textToSpeech.convert(voiceId, { modelId: model, outputFormat: OUTPUT_FORMAT, text: spokenText(text) });
 		const audio = new Uint8Array(await new Response(stream).arrayBuffer());
 		if (audio.byteLength === 0) return fail('internal', 'ai.speechFailed', { detail: 'ElevenLabs returned no audio' });
 		return ok(audio);

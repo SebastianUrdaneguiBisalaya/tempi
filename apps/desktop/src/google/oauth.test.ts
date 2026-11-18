@@ -37,6 +37,16 @@ const tokenBody = (claims: object = { aud: client.id, email: 'ada@example.com', 
 	token_type: 'Bearer',
 });
 
+describe('timeouts', () => {
+	test('a token refresh Google never answers fails as unreachable at the deadline', async () => {
+		const hanging: Fetch = (_url, init) =>
+			new Promise((_resolve, reject) => {
+				init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true });
+			});
+		await expect(refreshAccessToken(hanging, client, { now: NOW, refreshToken: '1//refresh' }, 10)).rejects.toBeInstanceOf(OAuthNetworkError);
+	});
+});
+
 describe('client config', () => {
 	test('needs both the id and the secret', () => {
 		expect(oauthClientFrom({ id: client.id, secret: client.secret })).toEqual(client);

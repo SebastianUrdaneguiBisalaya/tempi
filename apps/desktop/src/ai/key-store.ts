@@ -10,7 +10,7 @@ type StoredKeys = z.output<typeof storedKeysSchema>;
 /** The user's AI provider keys, kept in one file encrypted with the OS key. Nothing here is ever written in clear. */
 export type AiKeyStore = {
 	/** False when the OS can't really protect the key; keys are then never saved. */
-	isAvailable: () => boolean;
+	isAvailable: () => Promise<boolean>;
 	/** Whether each provider has a key. */
 	flags: () => Promise<AiKeyFlags>;
 	/** A provider's key, or null if none is saved or the file can't be read. */
@@ -33,7 +33,7 @@ export const createAiKeyStore = (file: string, cipher: Cipher): AiKeyStore => {
 			throw error;
 		}
 		try {
-			const parsed = storedKeysSchema.safeParse(JSON.parse(cipher.decrypt(data)));
+			const parsed = storedKeysSchema.safeParse(JSON.parse(await cipher.decrypt(data)));
 			if (parsed.success) return parsed.data;
 			// Never log the parse error itself: its input holds the keys.
 			console.error('The stored AI keys are malformed; treating them as absent');
@@ -48,8 +48,8 @@ export const createAiKeyStore = (file: string, cipher: Cipher): AiKeyStore => {
 			await rm(file, { force: true });
 			return;
 		}
-		if (!cipher.isAvailable()) throw new Error('Refusing to store AI keys: encryption is unavailable');
-		const data = cipher.encrypt(JSON.stringify(keys));
+		if (!(await cipher.isAvailable())) throw new Error('Refusing to store AI keys: encryption is unavailable');
+		const data = await cipher.encrypt(JSON.stringify(keys));
 		// Written aside and renamed over, so a crash never leaves half a file; readable by this OS user only.
 		const staged = `${file}.tmp`;
 		await writeFile(staged, data, { mode: 0o600 });
@@ -69,7 +69,7 @@ export const createAiKeyStore = (file: string, cipher: Cipher): AiKeyStore => {
 			await write(rest);
 		},
 		save: async (provider, key) => {
-			if (!cipher.isAvailable()) throw new Error('Refusing to store AI keys: encryption is unavailable');
+			if (!(await cipher.isAvailable())) throw new Error('Refusing to store AI keys: encryption is unavailable');
 			await write({ ...(await read()), [provider]: key });
 		},
 	};

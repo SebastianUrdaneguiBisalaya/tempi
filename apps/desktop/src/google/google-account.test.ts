@@ -22,7 +22,7 @@ const store: TokenStore = {
 		stored = null;
 		return Promise.resolve();
 	},
-	isAvailable: () => encryptionAvailable,
+	isAvailable: () => Promise.resolve(encryptionAvailable),
 	read: () => Promise.resolve(stored),
 	write: account => {
 		stored = account;

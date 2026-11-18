@@ -114,6 +114,17 @@ describe('runAssistant', () => {
 		expect(system).toContain('read-only');
 	});
 
+	test('keeps the assistant to the calendar: anything else is declined, and it never claims to have browsed', async () => {
+		const model = scriptedModel(textStep('Hola'));
+		await run(model);
+		const system = JSON.stringify(model.doStreamCalls[0]?.prompt[0]);
+		expect(system).toContain("Only help with the user's Tempi calendar");
+		expect(system).toContain('Never claim to have visited a page or searched the web');
+		// "What's your name?" is about the assistant, not off-topic.
+		expect(system).toContain('Your name is Tempi');
+		expect(system).toContain('questions about you (your name, what you can do) are fine');
+	});
+
 	test('a reply to be read aloud is asked for in plain spoken sentences; a written one is not', async () => {
 		const spoken = scriptedModel(textStep('Hola'));
 		await run(spoken, '¿Qué tengo mañana?', true);
@@ -122,6 +133,22 @@ describe('runAssistant', () => {
 		const written = scriptedModel(textStep('Hola'));
 		await run(written);
 		expect(JSON.stringify(written.doStreamCalls[0]?.prompt[0])).not.toContain('read aloud');
+	});
+
+	test('a written reply is asked for in light Markdown with one event per line', async () => {
+		const written = scriptedModel(textStep('Hola'));
+		await run(written);
+		const system = JSON.stringify(written.doStreamCalls[0]?.prompt[0]);
+		expect(system).toContain('Write every reply in Markdown');
+		expect(system).toContain('Keep it light');
+		expect(system).toContain('List events as a bulleted list');
+
+		const spoken = scriptedModel(textStep('Hola'));
+		await run(spoken, '¿Qué tengo mañana?', true);
+		const voiceSystem = JSON.stringify(spoken.doStreamCalls[0]?.prompt[0]);
+		expect(voiceSystem).not.toContain('List events as a bulleted list');
+		expect(voiceSystem).not.toContain('Write every reply in Markdown');
+		expect(voiceSystem).toContain('no Markdown');
 	});
 
 	test('a valid new event becomes a proposal, and nothing is written', async () => {

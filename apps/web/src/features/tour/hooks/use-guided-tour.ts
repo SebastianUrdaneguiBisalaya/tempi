@@ -126,6 +126,8 @@ export const useGuidedTour = (layout: RefObject<TourLayout | null>) => {
 			closeBtnLabel: escapeHtml(t('tour.close')),
 			doneBtnText: escapeHtml(t('tour.done')),
 			nextBtnText: escapeHtml(t('tour.next')),
+			// A stray click outside the step would end the tour and mark it as seen; only ×, Esc or Done close it.
+			overlayClickBehavior: 'none',
 			// A token, so the dimming follows the theme, even when it changes mid-tour.
 			overlayColor: 'var(--tour-overlay)',
 			overlayOpacity: 1,

@@ -2,10 +2,13 @@ import { z } from 'zod';
 
 const BASE_URL = 'https://www.googleapis.com/calendar/v3';
 
+/** How long one request may take, body included, before Google counts as unreachable and the sync ends as offline. */
+export const GOOGLE_REQUEST_TIMEOUT_MS = 30_000;
+
 /** The subset of `fetch` the client uses, so tests can stand in for Google. */
 export type GoogleFetch = (
 	url: string,
-	init: { body?: string; headers: Record<string, string>; method: 'DELETE' | 'GET' | 'PATCH' | 'POST' }
+	init: { body?: string; headers: Record<string, string>; method: 'DELETE' | 'GET' | 'PATCH' | 'POST'; signal: AbortSignal }
 ) => Promise<{ json: () => Promise<unknown>; ok: boolean; status: number }>;
 
 /** Google couldn't be reached at all: sync waits for the connection to come back. */
@@ -111,17 +114,27 @@ export type GoogleCalendarApi = {
 const path = (...segments: string[]) => segments.map(encodeURIComponent).join('/');
 
 /** Google Calendar API v3 over `fetch`, authorized with a fresh access token on every request. */
-export const createGoogleCalendarApi = (options: { accessToken: () => Promise<string>; fetch: GoogleFetch }): GoogleCalendarApi => {
+export const createGoogleCalendarApi = (options: { accessToken: () => Promise<string>; fetch: GoogleFetch; timeoutMs?: number }): GoogleCalendarApi => {
 	const request = async (method: 'DELETE' | 'GET' | 'PATCH' | 'POST', url: string, body?: object): Promise<{ json: unknown; status: number }> => {
 		const headers: Record<string, string> = { Authorization: `Bearer ${await options.accessToken()}` };
 		if (body !== undefined) headers['Content-Type'] = 'application/json';
+		// Without a deadline, a connection that drops mid-request leaves the sync (and its spinner) running forever.
+		const signal = AbortSignal.timeout(options.timeoutMs ?? GOOGLE_REQUEST_TIMEOUT_MS);
 		let response: Awaited<ReturnType<GoogleFetch>>;
+		let json: unknown;
 		try {
-			response = await options.fetch(url, { body: body === undefined ? undefined : JSON.stringify(body), headers, method });
+			response = await options.fetch(url, { body: body === undefined ? undefined : JSON.stringify(body), headers, method, signal });
+			// A body that isn't JSON reads as null; one cut off by the deadline is a lost connection.
+			json =
+				response.status === 204
+					? null
+					: await response.json().catch((error: unknown) => {
+							if (signal.aborted) throw error;
+							return null;
+						});
 		} catch (error) {
 			throw new GoogleOfflineError(`${method} ${url} failed: ${error instanceof Error ? error.message : String(error)}`);
 		}
-		const json: unknown = response.status === 204 ? null : await response.json().catch(() => null);
 		if (response.ok) return { json, status: response.status };
 		if (response.status === 401) throw new GoogleAuthError(`${method} ${url} was refused: ${JSON.stringify(json)}`);
 		// Missing scopes come back as 403 "insufficientPermissions"; quota errors also use 403, so tell them apart.

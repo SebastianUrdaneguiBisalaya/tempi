@@ -37,6 +37,12 @@ describe('speak', () => {
 		expect(sent?.body).toMatchObject({ model_id: 'eleven_multilingual_v2', text: 'Mañana tienes dentista a las 3.' });
 	});
 
+	test('a reply with Markdown reaches ElevenLabs without its symbols, so the voice never says "hashtag"', async () => {
+		const fake = elevenlabs(200);
+		await speak('xi-key', { ...request, text: '# Mañana\n- **15:00** · Dentista' }, fake);
+		expect(fake.sent[0]?.body).toMatchObject({ text: 'Mañana\n15:00 · Dentista' });
+	});
+
 	test('no audio back is ai.speechFailed', async () => {
 		expect(keyOf(await speak('xi-key', request, elevenlabs(200, new Uint8Array())))).toBe('ai.speechFailed');
 	});
