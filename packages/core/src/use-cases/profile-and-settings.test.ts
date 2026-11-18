@@ -97,6 +97,13 @@ describe('settings', () => {
 		expect(await getSettings(deps)).toEqual({ ...DEFAULT_SETTINGS, createdAt: T0, language: 'es', theme: 'dark', updatedAt: '2026-11-20T00:00:00.000Z' });
 	});
 
+	test('marks the tour completed without touching other settings', async () => {
+		const deps = makeDeps();
+		await saveSettings(deps, { onboardingCompleted: true, theme: 'dark' });
+		const result = await saveSettings(deps, { tourCompleted: true });
+		expect(result).toEqual({ ok: true, value: { ...DEFAULT_SETTINGS, createdAt: T0, onboardingCompleted: true, theme: 'dark', tourCompleted: true, updatedAt: T0 } });
+	});
+
 	test.each([0, -15, 1.5, 1441])('rejects a default event duration of %p', async duration => {
 		const deps = makeDeps();
 		const result = await saveSettings(deps, { defaultEventDuration: duration });

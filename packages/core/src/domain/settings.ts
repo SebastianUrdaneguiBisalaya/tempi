@@ -27,6 +27,8 @@ export const settingsValuesSchema = z.object({
 	showWeekNumbers: z.boolean(),
 	theme: z.enum(THEMES),
 	timeFormat: z.enum(TIME_FORMATS),
+	/** The guided tour of the main screen was finished or dismissed. Replaying it doesn't change this. */
+	tourCompleted: z.boolean(),
 	weekStart: z.enum(WEEK_STARTS),
 });
 
@@ -52,6 +54,7 @@ export const DEFAULT_SETTINGS = {
 	showWeekNumbers: false,
 	theme: 'system',
 	timeFormat: '24h',
+	tourCompleted: false,
 	weekStart: 'monday',
 } as const satisfies SettingsValues;
 

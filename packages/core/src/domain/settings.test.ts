@@ -13,6 +13,19 @@ describe('resolveLanguage', () => {
 	});
 });
 
+describe('tour completion', () => {
+	test('starts pending so the tour shows once', () => {
+		expect(DEFAULT_SETTINGS.tourCompleted).toBe(false);
+	});
+
+	test('can be patched on its own and accepts only booleans', () => {
+		expect(settingsPatchSchema.parse({ tourCompleted: true })).toEqual({ tourCompleted: true });
+		expect(settingsPatchSchema.safeParse({ tourCompleted: 1 }).success).toBe(false);
+		const { tourCompleted: _, ...withoutTour } = DEFAULT_SETTINGS;
+		expect(settingsValuesSchema.safeParse(withoutTour).success).toBe(false);
+	});
+});
+
 describe('notification and microphone preferences', () => {
 	test('are on by default', () => {
 		expect(DEFAULT_SETTINGS.notificationsEnabled).toBe(true);

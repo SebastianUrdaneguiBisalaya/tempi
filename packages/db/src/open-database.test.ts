@@ -124,6 +124,23 @@ describe('migrate', () => {
 		db.close();
 	});
 
+	test('0008 keeps existing settings and leaves the tour pending, so existing users see it once', () => {
+		const db = new DatabaseSync(':memory:');
+		const migrations = loadMigrations();
+		migrate(db, migrations.slice(0, 7));
+		db.exec(`INSERT INTO settings (id, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			show_week_numbers, theme, time_format, week_start, created_at, updated_at)
+			VALUES (1, 30, 'es', 0, 1, 1, 1, 'dark', '24h', 'monday', '2026-11-15T10:00:00.000Z', '2026-11-15T10:00:00.000Z')`);
+		migrate(db, migrations);
+		expect(db.prepare('SELECT language, onboarding_completed, tour_completed FROM settings').get()).toEqual({
+			language: 'es',
+			onboarding_completed: 1,
+			tour_completed: 0,
+		});
+		expect(() => db.exec('UPDATE settings SET tour_completed = 2')).toThrow();
+		db.close();
+	});
+
 	test('rolls back a failing migration and leaves the version unchanged', () => {
 		const db = new DatabaseSync(':memory:');
 		const migrations = [

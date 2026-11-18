@@ -348,7 +348,7 @@ describe('SqliteSettingsRepository', () => {
 		const settings = { ...DEFAULT_SETTINGS, createdAt: T0, updatedAt: T0 };
 		expect(await repos.settings.get()).toBeNull();
 		await repos.settings.save(settings);
-		const changed = { ...settings, allDayCollapsed: true, microphoneEnabled: false, notificationsEnabled: false, showWeekNumbers: true, theme: 'dark' } as const;
+		const changed = { ...settings, allDayCollapsed: true, microphoneEnabled: false, notificationsEnabled: false, showWeekNumbers: true, theme: 'dark', tourCompleted: true } as const;
 		await repos.settings.save(changed);
 		expect(await repos.settings.get()).toEqual(changed);
 		expect(db.prepare('SELECT COUNT(*) AS count FROM settings').get()).toMatchObject({ count: 1 });
