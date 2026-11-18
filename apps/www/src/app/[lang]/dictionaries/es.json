@@ -292,5 +292,15 @@
     "title": "Esta página se tomó el día libre.",
     "body": "Puede que la dirección esté mal escrita o que la página se haya movido. Tu calendario sigue donde lo dejaste.",
     "back": "Volver al inicio"
+  },
+  "signIn": {
+    "done": {
+      "title": "Sesión iniciada.",
+      "body": "Tu Google Calendar está conectado. Puedes cerrar esta pestaña y volver a Tempi."
+    },
+    "failed": {
+      "title": "No se completó el inicio de sesión.",
+      "body": "Google Calendar no se conectó. Puedes cerrar esta pestaña, volver a Tempi e intentarlo de nuevo."
+    }
   }
 }

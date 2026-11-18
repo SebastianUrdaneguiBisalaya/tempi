@@ -1,0 +1,7 @@
+import { SignInResult, signInMetadata } from '@/features/sign-in/components/sign-in-result';
+
+export const generateMetadata = () => signInMetadata('failed');
+
+export default function SignInFailedPage() {
+	return <SignInResult outcome='failed' />;
+}

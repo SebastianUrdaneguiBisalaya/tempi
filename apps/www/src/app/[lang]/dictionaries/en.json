@@ -292,5 +292,15 @@
     "title": "This page took the day off.",
     "body": "The address may be mistyped, or the page may have moved. Your calendar is still where you left it.",
     "back": "Back to home"
+  },
+  "signIn": {
+    "done": {
+      "title": "You’re signed in.",
+      "body": "Your Google Calendar is connected. You can close this tab and go back to Tempi."
+    },
+    "failed": {
+      "title": "Sign-in didn’t finish.",
+      "body": "Google Calendar wasn’t connected. You can close this tab, go back to Tempi and try again."
+    }
   }
 }
