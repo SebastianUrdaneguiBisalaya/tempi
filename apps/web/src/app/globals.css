@@ -187,3 +187,11 @@
 		background-color: oklch(0.145 0 0);
 	}
 }
+
+/*
+ * Toasts share `z-50` with dialogs, drawers and popovers, and their portal mounts first, so an open dialog covered
+ * them. Unlayered, this beats the generated viewport's Tailwind class without editing `components/ui/toast.tsx`.
+ */
+[data-slot="toast-viewport"] {
+	z-index: 60;
+}
