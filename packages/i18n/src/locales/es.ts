@@ -440,6 +440,7 @@ export const es = {
 				connectedAs: 'Conectada como {{email}}',
 				disconnect: 'Desconectar',
 				googleDescription: 'Inicia sesión con Google en tu navegador. Solo se puede conectar una cuenta.',
+				legal: { label: 'Legal', privacy: 'Política de Privacidad', terms: 'Términos y Condiciones' },
 				googleTitle: 'Google',
 				notConnected: 'Ninguna cuenta conectada.',
 				readOnly: 'Solo lectura',

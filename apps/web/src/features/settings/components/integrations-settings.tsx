@@ -1,6 +1,7 @@
 'use client';
 
 import { GoogleCalendar } from '@ridemountainpig/svgl-react';
+import { resolveLanguage } from '@tempi/core';
 import { LogOutIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,13 +9,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
+import { WEBSITE_URL } from '@/lib/site';
 import { useConnectGoogle, useDisconnectGoogle, useGoogleAccount } from '../hooks/use-google-account';
 import { AiIntegrations } from './ai-integrations';
 import { GoogleSyncSettings } from './google-sync-settings';
 
 /** Connects one Google account through the system browser, syncs its calendars, or disconnects it after confirming. */
 export function IntegrationsSettings() {
-	const { t } = useTranslation();
+	const { i18n, t } = useTranslation();
 	const googleId = useId();
 	const { data: account } = useGoogleAccount();
 	const connect = useConnectGoogle();
@@ -64,6 +66,20 @@ export function IntegrationsSettings() {
 									<GoogleSyncSettings />
 								</>
 							)}
+							<nav aria-label={t('settings.integrations.legal.label')} className='flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground'>
+								{(['privacy', 'terms'] as const).map(page => (
+									// Opens in the system browser: the main process sends new-window links there.
+									<a
+										className='rounded-sm underline-offset-4 hover:text-foreground hover:underline'
+										href={`${WEBSITE_URL}/${resolveLanguage([i18n.language])}/${page}`}
+										key={page}
+										rel='noreferrer'
+										target='_blank'
+									>
+										{t(`settings.integrations.legal.${page}`)}
+									</a>
+								))}
+							</nav>
 						</CardContent>
 					)}
 				</Card>

@@ -9,11 +9,11 @@ import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { formatDateTime } from '@/lib/date-format';
+import { WEBSITE_URL } from '@/lib/site';
 import { useAppUpdateStatus, useCheckForUpdates, useInstallUpdate } from '../hooks/use-app-update';
 import { useSettings } from '../hooks/use-settings';
 
 const AUTHOR = { name: 'Sebastian Marat Urdanegui Bisalaya', url: 'https://sebastianurdanegui.com' } as const;
-const WEBSITE_URL = 'https://tempi.sebastianurdanegui.com';
 const REPO_URL = 'https://github.com/SebastianUrdaneguiBisalaya/tempi';
 
 /** Opens in the system browser: the main process sends new-window links there. */

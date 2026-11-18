@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDownIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { type Locale, locales } from '@/lib/i18n';
@@ -19,11 +19,12 @@ function nativeName(locale: Locale) {
 
 export function LanguageSwitcher({ locale, label }: LanguageSwitcherProps) {
 	const router = useRouter();
+	const pathname = usePathname();
 
 	function changeLocale(next: string) {
 		if (next === locale) return;
-		// Keep the hash so the visitor lands on the same section in the other language.
-		router.push(`/${next}${window.location.hash}`);
+		// Keep the page and the hash so the visitor lands on the same spot in the other language.
+		router.push(`${pathname.replace(/^\/[^/]+/, `/${next}`)}${window.location.hash}`);
 	}
 
 	return (

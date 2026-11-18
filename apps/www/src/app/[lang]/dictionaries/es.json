@@ -286,7 +286,244 @@
   },
   "footer": {
     "license": "Licencia ISC",
-    "madeBy": "Hecho por"
+    "madeBy": "Hecho por",
+    "legal": "Legal",
+    "terms": "Términos",
+    "privacy": "Privacidad"
+  },
+  "legal": {
+    "updatedLabel": "Última actualización",
+    "updated": "17 de noviembre de 2026",
+    "onThisPage": "En esta página",
+    "contactLabel": "Contacto",
+    "privacy": {
+      "metaTitle": "Política de Privacidad · Tempi",
+      "metaDescription": "Cómo Tempi trata tus datos: local-first, sin cuentas, sin rastreo, con sincronización opcional de Google Calendar e IA con tus propias claves.",
+      "title": "Política de Privacidad",
+      "intro": [
+        "Tempi es un calendario de escritorio local-first. Tu calendario vive en tu computadora: no hay cuenta de Tempi, no hay servidor de Tempi y no hay rastreo. Esta política explica en detalle qué datos manejan la app y este sitio web, a dónde van y por qué.",
+        "Tempi es desarrollado y mantenido por Sebastian Urdanegui, desarrollador independiente con sede en Perú (\"nosotros\"). Esta política cubre la app de escritorio Tempi para macOS, Windows y Linux y el sitio web tempi.sebastianurdanegui.com."
+      ],
+      "sections": [
+        {
+          "title": "Local-first por diseño",
+          "body": [
+            "Todo lo que creas en Tempi (calendarios, eventos, recordatorios, tu perfil y tus ajustes) se guarda en una base de datos en tu propia computadora, dentro de la carpeta de datos de la app. Tempi funciona completamente sin conexión.",
+            "No operamos ningún servidor que reciba, guarde o procese tus datos. No tenemos una copia de tu calendario, así que no podemos leerlo, recuperarlo, compartirlo ni borrarlo. Hacer copias de seguridad de tu computadora depende de ti."
+          ]
+        },
+        {
+          "title": "Qué recopilamos",
+          "body": [
+            "No recopilamos información personal. La app no tiene analítica, telemetría, reportes de errores, publicidad ni rastreo de ningún tipo, y no crea cuentas.",
+            "La app solo se conecta a internet en estos casos, todos descritos más abajo:"
+          ],
+          "list": [
+            "Google Calendar, solo si conectas una cuenta de Google.",
+            "El proveedor de IA que elijas, solo si agregas tu propia API key y usas una función de IA.",
+            "GitHub, para buscar y descargar actualizaciones de la app.",
+            "Este sitio web, que tu navegador abre al terminar el inicio de sesión con Google, y cualquier enlace que abras tú."
+          ]
+        },
+        {
+          "title": "Google Calendar (opcional)",
+          "body": [
+            "Conectar Google Calendar es opcional; Tempi funciona por completo sin hacerlo. Si lo conectas, inicias sesión en la propia página de Google en tu navegador. Tempi nunca ve tu contraseña de Google.",
+            "Tempi pide a Google estos permisos y usa cada uno solo para el fin descrito:"
+          ],
+          "list": [
+            "openid y email: para saber qué cuenta de Google está conectada y mostrar su correo en Ajustes. Tempi guarda el correo y el identificador de la cuenta de Google en tu computadora.",
+            "calendar.calendarlist.readonly (solo lectura): para listar los calendarios de tu cuenta, con sus nombres, colores y zonas horarias, y que elijas cuáles sincronizar.",
+            "calendar.events: para leer los eventos de los calendarios que elijas y mostrarlos en Tempi, y para crear, editar y eliminar eventos en Google Calendar cuando lo haces en Tempi, de modo que ambos estén sincronizados."
+          ]
+        },
+        {
+          "title": "Cómo se tratan los datos de Google",
+          "body": [
+            "Los datos de Google que Tempi procesa son tu lista de calendarios (nombres, colores, zonas horarias y nivel de acceso) y los eventos de los calendarios que elijas (título, descripción, ubicación, horas de inicio y fin, zona horaria, repetición, recordatorios, estado y enlaces de videollamada).",
+            "Estos datos viajan directamente entre tu computadora y los servidores de Google mediante una conexión cifrada (HTTPS). Nunca pasan por un servidor nuestro, porque no tenemos uno. Los calendarios y eventos sincronizados se guardan solo en la base de datos de tu computadora.",
+            "Los tokens de acceso y de actualización de Google se cifran con el almacenamiento seguro de tu sistema operativo (Llavero en macOS, DPAPI en Windows, el llavero del sistema en Linux). En Linux sin llavero, Tempi no guarda los tokens. Los tokens nunca se nos envían ni llegan a la interfaz de la app.",
+            "Al terminar el inicio de sesión, tu navegador va a una página de este sitio web que solo indica si funcionó. Esa página no recibe ningún dato de Google.",
+            "Para desconectar, abre Ajustes › Integraciones en Tempi y elige Desconectar. Tempi revoca su acceso ante Google, borra los tokens guardados y quita de Tempi los calendarios de Google y sus eventos; tus datos en Google Calendar no se ven afectados. También puedes revocar el acceso en cualquier momento desde tu cuenta de Google en myaccount.google.com/permissions."
+          ]
+        },
+        {
+          "title": "Política de Datos de Usuario de los Servicios de API de Google",
+          "body": [
+            "El uso y la transferencia que Tempi hace de la información recibida de las API de Google a cualquier otra app se ajustará a la Política de Datos de Usuario de los Servicios de API de Google (Google API Services User Data Policy), incluidos los requisitos de Uso Limitado (Limited Use).",
+            "En particular:"
+          ],
+          "list": [
+            "Los datos de usuario de Google se usan solo para ofrecer las funciones de calendario que ves en Tempi: mostrar, crear, editar y sincronizar tus eventos.",
+            "Los datos de usuario de Google nunca se venden, nunca se usan para publicidad, nunca se usan para crear perfiles de usuario y nunca se usan para entrenar modelos de IA o aprendizaje automático, ni por nosotros ni por nadie más.",
+            "Ninguna persona lee tus datos de Google. No tenemos acceso a ellos: se quedan en tu computadora.",
+            "Los datos de usuario de Google se transfieren a un tercero solo cuando tú lo pides: si usas el asistente de IA opcional, los detalles de eventos necesarios para responder tu solicitud se envían desde tu computadora al proveedor de IA que elegiste, como se describe en la siguiente sección."
+          ],
+          "links": [
+            {
+              "label": "Leer la Política de Datos de Usuario de los Servicios de API de Google",
+              "href": "https://developers.google.com/terms/api-services-user-data-policy"
+            }
+          ]
+        },
+        {
+          "title": "Funciones de IA (opcionales)",
+          "body": [
+            "Las funciones de IA de Tempi (el asistente, el dictado y las respuestas habladas) son opcionales y funcionan con tus propias API keys del proveedor que elijas: OpenAI, Anthropic, Google Gemini, Groq, xAI o ElevenLabs. Sin ninguna clave guardada, Tempi nunca contacta a un proveedor de IA.",
+            "Tus API keys se cifran con el almacenamiento seguro de tu sistema operativo y se quedan en tu computadora. Nunca se nos envían; Tempi las usa solo para llamar al proveedor que elegiste.",
+            "Cuando usas una función de IA, la solicitud va directamente de tu computadora a ese proveedor: tu mensaje, los detalles de eventos necesarios para responderlo (que pueden incluir eventos sincronizados desde Google Calendar) y, en el dictado, tu grabación de voz. No recibimos, guardamos ni usamos nada de eso. El proveedor lo procesa según sus propios términos y política de privacidad, y cualquier costo de uso lo cobra el proveedor a tu cuenta.",
+            "El micrófono se usa solo mientras dictas, y solo después de que lo permitas en tu sistema operativo."
+          ]
+        },
+        {
+          "title": "Actualizaciones de la app",
+          "body": [
+            "Tempi busca nuevas versiones en GitHub Releases y las descarga desde allí. Como en cualquier descarga, GitHub recibe tu dirección IP y el archivo solicitado. No se envía ningún dato personal ni de tu calendario. A estas solicitudes se aplica la declaración de privacidad de GitHub."
+          ]
+        },
+        {
+          "title": "Este sitio web",
+          "body": [
+            "Este sitio web está alojado en Vercel. Para entregar las páginas y mantenerlas seguras, Vercel procesa datos técnicos estándar como tu dirección IP, el tipo de navegador y las páginas solicitadas.",
+            "El sitio no usa analítica, publicidad ni cookies de rastreo. Lee el idioma de tu navegador solo para mostrar la página en inglés o en español."
+          ]
+        },
+        {
+          "title": "Compartir y vender datos",
+          "body": [
+            "No vendemos, alquilamos ni compartimos tus datos con nadie. No podríamos, porque no los tenemos. Tus datos solo llegan a un tercero (Google, el proveedor de IA que elegiste o GitHub) cuando usas una función que lo necesita, como se describe arriba."
+          ]
+        },
+        {
+          "title": "Conservación y eliminación",
+          "body": [
+            "Tus datos se quedan en tu computadora mientras los conserves. Puedes borrar eventos y calendarios en la app, desconectar Google y quitar las claves de IA en cualquier momento desde Ajustes.",
+            "Para borrarlo todo, desinstala Tempi y elimina su carpeta de datos: ~/Library/Application Support/Tempi en macOS, %APPDATA%\\Tempi en Windows y ~/.config/Tempi en Linux."
+          ]
+        },
+        {
+          "title": "Seguridad",
+          "body": [
+            "Tempi cifra los tokens y las API keys con el almacenamiento seguro de tu sistema operativo, se comunica con Google y los proveedores de IA solo mediante HTTPS y ejecuta su interfaz en un entorno aislado del resto de tu sistema. Su código fuente es público en GitHub para que cualquiera lo revise. Ningún software es perfectamente seguro, así que mantén tu computadora y tu sistema operativo protegidos y actualizados."
+          ]
+        },
+        {
+          "title": "Tus derechos",
+          "body": [
+            "Como tus datos se quedan en tu computadora, los controlas directamente: puedes verlos, cambiarlos, exportarlos y borrarlos en la app. Según la Ley de Protección de Datos Personales del Perú (Ley N.º 29733) y demás leyes aplicables, también puedes contactarnos para ejercer tus derechos de acceso, rectificación, cancelación y oposición; como no tenemos datos personales tuyos, te lo confirmaremos.",
+            "Para los datos que tienen Google o un proveedor de IA, usa las herramientas que esas empresas ofrecen."
+          ]
+        },
+        {
+          "title": "Menores de edad",
+          "body": ["Tempi no está dirigido a menores de 14 años, y no recopilamos a sabiendas datos de nadie, incluidos menores."]
+        },
+        {
+          "title": "Cambios en esta política",
+          "body": [
+            "Si esta política cambia, publicaremos la nueva versión en esta página y actualizaremos la fecha de arriba. Si un cambio afecta cómo se usan los datos de usuario de Google, Tempi te pedirá de nuevo tu consentimiento antes de aplicarlo."
+          ]
+        },
+        {
+          "title": "Contacto",
+          "body": ["Para cualquier pregunta sobre esta política o tus datos, escribe a Sebastian Urdanegui al correo de abajo."]
+        }
+      ]
+    },
+    "terms": {
+      "metaTitle": "Términos y Condiciones · Tempi",
+      "metaDescription": "Los términos de uso de Tempi, el calendario de escritorio local-first, su sincronización opcional con Google Calendar y sus funciones de IA.",
+      "title": "Términos y Condiciones",
+      "intro": [
+        "Estos términos rigen tu uso de Tempi, un calendario de escritorio local-first, gratuito y de código abierto para macOS, Windows y Linux, y del sitio web tempi.sebastianurdanegui.com. Tempi es desarrollado por Sebastian Urdanegui, desarrollador independiente con sede en Perú (\"nosotros\").",
+        "Al descargar, instalar o usar Tempi, aceptas estos términos y la Política de Privacidad. Si no estás de acuerdo, no uses Tempi."
+      ],
+      "sections": [
+        {
+          "title": "El software",
+          "body": [
+            "Tempi es un calendario de escritorio que guarda tus datos en tu computadora. No requiere cuenta y funciona sin conexión. Conectar Google Calendar y usar funciones de IA es opcional.",
+            "Tempi es gratuito. No cobramos por él y no hay planes de pago."
+          ]
+        },
+        {
+          "title": "Licencia",
+          "body": [
+            "El código fuente de Tempi está publicado en GitHub bajo la Licencia ISC, que te permite usarlo, copiarlo, modificarlo y distribuirlo según las condiciones de esa licencia. Estos términos complementan la licencia; si se contradicen sobre cómo puedes usar, copiar o modificar el código, prevalece la licencia."
+          ]
+        },
+        {
+          "title": "Tus datos",
+          "body": [
+            "Tus calendarios, eventos y ajustes te pertenecen y se guardan en tu computadora. No tenemos acceso a ellos y no podemos recuperarlos. Eres responsable de tu dispositivo, de su seguridad y de tus copias de seguridad."
+          ]
+        },
+        {
+          "title": "Google Calendar",
+          "body": [
+            "Si conectas una cuenta de Google, autorizas a Tempi, en tu computadora, a leer tu lista de calendarios y a leer, crear, editar y eliminar eventos en los calendarios que elijas, como se describe en la Política de Privacidad. Tu uso de Google Calendar sigue sujeto a los Términos del Servicio de Google. Puedes desconectarlo en cualquier momento desde Ajustes o desde tu cuenta de Google.",
+            "Tempi no está afiliado, respaldado ni patrocinado por Google. Los cambios que hagas en Tempi a eventos sincronizados también se aplican en tu Google Calendar."
+          ]
+        },
+        {
+          "title": "Funciones de IA y tus API keys",
+          "body": [
+            "Las funciones de IA funcionan solo con API keys que obtienes de un proveedor (OpenAI, Anthropic, Google, Groq, xAI o ElevenLabs) y guardas en Tempi. Eres responsable de tus claves, de cumplir los términos de cada proveedor y de cualquier costo que te cobren.",
+            "Las respuestas de la IA pueden ser inexactas o incompletas. El asistente propone cambios en tu calendario para que los revises y confirmes; verifícalos antes de confiar en ellos. No somos responsables del contenido que generan los proveedores. Tempi no está afiliado a ninguno de ellos."
+          ]
+        },
+        {
+          "title": "Uso aceptable",
+          "body": ["Te comprometes a usar Tempi de forma lícita. En particular, no deberás:"],
+          "list": [
+            "Usar Tempi para acceder a cuentas o datos que no estás autorizado a usar.",
+            "Usar la integración de Google de Tempi incumpliendo los términos o políticas de Google, ni intentar extraer sus credenciales OAuth para usarlas en otro software.",
+            "Usar las funciones de IA incumpliendo los términos o las políticas de uso aceptable del proveedor.",
+            "Distribuir versiones modificadas de Tempi presentándolas como la app oficial."
+          ]
+        },
+        {
+          "title": "Actualizaciones y disponibilidad",
+          "body": [
+            "Tempi busca e instala actualizaciones para mantener la app segura y funcionando. Podemos cambiar, agregar o quitar funciones, o dejar de desarrollar Tempi, en cualquier momento. Servicios de terceros como Google Calendar o los proveedores de IA pueden cambiar o dejar de funcionar sin depender de nosotros."
+          ]
+        },
+        {
+          "title": "Sin garantía",
+          "body": [
+            "Tempi se ofrece \"tal cual\" y \"según disponibilidad\", sin garantías de ningún tipo, expresas o implícitas, incluidas las de comerciabilidad, idoneidad para un fin determinado y no infracción. No garantizamos que Tempi esté libre de errores, que los recordatorios o notificaciones siempre se entreguen ni que la sincronización nunca falle."
+          ]
+        },
+        {
+          "title": "Limitación de responsabilidad",
+          "body": [
+            "En la máxima medida permitida por la ley, no somos responsables de daños indirectos, incidentales, especiales o consecuentes, ni de la pérdida de datos, eventos o citas perdidas, o cargos de proveedores externos, derivados de tu uso de Tempi o de la imposibilidad de usarlo. Nada en estos términos limita una responsabilidad que no pueda limitarse según la ley aplicable."
+          ]
+        },
+        {
+          "title": "Marcas",
+          "body": [
+            "Google, Google Calendar y Gemini son marcas de Google LLC. OpenAI, Anthropic, Claude, Groq, xAI, Grok y ElevenLabs son marcas de sus respectivos titulares. Se mencionan solo para describir la compatibilidad."
+          ]
+        },
+        {
+          "title": "Ley aplicable",
+          "body": [
+            "Estos términos se rigen por las leyes de la República del Perú. Cualquier controversia se someterá a los juzgados y tribunales de Lima, Perú, sin perjuicio de los derechos de consumidor irrenunciables que te otorgue la ley de tu país."
+          ]
+        },
+        {
+          "title": "Cambios en estos términos",
+          "body": [
+            "Podemos actualizar estos términos. Publicaremos la nueva versión en esta página y actualizaremos la fecha de arriba. Si sigues usando Tempi después de un cambio, aceptas los términos actualizados."
+          ]
+        },
+        {
+          "title": "Contacto",
+          "body": ["Para cualquier pregunta sobre estos términos, escribe a Sebastian Urdanegui al correo de abajo."]
+        }
+      ]
+    }
   },
   "notFound": {
     "title": "Esta página se tomó el día libre.",

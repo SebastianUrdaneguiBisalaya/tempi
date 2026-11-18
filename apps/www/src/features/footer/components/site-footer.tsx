@@ -2,7 +2,7 @@ import { GitHubDark } from '@ridemountainpig/svgl-react';
 import Image from 'next/image';
 import { getDictionary, getLocale } from '@/app/[lang]/dictionaries';
 import { LanguageSwitcher } from '@/features/header/components/language-switcher';
-import { AUTHOR_URL, GITHUB_URL } from '@/lib/site';
+import { AUTHOR_URL, GITHUB_URL, LEGAL_PAGES } from '@/lib/site';
 
 export async function SiteFooter() {
 	const [locale, { footer, header }] = await Promise.all([getLocale(), getDictionary()]);
@@ -21,6 +21,13 @@ export async function SiteFooter() {
 						</a>
 					</span>
 				</div>
+				<nav aria-label={footer.legal} className='flex items-center gap-4'>
+					{LEGAL_PAGES.map(page => (
+						<a key={page} href={`/${locale}/${page}`} className='rounded-sm hover:text-foreground'>
+							{footer[page]}
+						</a>
+					))}
+				</nav>
 				<p>
 					{footer.madeBy}{' '}
 					<a href={AUTHOR_URL} target='_blank' rel='noreferrer' className='rounded-sm text-foreground underline-offset-4 hover:underline'>

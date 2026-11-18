@@ -56,7 +56,7 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 					compact ? 'h-12 max-w-3xl border-border bg-background/70 shadow-lg shadow-black/30' : 'h-14 max-w-6xl border-foreground/10 bg-background/25'
 				)}
 			>
-				<a href='#' aria-label={copy.home} className='flex items-center gap-1 rounded-full' data-header-item>
+				<a href={`/${locale}`} aria-label={copy.home} className='flex items-center gap-1 rounded-full' data-header-item>
 					{/* The icon has wide transparent padding; the negative margin keeps the dolphin aligned with the content. */}
 					<Image src='/tempi-icon.png' alt='' width={40} height={40} priority className='-my-2 -ml-2.5 size-10' />
 					<span className='font-heading text-base font-medium tracking-tight'>Tempi</span>
@@ -64,7 +64,7 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 
 				<nav aria-label={copy.navLabel} className='hidden items-center gap-6 md:flex'>
 					{NAV_ORDER.map(section => (
-						<a key={section} href={`#${SECTION_IDS[section]}`} className='rounded-sm text-sm text-foreground/75 transition-colors hover:text-foreground' data-header-item>
+						<a key={section} href={`/${locale}#${SECTION_IDS[section]}`} className='rounded-sm text-sm text-foreground/75 transition-colors hover:text-foreground' data-header-item>
 							{copy.nav[section]}
 						</a>
 					))}
@@ -96,7 +96,7 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 					{NAV_ORDER.map(section => (
 						<a
 							key={section}
-							href={`#${SECTION_IDS[section]}`}
+							href={`/${locale}#${SECTION_IDS[section]}`}
 							onClick={() => setMenuOpen(false)}
 							className='rounded-md px-2 py-3 text-base text-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground'
 						>
