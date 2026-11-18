@@ -438,6 +438,7 @@ export const en = {
 				connectedAs: 'Connected as {{email}}',
 				disconnect: 'Disconnect',
 				googleDescription: 'Sign in with Google in your browser. Only one account can be connected.',
+				legal: { label: 'Legal', privacy: 'Privacy Policy', terms: 'Terms and Conditions' },
 				googleTitle: 'Google',
 				notConnected: 'No account connected.',
 				readOnly: 'Read-only',
