@@ -228,8 +228,10 @@ function createTrayWindow() {
 		resizable: false,
 		skipTaskbar: true,
 	});
-	// Opens over whatever space or full-screen app is in front, like other menu bar extras.
-	if (process.platform === 'darwin') window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+	// Opens over whatever space or full-screen app is in front, like other menu bar extras. Without
+	// `skipTransformProcessType`, macOS turns Tempi into a menu bar-only app for a moment, which hides the main window
+	// and drops the Dock icon.
+	if (process.platform === 'darwin') window.setVisibleOnAllWorkspaces(true, { skipTransformProcessType: true, visibleOnFullScreen: true });
 	window.loadURL(`${WEB_URL}/tray`).catch(error => console.error('Failed to load the menu bar calendar', error));
 	return window;
 }
