@@ -54,7 +54,7 @@ describe('testKey', () => {
 	});
 
 	test('ElevenLabs keys are checked by listing voices', async () => {
-		const fake = provider(200, { voices: [] });
+		const fake = provider(200, { has_more: false, total_count: 0, voices: [] });
 		expect(await testKey('elevenlabs', 'xi-test', fake)).toEqual({ ok: true, value: null });
 		expect(fake.seen[0]?.url).toContain('api.elevenlabs.io');
 		expect(fake.seen[0]?.headers.get('xi-api-key')).toBe('xi-test');
@@ -68,6 +68,8 @@ describe('testKey', () => {
 describe('listVoices', () => {
 	test('returns the account’s voices by name', async () => {
 		const fake = provider(200, {
+			has_more: false,
+			total_count: 2,
 			voices: [
 				{ name: 'Sofía', voice_id: 'v-es' },
 				{ name: 'Adam', voice_id: 'v-en' },
@@ -80,6 +82,29 @@ describe('listVoices', () => {
 				{ id: 'v-es', name: 'Sofía' },
 			],
 		});
+	});
+
+	test('asks v2 search for pages of 100 without the slow total, and follows every page', async () => {
+		const pages = [
+			{ has_more: true, next_page_token: 'p2', total_count: 0, voices: [{ name: 'Zoe', voice_id: 'v-z' }] },
+			{ has_more: false, total_count: 0, voices: [{ name: 'Ada', voice_id: 'v-a' }] },
+		];
+		const urls: URL[] = [];
+		const fake = (input: Request | string | URL) => {
+			urls.push(new URL(input instanceof Request ? input.url : String(input)));
+			return Promise.resolve(new Response(JSON.stringify(pages.shift()), { headers: { 'content-type': 'application/json' }, status: 200 }));
+		};
+		expect(await listVoices('xi-test', { fetch: fake as typeof fetch })).toEqual({
+			ok: true,
+			value: [
+				{ id: 'v-a', name: 'Ada' },
+				{ id: 'v-z', name: 'Zoe' },
+			],
+		});
+		expect(urls.map(url => url.pathname)).toEqual(['/v2/voices', '/v2/voices']);
+		expect(urls[0]?.searchParams.get('page_size')).toBe('100');
+		expect(urls[0]?.searchParams.get('include_total_count')).toBe('false');
+		expect(urls[1]?.searchParams.get('next_page_token')).toBe('p2');
 	});
 
 	test('maps failures like a key test', async () => {
