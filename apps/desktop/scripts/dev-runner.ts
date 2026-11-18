@@ -23,11 +23,16 @@ const stop = (child: ChildProcess) => {
 	}
 };
 
+// A child stopped by a signal keeps `exitCode` null and has already emitted `exit`: waiting for it would never end.
 const exitCode = async (child: ChildProcess): Promise<number> => {
 	if (child.exitCode !== null) return child.exitCode;
+	if (child.signalCode !== null) return 1;
 	const [code] = (await once(child, 'exit')) as [number | null];
 	return code ?? 1;
 };
+
+// Ctrl+C, `kill`, and closing the terminal (SIGHUP) all stop the whole dev session.
+const SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP'] as const;
 
 /**
  * Starts the watchers and the app, and stops every watcher when the app exits or this process is interrupted.
@@ -37,17 +42,19 @@ export async function runDev({ watchers, app, cwd }: DevOptions): Promise<{ code
 	const children = watchers.map(watcher => start(watcher, cwd));
 	const appProcess = start(app, cwd);
 
+	// The handlers replace the default exit, so a second signal (the children didn't stop) exits right away.
+	let interrupted = false;
 	const interrupt = () => {
+		if (interrupted) process.exit(1);
+		interrupted = true;
 		for (const child of [...children, appProcess]) stop(child);
 	};
-	process.on('SIGINT', interrupt);
-	process.on('SIGTERM', interrupt);
+	for (const signal of SIGNALS) process.on(signal, interrupt);
 
 	const code = await exitCode(appProcess);
 	for (const child of children) stop(child);
 	await Promise.all(children.map(exitCode));
 
-	process.off('SIGINT', interrupt);
-	process.off('SIGTERM', interrupt);
+	for (const signal of SIGNALS) process.off(signal, interrupt);
 	return { code, watcherPids: children.flatMap(child => (child.pid === undefined ? [] : [child.pid])) };
 }
