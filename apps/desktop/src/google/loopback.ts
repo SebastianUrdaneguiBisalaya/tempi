@@ -6,8 +6,8 @@ export type RedirectOutcome = { kind: 'redirect'; params: URLSearchParams } | { 
 export type LoopbackOptions = {
 	/** Only a redirect carrying this `state` is accepted; anything else gets a 400 and the wait goes on. */
 	state: string;
-	/** The page the browser shows once redirected, by whether a code came back. */
-	page: (succeeded: boolean) => string;
+	/** Where the browser goes once redirected, by whether a code came back. */
+	landingUrl: (succeeded: boolean) => string;
 	signal: AbortSignal;
 	timeoutMs: number;
 };
@@ -17,12 +17,6 @@ export type LoopbackRedirect = {
 	redirectUri: string;
 	outcome: Promise<RedirectOutcome>;
 };
-
-const escapeHtml = (text: string): string => text.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`);
-
-/** A minimal page for the browser tab the sign-in ends in. */
-export const redirectPage = (title: string, message: string): string =>
-	`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>body{font:16px system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;padding:0 16px;color-scheme:light dark}</style></head><body><p>${escapeHtml(message)}</p></body></html>`;
 
 /**
  * Listens on 127.0.0.1 for Google's redirect (RFC 8252 loopback). Only 127.0.0.1 is bound, so other machines can't
@@ -39,14 +33,8 @@ export const listenForRedirect = async (options: LoopbackOptions): Promise<Loopb
 			return;
 		}
 		const succeeded = params.has('code') && !params.has('error');
-		response
-			.writeHead(200, {
-				'Cache-Control': 'no-store',
-				Connection: 'close',
-				'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'",
-				'Content-Type': 'text/html; charset=utf-8',
-			})
-			.end(options.page(succeeded));
+		// Off to the landing's page, so the tab leaves the URL holding the code and shows the site's style.
+		response.writeHead(302, { 'Cache-Control': 'no-store', Connection: 'close', Location: options.landingUrl(succeeded) }).end();
 		finish({ kind: 'redirect', params });
 	});
 
