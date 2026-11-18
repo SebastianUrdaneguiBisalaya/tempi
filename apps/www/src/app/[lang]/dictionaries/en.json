@@ -99,7 +99,9 @@
       },
       "googleSync": {
         "title": "Google Calendar sync",
-        "body": "Optional two-way sync, including read-only calendars such as holidays."
+        "body": "Optional two-way sync, including read-only calendars such as holidays.",
+        "badge": "Early access",
+        "note": "For now only invited Google accounts can connect, while Google reviews Tempi."
       },
       "recurrence": {
         "title": "Recurrence and reminders",
@@ -248,7 +250,11 @@
       },
       "account": {
         "question": "Do I need a Google account?",
-        "answer": "No. Tempi works fully without any account. Google Calendar sync is optional: connect it from Settings → Integrations whenever you want two-way sync."
+        "answer": "No. Tempi works fully without any account. Google Calendar sync is optional, and for now it's limited to invited accounts (see below)."
+      },
+      "googleAccess": {
+        "question": "Why can't I connect Google Calendar yet?",
+        "answer": "Google is still reviewing Tempi, and until it approves the app only invited Google accounts can connect; any other account sees an “access denied” error from Google. Everything else works without Google, and you can bring your events over by importing an iCalendar (.ics) file into any calendar. Sync will open to everyone once Google approves Tempi."
       },
       "offline": {
         "question": "Does it work offline?",

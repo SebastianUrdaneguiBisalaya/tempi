@@ -2,6 +2,7 @@
 
 import { ArchiveIcon, BellRingIcon, CalendarDaysIcon, CircleFadingArrowUpIcon, CommandIcon, GlobeIcon, LanguagesIcon, type LucideIcon, PanelTopIcon, RefreshCwIcon } from 'lucide-react';
 import { useRef } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { gsap, useMotion } from '@/lib/gsap';
 import { SECTION_IDS } from '@/lib/site';
 
@@ -18,7 +19,8 @@ const FEATURES = [
 	{ key: 'updates', icon: CircleFadingArrowUpIcon },
 ] as const satisfies readonly { key: string; icon: LucideIcon }[];
 
-type Feature = { title: string; body: string };
+// `badge` and `note` flag a feature that isn't open to everyone yet (Google sync while Google reviews the app).
+type Feature = { title: string; body: string; badge?: string; note?: string };
 
 export type FeaturesCopy = {
 	eyebrow: string;
@@ -60,8 +62,12 @@ export function FeaturesContent({ copy }: { copy: FeaturesCopy }) {
 					{FEATURES.map(({ key, icon: Icon }) => (
 						<li key={key} data-feature>
 							<Icon aria-hidden className='size-5 text-foreground/90' />
-							<h3 className='mt-4 text-sm font-semibold'>{copy.items[key].title}</h3>
+							<h3 className='mt-4 flex flex-wrap items-center gap-2 text-sm font-semibold'>
+								{copy.items[key].title}
+								{copy.items[key].badge && <Badge variant='outline'>{copy.items[key].badge}</Badge>}
+							</h3>
 							<p className='mt-1.5 text-sm leading-relaxed text-muted-foreground'>{copy.items[key].body}</p>
+							{copy.items[key].note && <p className='mt-1.5 text-xs leading-relaxed text-muted-foreground/80'>{copy.items[key].note}</p>}
 						</li>
 					))}
 				</ul>
