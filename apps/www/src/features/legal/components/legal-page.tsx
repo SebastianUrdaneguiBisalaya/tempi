@@ -39,7 +39,7 @@ export async function LegalPage({ page }: { page: LegalPageName }) {
 				<div className='absolute inset-0 bg-linear-to-b from-transparent via-background/60 to-background' />
 			</div>
 
-			<article className='mx-auto w-full max-w-3xl px-4 pt-32 pb-24 sm:px-6 md:pt-40'>
+			<article className='mx-auto w-full max-w-3xl px-4 pt-30 pb-24 sm:px-6'>
 				<header>
 					<p className='font-mono text-xs tracking-[0.3em] text-foreground/60 uppercase'>Tempi</p>
 					<h1 className='mt-4 font-heading text-4xl font-medium tracking-tight text-balance sm:text-5xl'>{copy.title}</h1>
