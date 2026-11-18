@@ -4,14 +4,14 @@ How to install, update, develop and release Tempi. For what Tempi is and how it 
 
 ## Install
 
-Download the installer for your platform from [GitHub Releases](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases):
+Download the installer for your platform from the [latest GitHub release](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest):
 
-| Platform              | File                                                                         |
-| --------------------- | ---------------------------------------------------------------------------- |
-| macOS (Apple Silicon) | `Tempi-<version>-mac-arm64.dmg`                                              |
-| macOS (Intel)         | `Tempi-<version>-mac-x64.dmg`                                                |
-| Windows               | `Tempi-<version>-win-x64.exe`                                                |
-| Linux                 | `Tempi-<version>-linux-x86_64.AppImage` or `Tempi-<version>-linux-amd64.deb` |
+| Platform              | File                                                                                                                                                                                                                                                                       |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| macOS (Apple Silicon) | [`Tempi-mac-arm64.dmg`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-mac-arm64.dmg)                                                                                                                                                  |
+| macOS (Intel)         | [`Tempi-mac-x64.dmg`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-mac-x64.dmg)                                                                                                                                                      |
+| Windows               | [`Tempi-win-x64.exe`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-win-x64.exe)                                                                                                                                                      |
+| Linux                 | [`Tempi-linux-x86_64.AppImage`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-linux-x86_64.AppImage) or [`Tempi-linux-amd64.deb`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-linux-amd64.deb) |
 
 ### Opening an unsigned build on macOS
 
@@ -37,7 +37,7 @@ Tempi checks GitHub Releases for a newer version shortly after it starts, then e
   1. Quit Tempi (also from the menu bar).
   2. Open the new `.dmg` and drag Tempi to Applications, choosing **Replace**.
   3. Allow it again as described in [Opening an unsigned build on macOS](#opening-an-unsigned-build-on-macos).
-- **Linux (`.deb`):** the notice links to the download; install it with `sudo apt install ./Tempi-<version>-linux-amd64.deb`.
+- **Linux (`.deb`):** the notice links to the download; install it with `sudo apt install ./Tempi-linux-amd64.deb`.
 
 Your calendars, events and settings live in the app's data folder, not inside the app, so updating keeps them. Make a backup first from **Settings → Data** if you want to be safe.
 
@@ -72,17 +72,64 @@ See [AGENTS.md](AGENTS.md) for the project rules and [CONTRIBUTING.md](CONTRIBUT
 
 ## Releasing
 
-1. Bump `version` in `apps/desktop/package.json` and merge it to `main`.
-2. Tag that commit with the same version and push the tag:
+Releases are built by GitHub Actions, not on your computer. Pushing a `v*` tag runs the **Release** workflow (`.github/workflows/release.yml`), which builds every platform and collects the installers in a draft GitHub Release. Nothing is public until you publish that draft.
+
+### Before the first release
+
+- **Secrets.** Add `TEMPI_GOOGLE_CLIENT_ID` and `TEMPI_GOOGLE_CLIENT_SECRET` under **GitHub → Settings → Secrets and variables → Actions** (see [Google Calendar setup](#google-calendar-setup)). Without them the builds ship with Google sync disabled.
+- **Actions.** Make sure Actions is enabled under **Settings → Actions → General**. The workflow asks for the write permission it needs to create the release, so the default token settings are enough.
+
+### Cut a release
+
+1. **Bump the version.** Change `version` in `apps/desktop/package.json` (for example `0.1.0` → `0.2.0`) through the usual issue → branch → PR flow, and merge it to `main`.
+2. **Tag the merged commit** with the same version, prefixed with `v`, and push the tag:
 
    ```sh
-   git tag v0.1.0
-   git push origin v0.1.0
+   git switch main
+   git pull --ff-only origin main
+   git tag v0.2.0
+   git push origin v0.2.0
    ```
 
-3. The **Release** workflow builds every platform, checks the Electron Fuses and creates a draft release with the installers. Review it on GitHub and publish it.
+   The workflow fails on purpose if the tag doesn't match `apps/desktop/package.json`.
 
-Google Calendar sync needs the `TEMPI_GOOGLE_CLIENT_ID` and `TEMPI_GOOGLE_CLIENT_SECRET` repository secrets; without them the release builds ship with sync disabled.
+3. **Wait for the build.** Follow it under **GitHub → Actions → Release**. It builds macOS, Windows and Linux in parallel, then checks the Electron Fuses.
+4. **Review the draft.** Under **GitHub → Releases**, open the new draft. It should have these files, plus `.blockmap` files:
+
+   | File                          | Used by                      |
+   | ----------------------------- | ---------------------------- |
+   | `Tempi-mac-arm64.dmg`         | macOS (Apple Silicon)        |
+   | `Tempi-mac-x64.dmg`           | macOS (Intel)                |
+   | `Tempi-win-x64.exe`           | Windows                      |
+   | `Tempi-linux-x86_64.AppImage` | Linux                        |
+   | `Tempi-linux-amd64.deb`       | Linux (Debian, Ubuntu)       |
+   | `latest.yml`                  | Windows auto-update          |
+   | `latest-linux.yml`            | Linux (AppImage) auto-update |
+
+   Edit the generated release notes if you want, and install a build or two to try them.
+
+5. **Publish.** Click **Publish release**, keeping **Set as the latest release** checked. Don't mark it as a pre-release: drafts and pre-releases are never "latest".
+
+### What picks up a new release
+
+Once the release is published, these update without any further step:
+
+- **The landing page.** Its download buttons (`apps/www/src/lib/downloads.ts`) and the [Install](#install) table link to `https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/<file>`. GitHub redirects that to the file in the newest published release. Installers carry no version in their names (`artifactName` in `apps/desktop/package.json`), so the links never change. The landing is deployed to Vercel by hand and needs no redeploy for a release.
+- **Installed apps.** They find the new version as described in [Update](#update).
+
+### If something goes wrong
+
+- **The workflow failed.** Open the failed job under **Actions** and fix the cause on a branch. Then delete the tag, merge the fix, and tag again:
+
+  ```sh
+  git push origin :refs/tags/v0.2.0   # delete the remote tag
+  git tag -d v0.2.0                   # delete the local tag
+  ```
+
+  Delete any draft the failed run left under **Releases** too.
+
+- **A published release is broken.** Don't reuse its version. Bump to the next patch version (for example `0.2.1`) and release again; it becomes the latest and replaces the broken one everywhere.
+- **A download link returns 404.** Check that the release is published (not a draft or pre-release), marked as latest, and that it has a file with exactly that name.
 
 ## Google Calendar setup
 
