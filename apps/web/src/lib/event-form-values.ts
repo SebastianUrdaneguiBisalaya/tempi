@@ -112,9 +112,18 @@ export const toFormTime = (instant: string, timeZone: string, allDay: boolean, i
 	return (isEnd ? time.toPlainDate().subtract({ days: 1 }) : time.toPlainDate()).toString();
 };
 
-/** Switches the form's times between all-day dates and timed values, keeping the days. */
-export const convertFormTimes = (values: Pick<EventFormValues, 'endAt' | 'startAt'>, allDay: boolean): Pick<EventFormValues, 'endAt' | 'startAt'> =>
-	allDay ? { endAt: values.endAt.slice(0, 10), startAt: values.startAt.slice(0, 10) } : { endAt: `${values.endAt.slice(0, 10)}T10:00`, startAt: `${values.startAt.slice(0, 10)}T09:00` };
+type FormTimes = Pick<EventFormValues, 'endAt' | 'startAt'>;
+
+const timeOf = (value: string | undefined, fallback: string): string => value?.slice(11) || fallback;
+
+/**
+ * Switches the form's times between all-day dates and timed values, keeping the days. Back to timed, the hours come
+ * from `timed` (the values before switching to all day), so toggling all day off and on again loses nothing.
+ */
+export const convertFormTimes = (values: FormTimes, allDay: boolean, timed?: FormTimes): FormTimes =>
+	allDay
+		? { endAt: values.endAt.slice(0, 10), startAt: values.startAt.slice(0, 10) }
+		: { endAt: `${values.endAt.slice(0, 10)}T${timeOf(timed?.endAt, '10:00')}`, startAt: `${values.startAt.slice(0, 10)}T${timeOf(timed?.startAt, '09:00')}` };
 
 /** Repeat fields for an event starting at `startAt`: its rule as a preset or custom recurrence, or none. */
 export const recurrenceFormValues = (rrule: string | null, startAt: string, timeZone: string): Pick<EventFormValues, 'recurrence' | 'repeat'> => {
