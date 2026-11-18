@@ -76,7 +76,9 @@ export function ProposalCard({ item, onCancel, onConfirmed, onEdit }: ProposalCa
 	};
 
 	return (
-		<Card className='w-full' size='sm'>
+		// The card's border is a ring drawn outside its box; the chat's list items clip their paint (`content-visibility`),
+		// so an inset ring keeps all four sides visible there and in the Voice tab alike.
+		<Card className='w-full ring-inset' size='sm'>
 			<CardHeader>
 				<CardTitle className='flex items-center gap-2'>
 					<Icon aria-hidden className='size-3.5 text-muted-foreground' />
