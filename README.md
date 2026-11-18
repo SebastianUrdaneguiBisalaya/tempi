@@ -24,14 +24,14 @@ Most calendars are a web service you rent: your schedule sits on someone else's 
 
 ## Install
 
-Download the installer for your platform from [GitHub Releases](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases):
+Download the installer for your platform from the [latest GitHub release](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest):
 
-| Platform              | File                                                                         |
-| --------------------- | ---------------------------------------------------------------------------- |
-| macOS (Apple Silicon) | `Tempi-<version>-mac-arm64.dmg`                                              |
-| macOS (Intel)         | `Tempi-<version>-mac-x64.dmg`                                                |
-| Windows               | `Tempi-<version>-win-x64.exe`                                                |
-| Linux                 | `Tempi-<version>-linux-x86_64.AppImage` or `Tempi-<version>-linux-amd64.deb` |
+| Platform              | File                                                                                                                                                                                                                                                                       |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| macOS (Apple Silicon) | [`Tempi-mac-arm64.dmg`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-mac-arm64.dmg)                                                                                                                                                  |
+| macOS (Intel)         | [`Tempi-mac-x64.dmg`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-mac-x64.dmg)                                                                                                                                                      |
+| Windows               | [`Tempi-win-x64.exe`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-win-x64.exe)                                                                                                                                                      |
+| Linux                 | [`Tempi-linux-x86_64.AppImage`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-linux-x86_64.AppImage) or [`Tempi-linux-amd64.deb`](https://github.com/SebastianUrdaneguiBisalaya/tempi/releases/latest/download/Tempi-linux-amd64.deb) |
 
 ### macOS warning: "Tempi can't be opened"
 
