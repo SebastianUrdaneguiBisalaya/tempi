@@ -3,25 +3,24 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { DEFAULT_SETTINGS, resolveLanguage } from '@tempi/core';
 import { daysToUtcRange } from '@usecalendar/core';
-import { isPast, useNow } from '@usecalendar/react';
+import { CalendarLocaleProvider, isPast, useNow } from '@usecalendar/react';
+import { MiniCalendar } from '@usecalendar/react/mini';
 import { useEffect, useEffectEvent, useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar } from '@/components/ui/calendar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CalendarNavigationProvider, useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
+import { useCalendarLocale } from '@/features/calendar/hooks/use-calendar-locale';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
-import { useDayPickerOptions } from '@/features/calendar/hooks/use-day-picker-options';
 import { useEvents } from '@/features/calendar/hooks/use-events';
 import { useGoogleSyncUpdates } from '@/features/settings/hooks/use-google-sync';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { formatDate, formatTimeRange } from '@/lib/date-format';
-import { fromLocalDate, toLocalDate } from '@/lib/plain-date';
 import { cn } from '@/lib/utils';
 import { useApi } from '@/providers/api-provider';
 import { useShowInMainWindow } from '../hooks/use-show-in-main-window';
 
-/** The menu bar calendar: a mini calendar and the picked day's events, today when it opens. */
+/** The menu bar calendar: a strip of days and the picked day's events, today when it opens. */
 export function TrayAgenda() {
 	const { t } = useTranslation();
 	const hasStorage = useApi() !== null;
@@ -40,10 +39,10 @@ export function TrayAgenda() {
 }
 
 function TrayContent() {
-	const { t } = useTranslation();
 	const queryClient = useQueryClient();
-	const { date, goToDate, goToToday, today } = useCalendarNavigation();
-	const dayPickerOptions = useDayPickerOptions();
+	const calendar = useCalendarNavigation();
+	const { date, goToToday, today } = calendar;
+	const locale = useCalendarLocale();
 
 	// The window is hidden between uses, not closed: each time it comes back, start on today with data refreshed from
 	// what the main window changed meanwhile (events, but also the theme and language in the settings).
@@ -61,24 +60,15 @@ function TrayContent() {
 	if (date === null || today === null) return null;
 
 	return (
-		<main className='flex h-svh flex-col bg-background'>
-			<Calendar
-				aria-label={t('shell.sidebar.datePicker')}
-				// Full width with the day list's inset (`px-4`), so both line up (the generated root is `w-fit`).
-				className='w-full! shrink-0 bg-transparent px-4 py-3 [--cell-size:--spacing(8)]'
-				{...dayPickerOptions}
-				// Always six weeks, like the sidebar's calendar, so the day list below doesn't jump between months.
-				fixedWeeks
-				mode='single'
-				onSelect={day => goToDate(fromLocalDate(day))}
-				// Keeps a day selected: picking the selected day again doesn't clear it.
-				required
-				selected={toLocalDate(date)}
-				today={toLocalDate(today)}
-			/>
-			<Separator />
-			<DayEvents day={date} />
-		</main>
+		<CalendarLocaleProvider {...locale}>
+			<main className='flex h-svh flex-col bg-background'>
+				{/* A single row of days, as many as fit, leaving the height to the day's events. Picking a day anchors the
+				    shared calendar state on it; week start, weekends and time zone come from that state too. */}
+				<MiniCalendar calendar={calendar} className='shrink-0 px-2 py-3' days='auto' />
+				<Separator />
+				<DayEvents day={date} />
+			</main>
+		</CalendarLocaleProvider>
 	);
 }
 

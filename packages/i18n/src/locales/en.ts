@@ -115,6 +115,10 @@ export const en = {
 				keyboard: 'Alt plus arrows move it, Alt plus Shift plus up or down arrow changes its end, Shift plus F10 shows its actions.',
 			},
 			grid: 'Schedule',
+			mini: {
+				next: 'Show later days',
+				previous: 'Show earlier days',
+			},
 			month: {
 				more: '+{{count}} more',
 				week: 'Week {{number}}',
