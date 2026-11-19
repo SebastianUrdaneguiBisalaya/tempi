@@ -15,6 +15,19 @@ const MESH_A =
 	'radial-gradient(circle at 25% 30%, oklch(0.97 0 0) 0%, transparent 45%), radial-gradient(circle at 75% 25%, oklch(0.62 0 0) 0%, transparent 45%), radial-gradient(circle at 70% 78%, oklch(0.25 0 0) 0%, transparent 45%), radial-gradient(circle at 25% 75%, oklch(0.8 0 0) 0%, transparent 45%)';
 const MESH_B = 'radial-gradient(circle at 60% 40%, oklch(1 0 0 / 0.8) 0%, transparent 35%), radial-gradient(circle at 35% 60%, oklch(0.15 0 0 / 0.9) 0%, transparent 40%)';
 
+/**
+ * Follows a changing scale smoothly. `quickTo` drives one property only, and `scale` is GSAP's shorthand for `scaleX`
+ * and `scaleY`, so it warns on every call; each axis gets its own setter instead.
+ */
+const quickScale = (target: string, duration: number) => {
+	const toX = gsap.quickTo(target, 'scaleX', { duration, ease: 'power3.out' });
+	const toY = gsap.quickTo(target, 'scaleY', { duration, ease: 'power3.out' });
+	return (value: number) => {
+		toX(value);
+		toY(value);
+	};
+};
+
 type VoiceOrbProps = {
 	phase: VoicePhase;
 	label: string;
@@ -61,8 +74,8 @@ export function VoiceOrb({ disabled, label, onTap, phase }: VoiceOrbProps) {
 				if (phase === 'thinking') gsap.to('[data-orb=halo]', { duration: 0.9, ease: 'sine.inOut', opacity: 0.7, repeat: -1, scale: 1.15, yoyo: true });
 				if (phase !== 'listening' && phase !== 'speaking') return;
 				const source = levels[phase];
-				const toCore = gsap.quickTo('[data-orb=core]', 'scale', { duration: 0.2, ease: 'power3.out' });
-				const toHalo = gsap.quickTo('[data-orb=halo]', 'scale', { duration: 0.35, ease: 'power3.out' });
+				const toCore = quickScale('[data-orb=core]', 0.2);
+				const toHalo = quickScale('[data-orb=halo]', 0.35);
 				const toGlow = gsap.quickTo('[data-orb=halo]', 'opacity', { duration: 0.35, ease: 'power3.out' });
 				return source.subscribe(() => {
 					const level = source.get();
