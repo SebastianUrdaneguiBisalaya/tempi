@@ -117,6 +117,10 @@ export const es = {
 				keyboard: 'Alt y las flechas lo mueven; Alt, Mayús y flecha arriba o abajo cambian su fin; Mayús y F10 muestran sus acciones.',
 			},
 			grid: 'Agenda',
+			mini: {
+				next: 'Mostrar días siguientes',
+				previous: 'Mostrar días anteriores',
+			},
 			month: {
 				more: '+{{count}} más',
 				week: 'Semana {{number}}',
