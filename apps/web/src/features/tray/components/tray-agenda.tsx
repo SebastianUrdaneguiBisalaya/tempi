@@ -1,18 +1,18 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { DEFAULT_SETTINGS, daysToUtcRange, resolveLanguage } from '@tempi/core';
+import { DEFAULT_SETTINGS, resolveLanguage } from '@tempi/core';
+import { daysToUtcRange } from '@usecalendar/core';
+import { isPast, useNow } from '@usecalendar/react';
 import { useEffect, useEffectEvent, useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar } from '@/components/ui/calendar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CalendarNavigationProvider, useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
-import { isPast } from '@/features/calendar/components/event-style';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { useDayPickerOptions } from '@/features/calendar/hooks/use-day-picker-options';
 import { useEvents } from '@/features/calendar/hooks/use-events';
-import { useMinute } from '@/features/calendar/hooks/use-minute';
 import { useGoogleSyncUpdates } from '@/features/settings/hooks/use-google-sync';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { formatDate, formatTimeRange } from '@/lib/date-format';
@@ -89,7 +89,7 @@ function DayEvents({ day }: { day: Temporal.PlainDate }) {
 	const { data: settings } = useSettings();
 	const { data: calendars } = useCalendars();
 	const { data: events, isPending } = useEvents(daysToUtcRange(day, day, timeZone));
-	const now = useMinute();
+	const now = useNow();
 	const showInMainWindow = useShowInMainWindow();
 
 	const calendarById = new Map(calendars?.map(calendar => [calendar.id, calendar]));

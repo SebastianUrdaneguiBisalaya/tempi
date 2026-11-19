@@ -32,12 +32,8 @@ export type { AvatarImage, AvatarType } from './domain/avatar';
 export { AVATAR_TYPES, avatarFileNameSchema, avatarImageSchema, MAX_AVATAR_BYTES } from './domain/avatar';
 export type { Calendar, CalendarFields, CalendarPatch, CalendarSource, DeleteCalendarInput, NewCalendarInput } from './domain/calendar';
 export { CALENDAR_PALETTE, CALENDAR_SOURCES, calendarFieldsSchema, calendarPatchSchema, calendarSchema, deleteCalendarInputSchema, newCalendarInputSchema, pickCalendarColor } from './domain/calendar';
-export type { CalendarView } from './domain/calendar-view';
-export { CALENDAR_VIEWS, daysToUtcRange, isCalendarView, isWeekend, shiftDate, startOfWeek, visibleDays } from './domain/calendar-view';
 export type { DateRange } from './domain/date-range';
 export { dateRangeSchema, overlapsRange } from './domain/date-range';
-export type { DaySegment } from './domain/day-layout';
-export { layoutDay, MINUTES_PER_DAY } from './domain/day-layout';
 export type { DictationAudioType, Transcription, TranscriptionInput } from './domain/dictation';
 export { DICTATION_AUDIO_TYPES, dictationAudioType, MAX_DICTATION_BYTES, MAX_DICTATION_SECONDS, transcriptionInputSchema, transcriptionSchema } from './domain/dictation';
 export type { ErrorKey } from './domain/error-keys';
@@ -70,8 +66,6 @@ export {
 } from './domain/google-sync';
 export type { ExportEventsInput, ImportEventsInput, ImportedEvent, ImportSummary } from './domain/ical-transfer';
 export { exportEventsInputSchema, importEventsInputSchema, importedEventSchema } from './domain/ical-transfer';
-export type { WeekSegment } from './domain/month-layout';
-export { belongsInAllDayLane, fitWeek, itemDays, layoutWeek, monthWeeks, weekNumber } from './domain/month-layout';
 export type { OnboardingInput } from './domain/onboarding';
 export { onboardingInputSchema } from './domain/onboarding';
 export type { OsPermission, OsPermissionState, OsPermissionStatus, OsPermissionsStatus } from './domain/os-permission';
@@ -91,8 +85,6 @@ export {
 	toRrule,
 	WEEKDAYS,
 } from './domain/recurrence';
-export type { TimeRange } from './domain/reschedule';
-export { moveRange, resizeRange, SNAP_MINUTES, sweepRange, wallTime } from './domain/reschedule';
 export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';
 export { DOMAIN_ERROR_CODES, domainErrorSchema, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
 export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, UiSound, WeekStart } from './domain/settings';

@@ -1,6 +1,7 @@
 'use client';
 
-import { type CalendarView, LANGUAGES, type Language, THEMES, type Theme } from '@tempi/core';
+import { LANGUAGES, type Language, THEMES, type Theme } from '@tempi/core';
+import type { CalendarView } from '@usecalendar/core';
 import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@/components/ui/command';
