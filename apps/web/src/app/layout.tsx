@@ -9,6 +9,7 @@ import { AppearancePreviewProvider } from '@/providers/appearance-preview-provid
 import { HotkeysProvider } from '@/providers/hotkeys-provider';
 import { I18nProvider } from '@/providers/i18n-provider';
 import { QueryProvider } from '@/providers/query-provider';
+import { SoundProvider } from '@/providers/sound-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 
 const instrumentSansHeading = Instrument_Sans({ subsets: ['latin'], variable: '--font-heading' });
@@ -38,9 +39,11 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
 							<I18nProvider>
 								<ThemeProvider>
 									<Toaster>
-										<TooltipProvider>
-											<HotkeysProvider>{children}</HotkeysProvider>
-										</TooltipProvider>
+										<SoundProvider>
+											<TooltipProvider>
+												<HotkeysProvider>{children}</HotkeysProvider>
+											</TooltipProvider>
+										</SoundProvider>
 									</Toaster>
 								</ThemeProvider>
 							</I18nProvider>

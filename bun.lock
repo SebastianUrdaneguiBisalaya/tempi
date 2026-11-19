@@ -46,6 +46,8 @@
         "@tempi/ipc": "workspace:*",
         "@usehotkeys/core": "0.1.0",
         "@usehotkeys/react": "0.1.0",
+        "@usesounds/core": "0.1.0",
+        "@usesounds/react": "0.1.0",
         "class-variance-authority": "0.7.1",
         "cmdk": "^1.1.1",
         "cn": "0.5.2",
@@ -683,6 +685,10 @@
     "@usehotkeys/core": ["@usehotkeys/core@0.1.0", "", {}, "sha512-JY2uU39HKpgBCFCmFm3QYlHtWcqOPcotCByutZgJARy/CX7Y0L3dd5XBkJwWgBzisOT401HHLXd53xMaJisRjA=="],
 
     "@usehotkeys/react": ["@usehotkeys/react@0.1.0", "", { "peerDependencies": { "@usehotkeys/core": "0.1.0", "react": ">=18.0.0" } }, "sha512-o8S0mNw53vAxft32i6nzcXED8axF4cjbTbLos+k/OHmLkZNKnzAF4EEo1oKs17poKLZjcZgB/kM35O3zwVqsEw=="],
+
+    "@usesounds/core": ["@usesounds/core@0.1.0", "", {}, "sha512-3zyBRYniJLsg+4sW4Wtnj1rgzDH4v2Gyt4NrQD3GmXxpu/mBW9Z4QSyCdNMMlSaOpnUOaWx/0CDgoM6/3rP6Bg=="],
+
+    "@usesounds/react": ["@usesounds/react@0.1.0", "", { "peerDependencies": { "@usesounds/core": "^0.1.0", "react": ">=18" } }, "sha512-oMWR7Y9UJ/ql3gvIXuuViFe1X0KnmkETbIREaoNvY89NVljfMcsW9IM0LJXxQ229QWmAfQ9S6XWxFYL7XTsNaQ=="],
 
     "@vercel/oidc": ["@vercel/oidc@3.2.0", "", {}, "sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug=="],
 

@@ -1,41 +1,55 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LANGUAGES, type Settings, settingsValuesSchema, THEMES, zodErrorKeyMap } from '@tempi/core';
+import { LANGUAGES, type Settings, settingsValuesSchema, THEMES, UI_SOUNDS, zodErrorKeyMap } from '@tempi/core';
 import { useId } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import type { z } from 'zod';
 import { FormFieldError } from '@/components/form-field-error';
-import { FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field';
+import { Field, FieldContent, FieldDescription, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useSaveSettings } from '@/features/settings/hooks/use-settings';
+import { previewSound } from '@/features/sounds/sounds';
 import { nativeLanguageName } from '@/lib/language-name';
 import { useAppearancePreview } from '@/providers/appearance-preview-provider';
 import { showFieldErrors } from './field-errors';
 import { SettingsFooter } from './settings-footer';
 
-const appearanceSchema = settingsValuesSchema.pick({ language: true, theme: true });
+const appearanceSchema = settingsValuesSchema.pick({ language: true, sound: true, soundsEnabled: true, theme: true });
 type AppearanceValues = z.input<typeof appearanceSchema>;
 
-const isField = (field: string): field is keyof AppearanceValues => field === 'language' || field === 'theme';
+const FIELDS = ['language', 'sound', 'soundsEnabled', 'theme'] as const satisfies readonly (keyof AppearanceValues)[];
+const isField = (field: string): field is (typeof FIELDS)[number] => FIELDS.some(name => name === field);
 
-/** Theme and language. A choice previews at once; Save keeps it, closing the dialog drops it. */
+const valuesOf = (settings: Settings): AppearanceValues => ({
+	language: settings.language,
+	sound: settings.sound,
+	soundsEnabled: settings.soundsEnabled,
+	theme: settings.theme,
+});
+
+/** Theme, language and button sounds. A choice previews at once; Save keeps it, closing the dialog drops it. */
 export function AppearanceSettings({ settings }: { settings: Settings }) {
 	const { t } = useTranslation();
 	const id = useId();
 	const { preview, setPreview } = useAppearancePreview();
 	const saveSettings = useSaveSettings();
+	const soundItems = UI_SOUNDS.map(sound => ({ label: t(`settings.appearance.sounds.${sound}`), value: sound }));
 	const form = useForm<AppearanceValues>({
-		defaultValues: { language: settings.language, theme: settings.theme },
+		defaultValues: valuesOf(settings),
 		resolver: zodResolver(appearanceSchema, { error: zodErrorKeyMap }),
 	});
+
+	const soundsEnabled = form.watch('soundsEnabled');
 
 	const submit = form.handleSubmit(values =>
 		saveSettings.mutate(values, {
 			onError: error => showFieldErrors(error, form.setError, isField),
 			onSuccess: saved => {
-				form.reset({ language: saved.language, theme: saved.theme });
+				form.reset(valuesOf(saved));
 				setPreview({});
 			},
 		})
@@ -99,6 +113,52 @@ export function AppearanceSettings({ settings }: { settings: Settings }) {
 						</RadioGroup>
 						<FormFieldError error={fieldState.error} />
 					</FieldSet>
+				)}
+			/>
+			<Controller
+				control={form.control}
+				name='soundsEnabled'
+				render={({ field }) => (
+					<Field orientation='horizontal'>
+						<FieldContent>
+							<FieldLabel htmlFor={`${id}-sounds-enabled`}>{t('settings.appearance.soundsEnabled')}</FieldLabel>
+							<FieldDescription>{t('settings.appearance.soundsEnabledDescription')}</FieldDescription>
+						</FieldContent>
+						<Switch checked={field.value} id={`${id}-sounds-enabled`} onCheckedChange={checked => field.onChange(checked)} ref={field.ref} />
+					</Field>
+				)}
+			/>
+			<Controller
+				control={form.control}
+				name='sound'
+				render={({ field, fieldState }) => (
+					<Field data-disabled={!soundsEnabled || undefined} data-invalid={fieldState.invalid || undefined}>
+						<FieldLabel htmlFor={`${id}-sound`}>{t('settings.appearance.sound')}</FieldLabel>
+						<Select
+							disabled={!soundsEnabled}
+							items={soundItems}
+							onValueChange={value => {
+								const sound = UI_SOUNDS.find(option => option === value);
+								if (sound === undefined) return;
+								field.onChange(sound);
+								previewSound(sound);
+							}}
+							required
+							value={field.value}
+						>
+							<SelectTrigger className='w-full sm:w-56' id={`${id}-sound`} ref={field.ref}>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{soundItems.map(item => (
+									<SelectItem key={item.value} value={item.value}>
+										{item.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<FormFieldError error={fieldState.error} />
+					</Field>
 				)}
 			/>
 			<SettingsFooter dirty={form.formState.isDirty} saving={saveSettings.isPending} />
