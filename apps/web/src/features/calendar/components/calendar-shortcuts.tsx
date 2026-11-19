@@ -1,6 +1,6 @@
 'use client';
 
-import type { CalendarView } from '@tempi/core';
+import type { CalendarView } from '@usecalendar/core';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { useCalendarNavigation } from './calendar-navigation-provider';
 

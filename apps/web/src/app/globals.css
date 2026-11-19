@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* The calendar's tokens (falling back to the shadcn theme) and a scan of its components for their classes. */
+@import "@usecalendar/react/theme.css";
 /* In a lower layer than Tailwind's utilities, so the app's classes on the tour popover override driver.js's defaults. */
 @import "driver.js/dist/driver.css" layer(components);
 /* Streamdown styles its Markdown with Tailwind classes inside its bundle; Tailwind must scan it to emit them. */

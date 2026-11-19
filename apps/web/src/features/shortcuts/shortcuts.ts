@@ -1,3 +1,4 @@
+import { CALENDAR_FOCUS_KEYS, CALENDAR_KEYMAP, type CalendarHotkeys, GLOBAL_HOTKEY_ACTIONS } from '@usecalendar/core';
 import type { KeyLayout, Keymap } from '@usehotkeys/core';
 
 /**
@@ -8,26 +9,35 @@ export const HOTKEY_SCOPES = { dialog: 'dialog', global: 'global', grid: 'grid' 
 type HotkeyScope = (typeof HOTKEY_SCOPES)[keyof typeof HOTKEY_SCOPES];
 
 /** Display order of the groups in the shortcuts lists. */
-export const SHORTCUT_GROUPS = ['navigation', 'views', 'events', 'general'] as const;
+export const SHORTCUT_GROUPS = ['navigation', 'views', 'events', 'grid', 'focus', 'general'] as const;
 type ShortcutGroup = (typeof SHORTCUT_GROUPS)[number];
 
 type ShortcutDefinition = { group: ShortcutGroup; keys: string | readonly string[]; layout?: KeyLayout; scope: HotkeyScope };
 
+// The calendar's global actions keep `@usecalendar`'s keys, so both list the same ones; the rest are its grid keys.
+const { close, dayView, deleteEvent, goToDate, goToToday, monthView, newEvent, next, previous, weekView, ...calendarGridKeys } = CALENDAR_KEYMAP;
+
 /**
- * The registry: every shortcut in the app, its keys and where it is live. Components bind actions by name
+ * The calendar's own global shortcuts, turned off in `<Calendar hotkeys>`: the app binds them through `SHORTCUTS`
+ * instead, in its scopes, so they pause behind dialogs. Its grid keys (Enter, Alt+arrows, Escape on a drag) stay on.
+ */
+export const CALENDAR_HOTKEYS: CalendarHotkeys = Object.fromEntries(GLOBAL_HOTKEY_ACTIONS.map(action => [action, null]));
+
+/**
+ * The registry: every shortcut the app binds, its keys and where it is live. Components bind actions by name
  * (`useShortcut`) and the shortcuts lists read this, so nothing else writes keys. Labels are translated from
  * `shortcuts.actions.<action>`.
  */
 export const SHORTCUTS = {
-	goToToday: { group: 'navigation', keys: 't', scope: HOTKEY_SCOPES.grid },
-	next: { group: 'navigation', keys: ['j', 'arrowright'], scope: HOTKEY_SCOPES.grid },
-	previous: { group: 'navigation', keys: ['k', 'arrowleft'], scope: HOTKEY_SCOPES.grid },
-	goToDate: { group: 'navigation', keys: '.', scope: HOTKEY_SCOPES.grid },
-	dayView: { group: 'views', keys: 'd', scope: HOTKEY_SCOPES.grid },
-	weekView: { group: 'views', keys: 'w', scope: HOTKEY_SCOPES.grid },
-	monthView: { group: 'views', keys: 'm', scope: HOTKEY_SCOPES.grid },
-	newEvent: { group: 'events', keys: 'c', scope: HOTKEY_SCOPES.grid },
-	deleteEvent: { group: 'events', keys: ['backspace', 'delete'], scope: HOTKEY_SCOPES.grid },
+	goToToday: { ...goToToday, scope: HOTKEY_SCOPES.grid },
+	next: { ...next, scope: HOTKEY_SCOPES.grid },
+	previous: { ...previous, scope: HOTKEY_SCOPES.grid },
+	goToDate: { ...goToDate, scope: HOTKEY_SCOPES.grid },
+	dayView: { ...dayView, scope: HOTKEY_SCOPES.grid },
+	weekView: { ...weekView, scope: HOTKEY_SCOPES.grid },
+	monthView: { ...monthView, scope: HOTKEY_SCOPES.grid },
+	newEvent: { ...newEvent, scope: HOTKEY_SCOPES.grid },
+	deleteEvent: { ...deleteEvent, scope: HOTKEY_SCOPES.grid },
 	undo: { group: 'events', keys: 'mod+z', scope: HOTKEY_SCOPES.global },
 	openCommandMenu: { group: 'general', keys: 'mod+k', scope: HOTKEY_SCOPES.global },
 	showShortcuts: { group: 'general', keys: '?', scope: HOTKEY_SCOPES.global },
@@ -37,10 +47,20 @@ export const SHORTCUTS = {
 	toggleSidebar: { group: 'general', keys: '`', layout: 'physical', scope: HOTKEY_SCOPES.global },
 	togglePanel: { group: 'general', keys: 'p', scope: HOTKEY_SCOPES.grid },
 	toggleAssistant: { group: 'general', keys: 'mod+j', scope: HOTKEY_SCOPES.global },
-	close: { group: 'general', keys: 'escape', scope: HOTKEY_SCOPES.grid },
+	close: { ...close, scope: HOTKEY_SCOPES.grid },
 } as const satisfies Record<string, ShortcutDefinition>;
 
 export type ShortcutAction = keyof typeof SHORTCUTS;
+
+/**
+ * Every shortcut the lists show: the registry plus the keys the calendar's grids handle themselves (moving an
+ * event, moving focus), which are listed but never bound here.
+ */
+export const LISTED_SHORTCUTS = { ...SHORTCUTS, ...calendarGridKeys, ...CALENDAR_FOCUS_KEYS } as const satisfies Record<string, Pick<ShortcutDefinition, 'group' | 'keys'>>;
+
+export type ListedAction = keyof typeof LISTED_SHORTCUTS;
+
+export const isListedAction = (action: string): action is ListedAction => Object.hasOwn(LISTED_SHORTCUTS, action);
 
 /** An action's keys as a list, for `ShortcutKeys`. */
 export const shortcutKeysOf = (action: ShortcutAction): readonly string[] => {
@@ -50,19 +70,5 @@ export const shortcutKeysOf = (action: ShortcutAction): readonly string[] => {
 
 export const isShortcutAction = (action: string): action is ShortcutAction => Object.hasOwn(SHORTCUTS, action);
 
-/** The registry as the engine's keymap, so bindings and `useShortcuts` share the same keys. */
-export const KEYMAP: Keymap = Object.fromEntries(Object.entries(SHORTCUTS).map(([action, { group, keys }]) => [action, { group, keys }]));
-
-const TEXT_INPUT_TYPES = new Set(['', 'date', 'datetime-local', 'email', 'month', 'number', 'password', 'search', 'tel', 'text', 'time', 'url', 'week']);
-
-const isTyping = (target: EventTarget | null): boolean => {
-	if (!(target instanceof HTMLElement)) return false;
-	if (target.isContentEditable || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return true;
-	return target instanceof HTMLInputElement && TEXT_INPUT_TYPES.has(target.type.toLowerCase());
-};
-
-/**
- * The default `ignoreInputs`: like the library's `auto` (plain keys don't fire while typing, ⌘/Ctrl combos do), and
- * also skips keys a focused widget already handled, such as the arrows that move focus inside the grid.
- */
-export const ignoreTypingOrHandled = (event: KeyboardEvent): boolean => event.defaultPrevented || (!(event.ctrlKey || event.metaKey) && isTyping(event.target));
+/** Every listed shortcut as the engine's keymap, so bindings and `useShortcuts` share the same keys. */
+export const KEYMAP: Keymap = Object.fromEntries(Object.entries(LISTED_SHORTCUTS).map(([action, { group, keys }]) => [action, { group, keys }]));

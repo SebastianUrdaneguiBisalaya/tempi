@@ -1,7 +1,8 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { asOccurrence, type EventOccurrence, type EventPatch, type NewEventInput, type OccurrenceScope, type TimeRange } from '@tempi/core';
+import { asOccurrence, type EventOccurrence, type EventPatch, type NewEventInput, type OccurrenceScope } from '@tempi/core';
+import type { TimeRange } from '@usecalendar/core';
 import { queryKeys, STORAGE_UNAVAILABLE, unwrap } from '@/lib/query';
 import { useApi } from '@/providers/api-provider';
 
