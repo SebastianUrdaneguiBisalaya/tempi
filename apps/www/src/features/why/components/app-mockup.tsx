@@ -33,16 +33,24 @@ type MockEvent = {
 };
 
 const EVENTS = [
-	{ key: 'standup', calendar: 'work', day: -1, start: 9, end: 9.5, video: true },
-	{ key: 'planning', calendar: 'work', day: -1, start: 14, end: 15.5 },
+	{ key: 'reading', calendar: 'personal', day: -3, start: 15.5, end: 16.5 },
 	{ key: 'gym', calendar: 'personal', day: -2, start: 8, end: 9 },
+	{ key: 'research', calendar: 'project', day: -2, start: 10, end: 12 },
+	{ key: 'standup', calendar: 'work', day: -1, start: 9, end: 9.5, video: true },
+	{ key: 'oneOnOne', calendar: 'work', day: -1, start: 11, end: 11.5, video: true },
+	{ key: 'planning', calendar: 'work', day: -1, start: 14, end: 15.5 },
 	{ key: 'designReview', calendar: 'work', day: 0, start: 9, end: 10, location: true },
 	{ key: 'lunch', calendar: 'personal', day: 0, start: 11.5, end: 12.5 },
 	{ key: 'teamSync', calendar: 'work', day: 0, start: 13, end: 14, video: true },
+	{ key: 'focus', calendar: 'project', day: 0, start: 15, end: 16.5 },
+	{ key: 'standup', calendar: 'work', day: 1, start: 9, end: 9.5, video: true },
 	{ key: 'docs', calendar: 'project', day: 1, start: 10, end: 11.5 },
+	{ key: 'call', calendar: 'personal', day: 1, start: 15.5, end: 16.5 },
 	{ key: 'gym', calendar: 'personal', day: 2, start: 8, end: 9 },
+	{ key: 'codeReview', calendar: 'project', day: 2, start: 11, end: 12 },
 	{ key: 'dentist', calendar: 'personal', day: 2, start: 15, end: 16 },
 	{ key: 'release', calendar: 'project', day: 3, start: 11, end: 12.5 },
+	{ key: 'retro', calendar: 'work', day: 3, start: 15, end: 16 },
 ] as const satisfies readonly MockEvent[];
 
 const ALL_DAY = { key: 'holiday', calendar: 'holidays', day: 4 } as const;
@@ -72,7 +80,7 @@ export type MockupCopy = {
 	location: string;
 	shortcutsHint: string;
 	/** The "Ask Tempi" entry at the bottom of the sidebar. */
-	assistant: { label: string; hint: string };
+	assistant: { label: string };
 	events: Record<EventKey, string>;
 };
 
@@ -159,18 +167,18 @@ function Sidebar({ locale, copy, today }: PartProps) {
 	);
 }
 
-/** Replica of the app's "Ask Tempi" entry (apps/web `assistant.tsx`), pinned to the bottom of the sidebar. */
+/**
+ * Replica of the app's "Ask Tempi" entry (apps/web `assistant.tsx`) in dark mode, pinned to the bottom of the sidebar:
+ * the logo on a light tile with the glyph inverted, the label and the ⌘J keys.
+ */
 function AssistantEntry({ copy }: { copy: MockupCopy['assistant'] }) {
 	return (
-		<div className='mt-auto flex items-center gap-2.5 rounded-lg border border-primary/15 bg-linear-to-br from-primary/10 via-transparent to-transparent p-2 text-xs shadow-xs'>
+		<div className='mt-auto flex items-center gap-2.5 rounded-lg border border-primary/15 bg-linear-to-br from-primary/10 via-transparent to-transparent p-2 shadow-xs'>
 			<span className='flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-md bg-foreground shadow-xs'>
 				{/* The icon has wide transparent padding: drawn larger than its tile, the dolphin fills it. */}
 				<Image src='/tempi-icon.png' alt='' width={48} height={48} className='size-12 max-w-none invert' />
 			</span>
-			<span className='flex min-w-0 flex-1 flex-col'>
-				<span className='truncate font-medium'>{copy.label}</span>
-				<span className='truncate text-muted-foreground'>{copy.hint}</span>
-			</span>
+			<span className='min-w-0 flex-1 truncate text-xs font-medium'>{copy.label}</span>
 			<Hotkey keys={SHOWN_SHORTCUTS.toggleAssistant} />
 		</div>
 	);
@@ -239,7 +247,8 @@ function Header({ locale, copy, today }: PartProps) {
 			<span className='hidden size-7 items-center justify-center text-muted-foreground @xl:flex'>
 				<SettingsIcon className='size-3.5' />
 			</span>
-			<span className='hidden size-7 items-center justify-center text-muted-foreground @6xl:flex'>
+			{/* Like the app, the toggle for the Upcoming panel is always there, even when the panel doesn't fit. */}
+			<span className='flex size-7 shrink-0 items-center justify-center text-muted-foreground'>
 				<PanelRightIcon className='size-3.5' />
 			</span>
 		</header>
