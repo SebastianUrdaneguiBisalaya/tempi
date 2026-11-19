@@ -70,8 +70,7 @@
       "location": "En línea",
       "shortcutsHint": "Ver todos los atajos de teclado",
       "assistant": {
-        "label": "Pregúntale a Tempi",
-        "hint": "Escribe o habla sobre tu calendario"
+        "label": "Pregúntale a Tempi"
       },
       "events": {
         "standup": "Daily",
@@ -83,7 +82,14 @@
         "docs": "Escribir documentación",
         "dentist": "Dentista",
         "release": "Lanzar v1.2",
-        "holiday": "Feriado"
+        "holiday": "Feriado",
+        "reading": "Club de lectura",
+        "research": "Investigación de usuarios",
+        "oneOnOne": "1:1 con tu líder",
+        "focus": "Tiempo de enfoque",
+        "call": "Llamada familiar",
+        "codeReview": "Revisión de código",
+        "retro": "Retrospectiva"
       }
     }
   },

@@ -70,8 +70,7 @@
       "location": "Online",
       "shortcutsHint": "See all keyboard shortcuts",
       "assistant": {
-        "label": "Ask Tempi",
-        "hint": "Chat or talk about your calendar"
+        "label": "Ask Tempi"
       },
       "events": {
         "standup": "Standup",
@@ -83,7 +82,14 @@
         "docs": "Write documentation",
         "dentist": "Dentist",
         "release": "Ship v1.2",
-        "holiday": "Public holiday"
+        "holiday": "Public holiday",
+        "reading": "Book club",
+        "research": "User research",
+        "oneOnOne": "1:1 with manager",
+        "focus": "Focus time",
+        "call": "Family call",
+        "codeReview": "Code review",
+        "retro": "Sprint retro"
       }
     }
   },
