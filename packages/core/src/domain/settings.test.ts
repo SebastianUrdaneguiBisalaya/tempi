@@ -26,6 +26,19 @@ describe('tour completion', () => {
 	});
 });
 
+describe('UI sounds', () => {
+	test('are on by default with the tick preset', () => {
+		expect(DEFAULT_SETTINGS.soundsEnabled).toBe(true);
+		expect(DEFAULT_SETTINGS.sound).toBe('tick');
+	});
+
+	test('accept only the built-in presets', () => {
+		expect(settingsPatchSchema.parse({ sound: 'pop', soundsEnabled: false })).toEqual({ sound: 'pop', soundsEnabled: false });
+		expect(settingsPatchSchema.safeParse({ sound: 'chime' }).success).toBe(false);
+		expect(settingsPatchSchema.safeParse({ soundsEnabled: 'on' }).success).toBe(false);
+	});
+});
+
 describe('notification and microphone preferences', () => {
 	test('are on by default', () => {
 		expect(DEFAULT_SETTINGS.notificationsEnabled).toBe(true);

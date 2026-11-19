@@ -5,11 +5,14 @@ export const THEMES = ['system', 'light', 'dark'] as const;
 export const LANGUAGES = ['en', 'es'] as const;
 export const WEEK_STARTS = ['monday', 'sunday', 'saturday'] as const;
 export const TIME_FORMATS = ['12h', '24h'] as const;
+/** The UI sounds a user can pick: the built-in presets of `@usesounds` (web checks each one is a preset), so no audio files ship. */
+export const UI_SOUNDS = ['tick', 'pop', 'tap', 'toggle', 'success', 'error'] as const;
 
 export type Theme = (typeof THEMES)[number];
 export type Language = (typeof LANGUAGES)[number];
 export type WeekStart = (typeof WEEK_STARTS)[number];
 export type TimeFormat = (typeof TIME_FORMATS)[number];
+export type UiSound = (typeof UI_SOUNDS)[number];
 
 export const settingsValuesSchema = z.object({
 	/** The all-day lane above the week/day grid shows at most two rows. */
@@ -25,6 +28,10 @@ export const settingsValuesSchema = z.object({
 	onboardingCompleted: z.boolean(),
 	showWeekends: z.boolean(),
 	showWeekNumbers: z.boolean(),
+	/** The sound every button plays while `soundsEnabled` is on. */
+	sound: z.enum(UI_SOUNDS),
+	/** Plays a sound on every button press. Off silences the whole app. */
+	soundsEnabled: z.boolean(),
 	theme: z.enum(THEMES),
 	timeFormat: z.enum(TIME_FORMATS),
 	/** The guided tour of the main screen was finished or dismissed. Replaying it doesn't change this. */
@@ -52,6 +59,8 @@ export const DEFAULT_SETTINGS = {
 	onboardingCompleted: false,
 	showWeekends: true,
 	showWeekNumbers: false,
+	sound: 'tick',
+	soundsEnabled: true,
 	theme: 'system',
 	timeFormat: '24h',
 	tourCompleted: false,
