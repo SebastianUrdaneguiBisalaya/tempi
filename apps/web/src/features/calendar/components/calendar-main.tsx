@@ -13,6 +13,7 @@ import { useCalendarLocale } from '../hooks/use-calendar-locale';
 import { useCalendars } from '../hooks/use-calendars';
 import { useEvents } from '../hooks/use-events';
 import { useCalendarNavigation } from './calendar-navigation-provider';
+import { MonthMorePopover } from './month-more-popover';
 
 /**
  * The calendar body: `@usecalendar`'s month, week and day views over the shared navigation state. It only draws and
@@ -75,6 +76,7 @@ export function CalendarMain() {
 			onEventClick={event => event.data !== undefined && openEvent(event.data)}
 			onRangeSelect={createEvent}
 			onSlotClick={createEvent}
+			renderMorePopover={MonthMorePopover}
 			renderEventWrapper={({ children, event }) => (event.data === undefined ? children : <EventContextMenu event={event.data}>{children}</EventContextMenu>)}
 			selectedEventId={selection?.kind === 'event' ? selection.event.key : null}
 			// The app header holds the navigation and view switcher, next to the sidebar, panel and settings buttons.
