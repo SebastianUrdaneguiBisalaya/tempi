@@ -370,6 +370,17 @@ export const es = {
 			},
 			appearance: {
 				language: 'Idioma',
+				sound: 'Sonido',
+				sounds: {
+					error: 'Error',
+					pop: 'Burbuja',
+					success: 'Éxito',
+					tap: 'Toque',
+					tick: 'Clic',
+					toggle: 'Interruptor',
+				},
+				soundsEnabled: 'Sonidos de botones',
+				soundsEnabledDescription: 'Reproduce un sonido corto al presionar un botón. Al elegir un sonido, se reproduce.',
 				theme: 'Tema',
 			},
 			calendar: {

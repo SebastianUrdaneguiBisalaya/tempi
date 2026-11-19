@@ -368,6 +368,17 @@ export const en = {
 			},
 			appearance: {
 				language: 'Language',
+				sound: 'Sound',
+				sounds: {
+					error: 'Error',
+					pop: 'Pop',
+					success: 'Success',
+					tap: 'Tap',
+					tick: 'Tick',
+					toggle: 'Toggle',
+				},
+				soundsEnabled: 'Button sounds',
+				soundsEnabledDescription: 'Play a short sound when you press a button. Picking a sound plays it.',
 				theme: 'Theme',
 			},
 			calendar: {

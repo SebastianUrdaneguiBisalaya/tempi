@@ -141,6 +141,19 @@ describe('migrate', () => {
 		db.close();
 	});
 
+	test('0009 keeps existing settings and turns UI sounds on with the tick preset', () => {
+		const db = new DatabaseSync(':memory:');
+		const migrations = loadMigrations();
+		migrate(db, migrations.slice(0, 8));
+		db.exec(`INSERT INTO settings (id, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			show_week_numbers, theme, time_format, week_start, created_at, updated_at)
+			VALUES (1, 30, 'es', 0, 1, 1, 1, 'dark', '24h', 'monday', '2026-11-15T10:00:00.000Z', '2026-11-15T10:00:00.000Z')`);
+		migrate(db, migrations);
+		expect(db.prepare('SELECT language, sound, sounds_enabled FROM settings').get()).toEqual({ language: 'es', sound: 'tick', sounds_enabled: 1 });
+		expect(() => db.exec('UPDATE settings SET sounds_enabled = 2')).toThrow();
+		db.close();
+	});
+
 	test('rolls back a failing migration and leaves the version unchanged', () => {
 		const db = new DatabaseSync(':memory:');
 		const migrations = [
