@@ -5,6 +5,7 @@ import {
 	type CoreDeps,
 	type DomainError,
 	fail,
+	findFreeSlots,
 	getProfile,
 	getSettings,
 	listCalendars,
@@ -61,6 +62,12 @@ export const assistantPorts = (deps: CoreDeps, transaction: TransactionQueue): A
 		const event = orThrow(await transaction(async () => ok(await deps.events.findById(id))));
 		return event === null || event.deletedAt !== null ? null : event;
 	},
+	findFreeSlots: async query =>
+		orThrow(
+			await transaction(async () =>
+				findFreeSlots(deps, query, Temporal.Instant.fromEpochMilliseconds(deps.clock.now().getTime()), (await getProfile(deps))?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone)
+			)
+		),
 	listEvents: async range => orThrow(await transaction(() => listEvents(deps, range))),
 	searchEvents: async query => orThrow(await transaction(() => searchEvents(deps, query))),
 });

@@ -8,6 +8,9 @@ import {
 	eventFieldsSchema,
 	eventPatchSchema,
 	eventSearchQuerySchema,
+	type FreeSlots,
+	type FreeSlotsQuery,
+	freeSlotsQuerySchema,
 	idSchema,
 	newEventInputSchema,
 	parseWith,
@@ -22,12 +25,14 @@ export type AssistantPorts = {
 	listEvents: (range: DateRange) => Promise<EventOccurrence[]>;
 	searchEvents: (query: string) => Promise<EventOccurrence[]>;
 	findEvent: (id: string) => Promise<CalendarEvent | null>;
+	findFreeSlots: (query: FreeSlotsQuery) => Promise<FreeSlots>;
 };
 
 /** What a tool answers the model: data, a proposal shown to the user, or the issues to fix first. */
 type ToolAnswer =
 	| { events: ReturnType<typeof eventSummary>[] }
 	| { calendars: unknown[] }
+	| { days: { date: string; free: { end: string; start: string }[] }[] }
 	| { status: 'proposed'; note: string }
 	| { issues: Pick<DomainIssue, 'detail' | 'field' | 'key'>[]; status: 'invalid' };
 
@@ -89,6 +94,22 @@ export const assistantTools = (context: AssistantContext, ports: AssistantPorts,
 				return PROPOSED;
 			},
 			inputSchema: lenient(z.object({ id: idSchema })),
+		}),
+		findFreeTime: tool({
+			description:
+				'Find free time on some days (from and to are YYYY-MM-DD, both included). Without a window or weekdays it searches the user’s working hours, or 09:00–18:00 Monday to Friday; minMinutes is the shortest slot worth listing (30 by default). Reads only.',
+			execute: async (input): Promise<ToolAnswer> => {
+				const query = parseWith(freeSlotsQuerySchema, input);
+				if (!query.ok) return invalid(query.error.issues);
+				const found = await ports.findFreeSlots(query.value);
+				return {
+					days: found.days.map(day => ({
+						date: day.date,
+						free: day.slots.map(slot => ({ end: localInstant(slot.endAt, found.timeZone), start: localInstant(slot.startAt, found.timeZone) })),
+					})),
+				};
+			},
+			inputSchema: lenient(freeSlotsQuerySchema),
 		}),
 		listCalendars: tool({
 			description: 'List the user’s calendars.',

@@ -52,6 +52,9 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 			}),
 		showEvent: ref => call(CHANNELS.app.showEvent, () => api.app.showEvent(ref)),
 	},
+	availability: {
+		freeSlots: query => call(CHANNELS.availability.freeSlots, () => api.availability.freeSlots(query)),
+	},
 	calendars: {
 		create: input => call(CHANNELS.calendars.create, () => api.calendars.create(input)),
 		delete: input => call(CHANNELS.calendars.delete, () => api.calendars.delete(input)),

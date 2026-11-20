@@ -41,6 +41,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 			},
 			showEvent: answer,
 		},
+		availability: { freeSlots: answer },
 		calendars: { create: answer, delete: answer, export: answer, import: answer, list: answer, update: answer },
 		data: { backup: answer, restore: answer },
 		events: { create: answer, delete: answer, deleteOccurrence: answer, duplicate: answer, list: answer, restore: answer, search: answer, update: answer, updateOccurrence: answer },

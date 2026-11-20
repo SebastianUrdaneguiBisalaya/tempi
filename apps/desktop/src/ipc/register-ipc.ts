@@ -3,6 +3,7 @@ import type { OccurrenceRef } from '@tempi/ipc';
 import type { UpdateService } from '../updates/update-service';
 import { type AiIo, registerAiHandlers } from './ai';
 import { registerAppHandlers } from './app';
+import { registerAvailabilityHandlers } from './availability';
 import { registerCalendarHandlers } from './calendars';
 import { type DataIo, registerDataHandlers } from './data';
 import { registerEventHandlers } from './events';
@@ -44,6 +45,7 @@ export type AppIo = { ai: AiIo; data: DataIo; google: GoogleIo; ical: IcalIo; pe
 export const registerIpc = (context: HandlerContext, deps: CoreDeps, io: AppIo, listeners: IpcListeners = {}): void => {
 	registerAiHandlers(context, io.ai);
 	registerAppHandlers(context, listeners.showEvent);
+	registerAvailabilityHandlers(context, deps);
 	registerCalendarHandlers(context, deps, listeners.eventsChanged);
 	registerEventHandlers(context, deps, listeners.eventsChanged);
 	registerIcalHandlers(context, deps, io.ical, listeners.eventsChanged);

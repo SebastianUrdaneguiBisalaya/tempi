@@ -16,7 +16,12 @@ const cipher: Cipher = {
 };
 
 const context: AssistantContext = { calendars: [], defaultEventDuration: 60, language: 'en', now: new Date('2026-11-17T14:30:00Z'), timeZone: 'America/Lima', weekStart: 'monday' };
-const ports = { findEvent: () => Promise.resolve(null), listEvents: () => Promise.resolve([]), searchEvents: () => Promise.resolve([]) };
+const ports = {
+	findEvent: () => Promise.resolve(null),
+	findFreeSlots: () => Promise.resolve({ days: [], timeZone: 'UTC' }),
+	listEvents: () => Promise.resolve([]),
+	searchEvents: () => Promise.resolve([]),
+};
 const input = { messages: [{ role: 'user' as const, text: 'Hola' }], provider: 'anthropic' as const, requestId: '01890a5d-ac96-774b-bcce-b302099a8057' };
 
 let dir: string;

@@ -231,6 +231,13 @@ describe('registerIpc', () => {
 		expect(await invoke(CHANNELS.settings.save, { theme: 'dark' })).toMatchObject({ ok: true, value: { theme: 'dark', weekStart: 'monday' } });
 	});
 
+	test('availability: finds free time and validates the query', async () => {
+		// A Monday far ahead, so the current time never cuts into its window.
+		const found = await invoke(CHANNELS.availability.freeSlots, { from: '2030-01-07', to: '2030-01-07' });
+		expect(found).toMatchObject({ ok: true, value: { days: [{ date: '2030-01-07', slots: [expect.any(Object)] }] } });
+		expect(await invoke(CHANNELS.availability.freeSlots, { from: '2030-01-08', to: '2030-01-07' })).toMatchObject({ error: { code: 'validation' }, ok: false });
+	});
+
 	test('ai: validates the payload, saves a working key and never answers with it', async () => {
 		expect(await invoke(CHANNELS.ai.saveKey, { key: ' ', provider: 'mistral' })).toMatchObject({ error: { code: 'validation' }, ok: false });
 		expect(aiKeys.size).toBe(0);

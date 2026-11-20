@@ -83,6 +83,9 @@ const desktop: DesktopApi = {
 		},
 		showEvent: ref => ipcRenderer.invoke(CHANNELS.app.showEvent, ref),
 	},
+	availability: {
+		freeSlots: query => ipcRenderer.invoke(CHANNELS.availability.freeSlots, query),
+	},
 	calendars: {
 		create: input => ipcRenderer.invoke(CHANNELS.calendars.create, input),
 		delete: input => ipcRenderer.invoke(CHANNELS.calendars.delete, input),
