@@ -167,12 +167,15 @@ export const es = {
 			title: 'Calendarios',
 		},
 		commandMenu: {
-			description: 'Escribe un comando o busca eventos.',
+			createEvent: 'Crear evento',
+			createNamedEvent: 'Crear “{{title}}”',
+			description: 'Escribe un comando, busca eventos o describe uno nuevo.',
 			empty: 'No se encontraron comandos.',
 			exportAll: 'Exportar todos los calendarios (.ics)…',
 			groups: {
 				actions: 'Acciones',
 				appearance: 'Apariencia',
+				create: 'Nuevo evento',
 				events: 'Eventos',
 			},
 			importIcs: 'Importar .ics en…',

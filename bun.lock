@@ -50,6 +50,7 @@
         "@usehotkeys/react": "0.1.0",
         "@usesounds/core": "0.1.0",
         "@usesounds/react": "0.1.0",
+        "chrono-node": "catalog:",
         "class-variance-authority": "0.7.1",
         "cmdk": "^1.1.1",
         "cn": "0.5.2",
@@ -218,6 +219,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "ai": "7.0.173",
+    "chrono-node": "2.10.3",
     "gsap": "3.15.1",
     "next": "16.4.6",
     "react": "19.3.0",
@@ -793,6 +795,8 @@
     "chownr": ["chownr@3.0.0", "", {}, "sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g=="],
 
     "chromium-pickle-js": ["chromium-pickle-js@0.2.0", "", {}, "sha512-1R5Fho+jBq0DDydt+/vHWj5KJNJCKdARKOCwZUen84I5BreWoLqRLANH1U87eJy1tiASPtMnGqJJq0ZsLoRPOw=="],
+
+    "chrono-node": ["chrono-node@2.10.3", "", {}, "sha512-MOfrzXgSMZTH4SZ5gyRKQCVwiCrCKY+uYkSJiWoRLXS88DA6WGJm8UjgS+VVEuUQeew/UUXaxrO+SeDn/WCisg=="],
 
     "ci-info": ["ci-info@4.5.0", "", {}, "sha512-d1uM8k5UZEyPza1n/MG3ko8nKupKN0KJpFsipgPcgaCCvV+IqIfJ+NzTjetlLM+UcXZx3+cLrNr76+eAO7G1Mw=="],
 

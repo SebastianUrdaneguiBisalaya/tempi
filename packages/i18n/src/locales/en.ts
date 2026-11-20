@@ -165,12 +165,15 @@ export const en = {
 			title: 'Calendars',
 		},
 		commandMenu: {
-			description: 'Type a command or search for events.',
+			createEvent: 'Create event',
+			createNamedEvent: 'Create “{{title}}”',
+			description: 'Type a command, search for events or describe a new one.',
 			empty: 'No commands found.',
 			exportAll: 'Export all calendars (.ics)…',
 			groups: {
 				actions: 'Actions',
 				appearance: 'Appearance',
+				create: 'New event',
 				events: 'Events',
 			},
 			importIcs: 'Import .ics into…',
