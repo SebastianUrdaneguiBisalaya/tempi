@@ -7,6 +7,7 @@ import { useDeferredValue, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@/components/ui/command';
 import { Spinner } from '@/components/ui/spinner';
+import { useShareAvailability } from '@/features/availability/components/share-availability-provider';
 import { useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
 import { useGoToDate } from '@/features/calendar/components/go-to-date-provider';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
@@ -45,6 +46,7 @@ export function CommandMenu() {
 	const searched = useDeferredValue(text);
 	const { setView } = useCalendarNavigation();
 	const { openGoToDate } = useGoToDate();
+	const { openShareAvailability } = useShareAvailability();
 	const { openSettings } = useSettingsDialog();
 	const newEvent = useNewEvent();
 	const { newEvent: openDraft } = useEventPanel();
@@ -209,6 +211,9 @@ export function CommandMenu() {
 								{actionItem('goToDate', openGoToDate)}
 								{(Object.entries(VIEW_ACTIONS) as [CalendarView, ShortcutAction][]).map(([view, action]) => actionItem(action, () => setView(view)))}
 								{actionItem('openSettings', openSettings)}
+								<CommandItem onSelect={run(openShareAvailability)} value={t('commandMenu.shareAvailability')}>
+									{t('commandMenu.shareAvailability')}
+								</CommandItem>
 								<CommandItem onSelect={() => showPage('import')} value={t('commandMenu.importIcs')}>
 									{t('commandMenu.importIcs')} ›
 								</CommandItem>

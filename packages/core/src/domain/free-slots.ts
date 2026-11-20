@@ -30,7 +30,7 @@ const plainDateSchema = z.string().refine(value => {
 export const freeSlotsQuerySchema = z
 	.object({
 		/** Calendars whose events block time. */
-		calendarIds: z.array(idSchema).min(1, 'validation.min').optional(),
+		calendarIds: z.array(idSchema).min(1, 'availability.noCalendars').optional(),
 		/** Weekdays to search, 1 (Monday) to 7 (Sunday). */
 		days: z
 			.array(z.number().int('validation.integer').min(1, 'validation.min').max(7, 'validation.max'))

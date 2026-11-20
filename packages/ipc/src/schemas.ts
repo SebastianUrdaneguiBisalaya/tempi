@@ -54,6 +54,9 @@ const noPayload = z.undefined();
 export const chatPortMessageSchema = z.object({ requestId: z.uuid() });
 
 /** An occurrence to show: its listing key and start, enough to find it again in the renderer. */
+/** Text to copy: plain, short enough for any clipboard and never empty. */
+export const copyTextSchema = z.string().min(1, 'validation.required').max(20_000, 'validation.max');
+
 export const occurrenceRefSchema = z.object({ key: z.string().min(1), startAt: utcInstantSchema });
 
 export type OccurrenceRef = z.output<typeof occurrenceRefSchema>;
@@ -89,6 +92,7 @@ export const payloadSchemas = {
 	'ai:speak': speechInputSchema,
 	'ai:testKey': aiProviderSchema,
 	'ai:transcribe': transcriptionInputSchema,
+	'app:copyText': copyTextSchema,
 	'app:showEvent': occurrenceRefSchema,
 	'availability:freeSlots': freeSlotsQuerySchema,
 	'calendars:create': newCalendarInputSchema,
@@ -141,6 +145,7 @@ export const responseValueSchemas = {
 	'ai:speak': speechSchema,
 	'ai:testKey': z.null(),
 	'ai:transcribe': transcriptionSchema,
+	'app:copyText': z.null(),
 	'app:showEvent': z.null(),
 	'availability:freeSlots': freeSlotsSchema,
 	'calendars:create': calendarSchema,

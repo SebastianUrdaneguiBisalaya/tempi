@@ -28,6 +28,8 @@ export const CHANNELS = {
 		transcribe: 'ai:transcribe',
 	},
 	app: {
+		/** Puts text on the system clipboard, e.g. shared availability. The renderer's own clipboard access stays denied. */
+		copyText: 'app:copyText',
 		/** Brings the main window forward on an occurrence, e.g. one picked in the menu bar calendar. */
 		showEvent: 'app:showEvent',
 	},

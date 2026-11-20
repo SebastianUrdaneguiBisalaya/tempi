@@ -27,6 +27,7 @@ import {
 	app,
 	BrowserWindow,
 	type BrowserWindowConstructorOptions,
+	clipboard,
 	dialog,
 	globalShortcut,
 	ipcMain,
@@ -687,6 +688,7 @@ if (!gotLock) {
 				themePreviewed: theme => {
 					nativeTheme.themeSource = theme ?? savedTheme;
 				},
+				copyText: text => clipboard.writeText(text),
 				showEvent: showInMainWindow,
 			}
 		);

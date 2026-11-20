@@ -33,6 +33,8 @@ export type IpcListeners = {
 	settingsSaved?: (settings: Settings) => void;
 	/** The renderer previews an unsaved theme, or drops the preview (null), e.g. to sync `nativeTheme` with it. */
 	themePreviewed?: (theme: Theme | null) => void;
+	/** A window asked to put text on the clipboard. */
+	copyText?: (text: string) => void;
 	/** A window asked to show an occurrence in the main window. */
 	showEvent?: (ref: OccurrenceRef) => void;
 };
@@ -44,7 +46,7 @@ export type AppIo = { ai: AiIo; data: DataIo; google: GoogleIo; ical: IcalIo; pe
 
 export const registerIpc = (context: HandlerContext, deps: CoreDeps, io: AppIo, listeners: IpcListeners = {}): void => {
 	registerAiHandlers(context, io.ai);
-	registerAppHandlers(context, listeners.showEvent);
+	registerAppHandlers(context, listeners.showEvent, listeners.copyText);
 	registerAvailabilityHandlers(context, deps);
 	registerCalendarHandlers(context, deps, listeners.eventsChanged);
 	registerEventHandlers(context, deps, listeners.eventsChanged);

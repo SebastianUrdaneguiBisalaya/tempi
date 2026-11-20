@@ -1,4 +1,4 @@
-import type { DateRange, DomainError, Result } from '@tempi/core';
+import type { DateRange, DomainError, FreeSlotsQueryInput, Result } from '@tempi/core';
 
 /**
  * Turns a use-case `Result` into a query/mutation outcome: the value, or the `DomainError` thrown as is.
@@ -22,7 +22,13 @@ export const STORAGE_UNAVAILABLE: DomainError = {
 export const queryKeys = {
 	ai: { all: ['ai'], settings: ['ai', 'settings'], voices: ['ai', 'voices'] },
 	calendars: { all: ['calendars'] },
-	events: { all: ['events'], range: (range: DateRange) => ['events', range.start, range.end], search: (query: string) => ['events', 'search', query] },
+	events: {
+		all: ['events'],
+		// Under `events`, so every event change refreshes the free time it leaves.
+		freeSlots: (query: FreeSlotsQueryInput) => ['events', 'freeSlots', query],
+		range: (range: DateRange) => ['events', range.start, range.end],
+		search: (query: string) => ['events', 'search', query],
+	},
 	google: { account: ['google', 'account'], calendars: ['google', 'calendars'], syncStatus: ['google', 'syncStatus'] },
 	permissions: { status: ['permissions', 'status'] },
 	profile: { all: ['profile'] },
