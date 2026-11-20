@@ -404,6 +404,10 @@ export const en = {
 				minutes: 'minutes',
 				openAtLoginEnabled: 'Open Tempi at login',
 				openAtLoginEnabledDescription: 'Start Tempi in the background when you log in, so reminders arrive after a restart.',
+				secondaryTimeZones: 'Secondary time zones',
+				secondaryTimeZonesAdd: 'Add time zone',
+				secondaryTimeZonesDescription: 'Show up to two more time zones as extra hour columns in the day and week views.',
+				secondaryTimeZonesRemove: 'Remove {{zone}}',
 				showWeekends: 'Show weekends',
 				showWeekNumbers: 'Show week numbers',
 				timeFormat: 'Time format',
@@ -775,6 +779,9 @@ export const en = {
 		},
 		range: {
 			endBeforeStart: 'The end of the range must be after its start.',
+		},
+		settings: {
+			secondaryTimeZones: 'Pick up to two different time zones.',
 		},
 		system: {
 			unexpected: 'Something went wrong. Please try again.',

@@ -7,6 +7,7 @@ import { EventContextMenu } from '@/features/events/components/event-context-men
 import { useEventPanel } from '@/features/events/components/event-panel-provider';
 import { EventPreview } from '@/features/events/components/event-preview';
 import { useRescheduleEvent } from '@/features/events/hooks/use-event-mutations';
+import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { useSetAllDayCollapsed, useSettings } from '@/features/settings/hooks/use-settings';
 import { useGridShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 import { CALENDAR_HOTKEYS } from '@/features/shortcuts/shortcuts';
@@ -23,7 +24,8 @@ import { MonthMorePopover } from './month-more-popover';
 export function CalendarMain() {
 	const calendar = useCalendarNavigation();
 	const { data: settings } = useSettings();
-	const { allDayCollapsed, defaultEventDuration } = settings ?? DEFAULT_SETTINGS;
+	const { allDayCollapsed, defaultEventDuration, secondaryTimeZones } = settings ?? DEFAULT_SETTINGS;
+	const timeZone = useTimeZone();
 	const { chooseScope, newEvent, openEvent, refreshEvent, selection } = useEventPanel();
 	const reschedule = useRescheduleEvent();
 	const setAllDayCollapsed = useSetAllDayCollapsed();
@@ -78,6 +80,8 @@ export function CalendarMain() {
 			onRangeSelect={createEvent}
 			onSlotClick={createEvent}
 			renderMorePopover={MonthMorePopover}
+			// A zone the profile later switched to already has the main column.
+			secondaryTimeZones={secondaryTimeZones.filter(zone => zone !== timeZone).map(zone => ({ timeZone: zone }))}
 			// The calendar's own `eventPopover` stays off: the app's popover previews an event on hover, and a click still opens the panel.
 			renderEventWrapper={({ children, event }) =>
 				event.data === undefined ? (

@@ -6,6 +6,16 @@ export const booleanColumn = z.union([z.literal(0), z.literal(1)]).transform(val
 
 export const toBooleanColumn = (value: boolean): 0 | 1 => (value ? 1 : 0);
 
+/** JSON text, parsed; the domain schema the row is piped into checks what it holds. */
+export const jsonColumn = z.string().transform((text, ctx): unknown => {
+	try {
+		return JSON.parse(text);
+	} catch {
+		ctx.addIssue({ code: 'custom', message: 'column is not JSON' });
+		return z.NEVER;
+	}
+});
+
 /**
  * Normalizes an instant to UTC before it is written, so range queries can compare text.
  * Use cases already pass UTC; this guards the adapter against any other caller.

@@ -353,6 +353,7 @@ describe('SqliteSettingsRepository', () => {
 			allDayCollapsed: true,
 			iconBadgeEnabled: false,
 			microphoneEnabled: false,
+			secondaryTimeZones: ['Asia/Kolkata', 'Europe/Madrid'],
 			notificationsEnabled: false,
 			openAtLoginEnabled: true,
 			showWeekNumbers: true,
