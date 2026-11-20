@@ -3,7 +3,7 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
-import { listVoices, runAssistant, speak, testKey, textModel, transcribe } from '@tempi/ai';
+import { listVoices, parseQuickAdd, runAssistant, speak, testKey, textModel, transcribe } from '@tempi/ai';
 import {
 	type CoreDeps,
 	countRemainingToday,
@@ -46,6 +46,7 @@ import { autoUpdater } from 'electron-updater';
 import { createAiService } from './ai/ai-service.js';
 import { type AssistantSink, assistantContext, assistantPorts, createAssistantChat } from './ai/assistant-chat.js';
 import { createAiKeyStore } from './ai/key-store.js';
+import { createQuickAdd } from './ai/quick-add.js';
 import { createAiSettingsStore } from './ai/settings-store.js';
 import { APP_ORIGIN, appScheme, handleAppProtocol } from './app-protocol.js';
 import { avatarScheme, handleAvatarProtocol } from './avatar-protocol.js';
@@ -496,9 +497,10 @@ function aiIo(deps: CoreDeps, transaction: TransactionQueue): AiIo {
 	const userData = app.getPath('userData');
 	const keys = createAiKeyStore(path.join(userData, 'ai-keys.bin'), safeStorageCipher);
 	const settings = createAiSettingsStore(path.join(userData, 'ai-settings.json'));
+	const context = assistantContext(deps, transaction, () => new Date());
 	return {
 		chat: createAssistantChat({
-			context: assistantContext(deps, transaction, () => new Date()),
+			context,
 			keys,
 			model: textModel,
 			ports: assistantPorts(deps, transaction),
@@ -506,6 +508,7 @@ function aiIo(deps: CoreDeps, transaction: TransactionQueue): AiIo {
 			settings,
 		}),
 		openStream: openAssistantStream,
+		quickAdd: createQuickAdd({ context, keys, model: textModel, parse: parseQuickAdd, settings }),
 		service: createAiService({
 			keys,
 			providers: {

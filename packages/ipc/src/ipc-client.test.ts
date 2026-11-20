@@ -25,6 +25,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 			},
 			getSettings: answer,
 			listVoices: answer,
+			quickAdd: answer,
 			removeKey: answer,
 			saveKey: answer,
 			saveSettings: answer,

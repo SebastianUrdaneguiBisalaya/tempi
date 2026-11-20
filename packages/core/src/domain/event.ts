@@ -58,8 +58,11 @@ export const newEventInputSchema = z
 	.object({ ...eventShape, allDay: eventShape.allDay.default(false), status: eventShape.status.default('confirmed') })
 	.refine(event => event.endAt > event.startAt, endAfterStart);
 
+/** Every input field with its own rule and no cross-field rule, to pick fields from (`eventPatchSchema`, quick add). */
+export const eventInputFieldsSchema = z.object(eventShape);
+
 /** Shape check for a partial update. Cross-field rules run after merging, with `eventFieldsSchema`. */
-export const eventPatchSchema = z.object(eventShape).partial();
+export const eventPatchSchema = eventInputFieldsSchema.partial();
 
 export type EventFields = z.output<typeof eventFieldsSchema>;
 export type NewEventInput = z.input<typeof newEventInputSchema>;

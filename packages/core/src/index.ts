@@ -1,4 +1,4 @@
-export type { AiKeyFlags, AiKeyInput, AiProvider, AiSettings, AiSettingsPatch, AiSettingsValues, AiVoice, TextProvider } from './domain/ai-settings';
+export type { AiKeyFlags, AiKeyInput, AiProvider, AiSettings, AiSettingsPatch, AiSettingsValues, AiVoice, QuickAddMode, TextProvider } from './domain/ai-settings';
 export {
 	AI_PROVIDERS,
 	aiKeyFlagsSchema,
@@ -12,6 +12,7 @@ export {
 	DEFAULT_AI_SETTINGS,
 	ELEVENLABS_STT_MODELS,
 	ELEVENLABS_TTS_MODELS,
+	QUICK_ADD_MODES,
 	TEXT_MODELS,
 	TEXT_PROVIDERS,
 	voiceIdSchema,
@@ -43,6 +44,7 @@ export {
 	calendarEventSchema,
 	EVENT_STATUSES,
 	eventFieldsSchema,
+	eventInputFieldsSchema,
 	eventOccurrenceSchema,
 	eventPatchSchema,
 	MAX_REMINDER_MINUTES,
@@ -72,6 +74,8 @@ export type { OnboardingInput } from './domain/onboarding';
 export { onboardingInputSchema } from './domain/onboarding';
 export type { OsPermission, OsPermissionState, OsPermissionStatus, OsPermissionsStatus } from './domain/os-permission';
 export { OS_PERMISSION_STATES, OS_PERMISSIONS, osPermissionSchema, osPermissionsStatusSchema } from './domain/os-permission';
+export type { QuickAddContext, QuickAddInput, QuickAddProposal } from './domain/quick-add';
+export { MAX_QUICK_ADD_TEXT, quickAddInputSchema, quickAddProposalSchema } from './domain/quick-add';
 export type { Recurrence, RecurrenceFrequency, RecurrencePreset, Weekday } from './domain/recurrence';
 export {
 	fromRrule,

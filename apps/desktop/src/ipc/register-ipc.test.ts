@@ -70,6 +70,8 @@ const aiService: AiService = {
 
 /** Assistant replies started, and the streams opened for them. */
 let chats: { input: unknown; requestId: string }[];
+/** Texts sent to AI quick add. */
+let quickAdds: string[] = [];
 const ai: AiIo = {
 	chat: (input, openSink) => {
 		openSink().send({ type: 'done' });
@@ -77,6 +79,12 @@ const ai: AiIo = {
 		return Promise.resolve(ok(null));
 	},
 	openStream: () => ({ close: () => undefined, send: () => undefined, signal: new AbortController().signal }),
+	quickAdd: ({ text }) => {
+		quickAdds.push(text);
+		return Promise.resolve(
+			ok({ allDay: false, description: null, endAt: '2026-11-20T23:00:00.000Z', location: 'Larcomar', reminderMinutes: 30, startAt: '2026-11-20T22:00:00.000Z', title: 'Café con Ana' })
+		);
+	},
 	service: aiService,
 };
 
@@ -240,6 +248,15 @@ describe('registerIpc', () => {
 		expect(chats).toEqual([]);
 		expect(await invoke(CHANNELS.ai.chat, input)).toEqual({ ok: true, value: null });
 		expect(chats).toEqual([{ input, requestId: input.requestId }]);
+	});
+
+	test('ai:quickAdd caps the text, refuses other frames and answers the proposal', async () => {
+		quickAdds = [];
+		expect(await invoke(CHANNELS.ai.quickAdd, { text: 'a'.repeat(501) })).toMatchObject({ error: { code: 'validation', issues: [{ field: 'text' }] }, ok: false });
+		expect(await invoke(CHANNELS.ai.quickAdd, { text: 'Café' }, 'https://evil.example/')).toMatchObject({ error: { issues: [{ key: 'system.unexpected' }] }, ok: false });
+		expect(quickAdds).toEqual([]);
+		expect(await invoke(CHANNELS.ai.quickAdd, { text: ' Café con Ana mañana 5pm ' })).toMatchObject({ ok: true, value: { location: 'Larcomar', title: 'Café con Ana' } });
+		expect(quickAdds).toEqual(['Café con Ana mañana 5pm']);
 	});
 
 	test('restores a deleted event', async () => {

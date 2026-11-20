@@ -2,6 +2,8 @@ export type { AssistantRequest } from './assistant';
 export { runAssistant } from './assistant';
 export type { AssistantContext } from './assistant-context';
 export type { AssistantPorts } from './assistant-tools';
+export type { QuickAddRequest } from './quick-add';
+export { parseQuickAdd } from './quick-add';
 export type { SpeechRequest } from './speak';
 export { speak } from './speak';
 export { testKey } from './test-key';

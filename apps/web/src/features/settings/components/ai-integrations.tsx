@@ -10,6 +10,7 @@ import {
 	ELEVENLABS_STT_MODELS,
 	ELEVENLABS_TTS_MODELS,
 	LANGUAGES,
+	QUICK_ADD_MODES,
 	TEXT_MODELS,
 	TEXT_PROVIDERS,
 	type TextProvider,
@@ -24,11 +25,12 @@ import { FormFieldError } from '@/components/form-field-error';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import { useAiSettings, useAiVoices, useRemoveAiKey, useSaveAiKey, useSaveAiSettings, useTestAiKey } from '../hooks/use-ai';
+import { quickAddProviderOf, useAiSettings, useAiVoices, useRemoveAiKey, useSaveAiKey, useSaveAiSettings, useTestAiKey } from '../hooks/use-ai';
 import { ElevenLabsLogo } from './elevenlabs-logo';
 import { showFieldErrors } from './field-errors';
 
@@ -265,6 +267,71 @@ function ElevenLabsCard({ settings }: { settings: AiSettings }) {
 	);
 }
 
+/**
+ * How quick add reads typed text: the local parser, or a text provider with a saved key. AI stays disabled until one
+ * has a key, and choosing it picks the first such provider unless one is already chosen.
+ */
+function QuickAddCard({ settings }: { settings: AiSettings }) {
+	const { t } = useTranslation();
+	const id = useId();
+	const save = useSaveChoice();
+	const withKey = TEXT_PROVIDERS.filter(provider => settings.keys[provider]);
+	const active = quickAddProviderOf(settings);
+	// A removed key turns AI off here too, matching what the command menu does.
+	const mode = active === null ? 'local' : 'ai';
+	const changeMode = (value: unknown) => {
+		const next = QUICK_ADD_MODES.find(option => option === value);
+		if (next === undefined || next === mode) return;
+		const provider = settings.quickAdd.provider !== null && settings.keys[settings.quickAdd.provider] ? settings.quickAdd.provider : (withKey[0] ?? null);
+		save({ quickAdd: next === 'local' ? { mode: 'local' } : { mode: 'ai', provider } });
+	};
+
+	return (
+		<section aria-labelledby={`${id}-title`}>
+			<Card size='sm'>
+				<CardHeader>
+					<CardTitle>
+						<h3 id={`${id}-title`}>{t('settings.integrations.ai.quickAdd.title')}</h3>
+					</CardTitle>
+					<CardDescription>{t('settings.integrations.ai.quickAdd.description')}</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<FieldGroup className='gap-4'>
+						<FieldSet>
+							<FieldLegend className='sr-only' variant='label'>
+								{t('settings.integrations.ai.quickAdd.title')}
+							</FieldLegend>
+							<RadioGroup className='flex flex-col gap-3 sm:flex-row sm:gap-4' onValueChange={changeMode} value={mode}>
+								{QUICK_ADD_MODES.map(option => (
+									<div className='flex items-center gap-2' key={option}>
+										<RadioGroupItem disabled={option === 'ai' && withKey.length === 0} id={`${id}-${option}`} value={option} />
+										<FieldLabel className='font-normal' htmlFor={`${id}-${option}`}>
+											{t(`settings.integrations.ai.quickAdd.${option}`)}
+										</FieldLabel>
+									</div>
+								))}
+							</RadioGroup>
+							{withKey.length === 0 && <FieldDescription>{t('settings.integrations.ai.quickAdd.noKey')}</FieldDescription>}
+						</FieldSet>
+						{mode === 'ai' && (
+							<>
+								<SettingSelect
+									label={t('settings.integrations.ai.quickAdd.provider')}
+									onChange={provider => save({ quickAdd: { provider } })}
+									options={withKey.map(provider => ({ label: t(`settings.integrations.ai.providers.${provider}.title`), value: provider }))}
+									placeholder={t('settings.integrations.ai.quickAdd.providerPlaceholder')}
+									value={active}
+								/>
+								<p className='text-muted-foreground'>{t('settings.integrations.ai.quickAdd.note')}</p>
+							</>
+						)}
+					</FieldGroup>
+				</CardContent>
+			</Card>
+		</section>
+	);
+}
+
 /** One card per AI provider: the user's own key, its model and, for ElevenLabs, its voices. With no key nothing calls a provider. */
 export function AiIntegrations() {
 	const { t } = useTranslation();
@@ -277,6 +344,7 @@ export function AiIntegrations() {
 				<ShieldAlertIcon aria-hidden className='mt-0.5 size-4 shrink-0' />
 				{t('settings.integrations.ai.privacy')}
 			</p>
+			<QuickAddCard settings={settings} />
 			{TEXT_PROVIDERS.map(provider => (
 				<TextProviderCard key={provider} provider={provider} settings={settings} />
 			))}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AiKeyInput, AiProvider, AiSettings, AiSettingsPatch } from '@tempi/core';
+import type { AiKeyInput, AiProvider, AiSettings, AiSettingsPatch, TextProvider } from '@tempi/core';
 import { queryKeys, STORAGE_UNAVAILABLE, unwrap } from '@/lib/query';
 import { useApi } from '@/providers/api-provider';
 
@@ -89,5 +89,22 @@ export const useAiVoices = (enabled: boolean) => {
 			return unwrap(await api.ai.listVoices());
 		},
 		queryKey: queryKeys.ai.voices,
+	});
+};
+
+/** The provider quick add reads text with, or null for the local parser: AI only once chosen with a provider that has a key. */
+export const quickAddProviderOf = (settings: AiSettings | undefined): TextProvider | null => {
+	const provider = settings?.quickAdd.mode === 'ai' ? settings.quickAdd.provider : null;
+	return provider !== null && settings?.keys[provider] === true ? provider : null;
+};
+
+/** Reads quick add text with the provider chosen in Settings. Nothing is saved: the answer only prefills the event form. */
+export const useAiQuickAdd = () => {
+	const api = useApi();
+	return useMutation({
+		mutationFn: async (text: string) => {
+			if (api === null) throw STORAGE_UNAVAILABLE;
+			return unwrap(await api.ai.quickAdd({ text }));
+		},
 	});
 };

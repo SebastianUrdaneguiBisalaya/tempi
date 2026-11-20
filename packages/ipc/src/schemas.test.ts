@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { MAX_DICTATION_BYTES, MAX_SPEECH_LENGTH, parseWith } from '@tempi/core';
+import { MAX_DICTATION_BYTES, MAX_QUICK_ADD_TEXT, MAX_SPEECH_LENGTH, parseWith } from '@tempi/core';
 import { CHANNELS } from './channels';
 import { payloadSchemas, responseValueSchemas, resultSchema } from './schemas';
 
@@ -25,6 +25,7 @@ describe('payloadSchemas', () => {
 		['ai:chat', { messages: [{ role: 'user', text: 'Dentista mañana a las 3pm' }], provider: 'anthropic', requestId: '01890a5d-ac96-774b-bcce-b302099a8057' }],
 		['ai:getSettings', undefined],
 		['ai:listVoices', undefined],
+		['ai:quickAdd', { text: 'Café con Ana en Larcomar mañana 5pm, avísame 30 min antes' }],
 		['ai:removeKey', 'groq'],
 		['ai:saveKey', { key: 'sk-test', provider: 'anthropic' }],
 		['ai:saveSettings', { elevenlabs: { voices: { es: 'voice-es' } }, models: { openai: 'gpt-5.4-mini' } }],
@@ -87,6 +88,8 @@ describe('payloadSchemas', () => {
 	test.each([
 		['ai:chat', { messages: [{ role: 'system', text: ' ' }], provider: 'elevenlabs', requestId: 'not-a-uuid' }, ['messages.0.role', 'messages.0.text', 'provider', 'requestId']],
 		['ai:chat', { messages: [], provider: 'openai', requestId: '01890a5d-ac96-774b-bcce-b302099a8057' }, ['messages']],
+		['ai:quickAdd', { text: ' ' }, ['text']],
+		['ai:quickAdd', { text: 'a'.repeat(MAX_QUICK_ADD_TEXT + 1) }, ['text']],
 		['ai:removeKey', 'mistral', ['']],
 		['ai:speak', { language: 'fr', text: '   ' }, ['language', 'text']],
 		['ai:speak', { language: 'es', text: 'a'.repeat(MAX_SPEECH_LENGTH + 1) }, ['text']],
@@ -149,6 +152,29 @@ describe('ai:transcribe', () => {
 	});
 });
 
+describe('ai:quickAdd answers', () => {
+	const answer = resultSchema(responseValueSchemas['ai:quickAdd']);
+	const proposal = {
+		allDay: false,
+		description: null,
+		endAt: '2026-11-20T23:00:00.000Z',
+		location: 'Larcomar',
+		reminderMinutes: 30,
+		startAt: '2026-11-20T22:00:00.000Z',
+		title: 'Café con Ana',
+	};
+
+	test('accept a proposal for the event form', () => {
+		expect(answer.parse({ ok: true, value: proposal })).toEqual({ ok: true, value: proposal });
+	});
+
+	test('reject a proposal that breaks the event rules or carries anything else', () => {
+		expect(answer.safeParse({ ok: true, value: { ...proposal, endAt: proposal.startAt } }).success).toBe(false);
+		expect(answer.safeParse({ ok: true, value: { ...proposal, title: '' } }).success).toBe(false);
+		expect(answer.safeParse({ ok: true, value: { ...proposal, apiKey: 'sk-secret' } }).success).toBe(false);
+	});
+});
+
 describe('ai:speak answers', () => {
 	const speech = resultSchema(responseValueSchemas['ai:speak']);
 
@@ -168,6 +194,7 @@ describe('ai answers', () => {
 		elevenlabs: { sttModel: 'scribe_v2', ttsModel: 'eleven_multilingual_v2', voices: { en: null, es: 'voice-es' } },
 		keys: { anthropic: true, elevenlabs: true, google: false, groq: false, openai: false, xai: false },
 		models: { anthropic: 'claude-opus-5-5', google: 'gemini-3.8-flash', groq: 'openai/gpt-oss-120b', openai: 'gpt-5.6', xai: 'grok-4.7' },
+		quickAdd: { mode: 'ai', provider: 'anthropic' },
 	} as const;
 
 	test('carry only whether a key exists, so keys could never reach the renderer', () => {

@@ -1,10 +1,12 @@
 'use client';
 
-import { DEFAULT_SETTINGS, LANGUAGES, type Language, resolveLanguage, THEMES, type Theme } from '@tempi/core';
+import { DEFAULT_SETTINGS, LANGUAGES, type Language, type QuickAddProposal, resolveLanguage, THEMES, type Theme } from '@tempi/core';
 import type { CalendarView } from '@usecalendar/core';
-import { useDeferredValue, useState } from 'react';
+import { SparklesIcon } from 'lucide-react';
+import { useDeferredValue, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@/components/ui/command';
+import { Spinner } from '@/components/ui/spinner';
 import { useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
 import { useGoToDate } from '@/features/calendar/components/go-to-date-provider';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
@@ -15,6 +17,7 @@ import { useNewEvent } from '@/features/events/hooks/use-new-event';
 import { useProfile } from '@/features/profile/hooks/use-profile';
 import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
+import { quickAddProviderOf, useAiQuickAdd, useAiSettings } from '@/features/settings/hooks/use-ai';
 import { useSaveSettings, useSettings } from '@/features/settings/hooks/use-settings';
 import { useTour } from '@/features/tour/components/tour-provider';
 import { formatDate, formatTimeRange } from '@/lib/date-format';
@@ -53,6 +56,11 @@ export function CommandMenu() {
 	const importCalendar = useImportCalendar();
 	const exportCalendars = useExportCalendars();
 	const { startTour } = useTour();
+	const { data: aiSettings } = useAiSettings();
+	const aiProvider = quickAddProviderOf(aiSettings);
+	const aiQuickAdd = useAiQuickAdd();
+	// Counts AI reads, so an answer that arrives after the menu closed, or after a newer read, opens nothing.
+	const aiRead = useRef(0);
 
 	useShortcut('openCommandMenu', () => setOpen(true));
 	useDialogShortcutScope(open);
@@ -60,6 +68,8 @@ export function CommandMenu() {
 	const changeOpen = (next: boolean) => {
 		setOpen(next);
 		if (next) return;
+		aiRead.current++;
+		aiQuickAdd.reset();
 		setPage('root');
 		setText('');
 	};
@@ -106,6 +116,56 @@ export function CommandMenu() {
 		return event.allDay ? day : `${day} · ${formatTimeRange(event.startAt, event.endAt, options)}`;
 	};
 
+	const openQuickAdd = (event: QuickAddEvent) => openDraft({ allDay: event.allDay, endAt: event.endAt, startAt: event.startAt, values: event.title === '' ? {} : { title: event.title } });
+
+	const openProposal = (proposal: QuickAddProposal) =>
+		openDraft({
+			allDay: proposal.allDay,
+			endAt: proposal.endAt,
+			startAt: proposal.startAt,
+			values: {
+				title: proposal.title,
+				...(proposal.location === null ? {} : { location: proposal.location }),
+				...(proposal.description === null ? {} : { description: proposal.description }),
+				// Without one asked for, the form keeps its usual reminder.
+				...(proposal.reminderMinutes === null ? {} : { reminderMinutes: proposal.reminderMinutes }),
+			},
+		});
+
+	/**
+	 * Sends the text to the chosen provider only now that the user picked the item, never while typing. The menu stays
+	 * open while it reads; a failure (already toasted) falls back to what the local parser read, if anything.
+	 */
+	const createWithAi = (typed: string, local: QuickAddEvent | null) => {
+		if (aiQuickAdd.isPending) return;
+		const read = ++aiRead.current;
+		aiQuickAdd.mutate(typed.trim(), {
+			onError: () => {
+				if (read !== aiRead.current || local === null) return;
+				changeOpen(false);
+				openQuickAdd(local);
+			},
+			onSuccess: proposal => {
+				if (read !== aiRead.current) return;
+				changeOpen(false);
+				openProposal(proposal);
+			},
+		});
+	};
+
+	const aiItemContent = (label: string) =>
+		aiQuickAdd.isPending ? (
+			<>
+				<Spinner />
+				<span className='truncate'>{t('commandMenu.aiReading')}</span>
+			</>
+		) : (
+			<>
+				<SparklesIcon aria-hidden />
+				<span className='truncate'>{label}</span>
+			</>
+		);
+
 	const setTheme = (theme: Theme) => saveSettings.mutate({ theme });
 	const setLanguage = (language: Language) => saveSettings.mutate({ language });
 
@@ -130,13 +190,16 @@ export function CommandMenu() {
 							{quickAdd !== null && (
 								<CommandGroup forceMount heading={t('commandMenu.groups.create')}>
 									<CommandItem
+										aria-busy={aiQuickAdd.isPending || undefined}
 										forceMount
-										onSelect={run(() =>
-											openDraft({ allDay: quickAdd.allDay, endAt: quickAdd.endAt, startAt: quickAdd.startAt, values: quickAdd.title === '' ? {} : { title: quickAdd.title } })
-										)}
+										onSelect={aiProvider === null ? run(() => openQuickAdd(quickAdd)) : () => createWithAi(text, quickAdd)}
 										value={`quick-add:${text}`}
 									>
-										<span className='truncate'>{quickAdd.title === '' ? t('commandMenu.createEvent') : t('commandMenu.createNamedEvent', { title: quickAdd.title })}</span>
+										{aiProvider === null ? (
+											<span className='truncate'>{quickAdd.title === '' ? t('commandMenu.createEvent') : t('commandMenu.createNamedEvent', { title: quickAdd.title })}</span>
+										) : (
+											aiItemContent(quickAdd.title === '' ? t('commandMenu.createEvent') : t('commandMenu.createNamedEvent', { title: quickAdd.title }))
+										)}
 										<span className='ml-auto shrink-0 text-muted-foreground'>{quickAddWhen(quickAdd)}</span>
 									</CommandItem>
 								</CommandGroup>
@@ -164,6 +227,14 @@ export function CommandMenu() {
 									{t('commandMenu.setLanguage')} ›
 								</CommandItem>
 							</CommandGroup>
+							{/* Text the local parser finds no date in can still describe an event to the AI; listed after the commands so Enter keeps running them. */}
+							{quickAdd === null && aiProvider !== null && text.trim() !== '' && (
+								<CommandGroup forceMount heading={t('commandMenu.groups.create')}>
+									<CommandItem aria-busy={aiQuickAdd.isPending || undefined} forceMount onSelect={() => createWithAi(text, null)} value={`quick-add-ai:${text}`}>
+										{aiItemContent(t('commandMenu.createWithAi', { text: text.trim() }))}
+									</CommandItem>
+								</CommandGroup>
+							)}
 							{text.trim() !== '' && (
 								<CommandGroup forceMount heading={t('commandMenu.groups.events')}>
 									<CommandItem forceMount onSelect={() => showPage('search')} value={`search:${text}`}>

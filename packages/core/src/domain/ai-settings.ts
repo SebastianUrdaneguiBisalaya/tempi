@@ -43,8 +43,22 @@ const elevenlabsSettingsSchema = z.object({
 	voices: voicesSchema,
 });
 
+/** How quick add reads typed text: on this device (the default), or with one of the user's text providers. */
+export const QUICK_ADD_MODES = ['local', 'ai'] as const;
+
+export type QuickAddMode = (typeof QUICK_ADD_MODES)[number];
+
+const quickAddSettingsSchema = z.object({ mode: z.enum(QUICK_ADD_MODES), provider: z.enum(TEXT_PROVIDERS).nullable() });
+
+const DEFAULT_QUICK_ADD = { mode: 'local', provider: null } as const satisfies z.output<typeof quickAddSettingsSchema>;
+
 /** The AI choices the user makes in Settings. Plain data: no keys, no SDK types. */
-export const aiSettingsValuesSchema = z.object({ elevenlabs: elevenlabsSettingsSchema, models: textModelsSchema });
+export const aiSettingsValuesSchema = z.object({
+	elevenlabs: elevenlabsSettingsSchema,
+	models: textModelsSchema,
+	// Defaulted so settings saved before quick add existed stay valid and keep the local parser.
+	quickAdd: quickAddSettingsSchema.default(DEFAULT_QUICK_ADD),
+});
 
 export type AiSettingsValues = z.output<typeof aiSettingsValuesSchema>;
 
@@ -58,6 +72,7 @@ export const aiSettingsPatchSchema = z.strictObject({
 		})
 		.optional(),
 	models: textModelsSchema.partial().strict().optional(),
+	quickAdd: quickAddSettingsSchema.partial().strict().optional(),
 });
 
 export type AiSettingsPatch = z.input<typeof aiSettingsPatchSchema>;
@@ -96,6 +111,7 @@ export const DEFAULT_AI_SETTINGS = {
 		openai: TEXT_MODELS.openai[0],
 		xai: TEXT_MODELS.xai[0],
 	},
+	quickAdd: DEFAULT_QUICK_ADD,
 } as const satisfies AiSettingsValues;
 
 /** The settings with `patch` applied; nested groups merge field by field. */
@@ -106,4 +122,5 @@ export const applyAiSettingsPatch = (current: AiSettingsValues, patch: z.output<
 		voices: { ...current.elevenlabs.voices, ...patch.elevenlabs?.voices },
 	},
 	models: { ...current.models, ...patch.models },
+	quickAdd: { ...current.quickAdd, ...patch.quickAdd },
 });
