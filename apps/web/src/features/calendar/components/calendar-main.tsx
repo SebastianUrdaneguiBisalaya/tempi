@@ -5,6 +5,7 @@ import type { CalendarEvent, TimeRange } from '@usecalendar/core';
 import { Calendar } from '@usecalendar/react';
 import { EventContextMenu } from '@/features/events/components/event-context-menu';
 import { useEventPanel } from '@/features/events/components/event-panel-provider';
+import { EventPreview } from '@/features/events/components/event-preview';
 import { useRescheduleEvent } from '@/features/events/hooks/use-event-mutations';
 import { useSetAllDayCollapsed, useSettings } from '@/features/settings/hooks/use-settings';
 import { useGridShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
@@ -77,7 +78,16 @@ export function CalendarMain() {
 			onRangeSelect={createEvent}
 			onSlotClick={createEvent}
 			renderMorePopover={MonthMorePopover}
-			renderEventWrapper={({ children, event }) => (event.data === undefined ? children : <EventContextMenu event={event.data}>{children}</EventContextMenu>)}
+			// The calendar's own `eventPopover` stays off: the app's popover previews an event on hover, and a click still opens the panel.
+			renderEventWrapper={({ children, event }) =>
+				event.data === undefined ? (
+					children
+				) : (
+					<EventContextMenu event={event.data}>
+						<EventPreview event={event}>{children}</EventPreview>
+					</EventContextMenu>
+				)
+			}
 			selectedEventId={selection?.kind === 'event' ? selection.event.key : null}
 			// The app header holds the navigation and view switcher, next to the sidebar, panel and settings buttons.
 			toolbar={false}
