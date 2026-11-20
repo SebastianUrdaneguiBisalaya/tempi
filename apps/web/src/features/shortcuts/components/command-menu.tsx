@@ -1,6 +1,6 @@
 'use client';
 
-import { LANGUAGES, type Language, THEMES, type Theme } from '@tempi/core';
+import { DEFAULT_SETTINGS, LANGUAGES, type Language, resolveLanguage, THEMES, type Theme } from '@tempi/core';
 import type { CalendarView } from '@usecalendar/core';
 import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,12 +9,17 @@ import { useCalendarNavigation } from '@/features/calendar/components/calendar-n
 import { useGoToDate } from '@/features/calendar/components/go-to-date-provider';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { useExportCalendars, useImportCalendar } from '@/features/calendars/hooks/use-calendar-transfer';
+import { useEventPanel } from '@/features/events/components/event-panel-provider';
 import { EventSearchItems } from '@/features/events/components/event-search';
 import { useNewEvent } from '@/features/events/hooks/use-new-event';
+import { useProfile } from '@/features/profile/hooks/use-profile';
+import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { useSaveSettings, useSettings } from '@/features/settings/hooks/use-settings';
 import { useTour } from '@/features/tour/components/tour-provider';
+import { formatDate, formatTimeRange } from '@/lib/date-format';
 import { nativeLanguageName } from '@/lib/language-name';
+import { parseQuickAdd, type QuickAddEvent } from '@/lib/quick-add';
 import { useDialogShortcutScope, useShortcut } from '../hooks/use-shortcut';
 import { type ShortcutAction, shortcutKeysOf } from '../shortcuts';
 import { ShortcutKeys } from './shortcut-keys';
@@ -29,7 +34,7 @@ const VIEW_ACTIONS = { day: 'dayView', month: 'monthView', week: 'weekView' } as
  * Backspace on an empty field goes back from a sub-page.
  */
 export function CommandMenu() {
-	const { t } = useTranslation();
+	const { i18n, t } = useTranslation();
 	const [open, setOpen] = useState(false);
 	const [page, setPage] = useState<Page>('root');
 	const [text, setText] = useState('');
@@ -39,7 +44,10 @@ export function CommandMenu() {
 	const { openGoToDate } = useGoToDate();
 	const { openSettings } = useSettingsDialog();
 	const newEvent = useNewEvent();
+	const { newEvent: openDraft } = useEventPanel();
 	const { data: settings } = useSettings();
+	const { data: profile } = useProfile();
+	const timeZone = useTimeZone();
 	const saveSettings = useSaveSettings();
 	const { data: calendars } = useCalendars();
 	const importCalendar = useImportCalendar();
@@ -80,6 +88,24 @@ export function CommandMenu() {
 		);
 	};
 
+	const language = resolveLanguage([i18n.language]);
+	// Typed text with a date offers to create an event from it. Nothing is saved until the form is.
+	const quickAdd =
+		page === 'root' && text.trim() !== ''
+			? parseQuickAdd(text, {
+					country: profile?.country ?? null,
+					defaultDuration: settings?.defaultEventDuration ?? DEFAULT_SETTINGS.defaultEventDuration,
+					language,
+					now: Temporal.Now.instant(),
+					timeZone,
+				})
+			: null;
+	const quickAddWhen = (event: QuickAddEvent) => {
+		const options = { language, timeFormat: settings?.timeFormat ?? DEFAULT_SETTINGS.timeFormat, timeZone };
+		const day = formatDate(event.startAt, options, 'medium');
+		return event.allDay ? day : `${day} · ${formatTimeRange(event.startAt, event.endAt, options)}`;
+	};
+
 	const setTheme = (theme: Theme) => saveSettings.mutate({ theme });
 	const setLanguage = (language: Language) => saveSettings.mutate({ language });
 
@@ -100,6 +126,21 @@ export function CommandMenu() {
 					{page === 'root' && (
 						<>
 							<CommandEmpty>{t('commandMenu.empty')}</CommandEmpty>
+							{/* First, so Enter creates the event the text describes. */}
+							{quickAdd !== null && (
+								<CommandGroup forceMount heading={t('commandMenu.groups.create')}>
+									<CommandItem
+										forceMount
+										onSelect={run(() =>
+											openDraft({ allDay: quickAdd.allDay, endAt: quickAdd.endAt, startAt: quickAdd.startAt, values: quickAdd.title === '' ? {} : { title: quickAdd.title } })
+										)}
+										value={`quick-add:${text}`}
+									>
+										<span className='truncate'>{quickAdd.title === '' ? t('commandMenu.createEvent') : t('commandMenu.createNamedEvent', { title: quickAdd.title })}</span>
+										<span className='ml-auto shrink-0 text-muted-foreground'>{quickAddWhen(quickAdd)}</span>
+									</CommandItem>
+								</CommandGroup>
+							)}
 							<CommandGroup heading={t('commandMenu.groups.actions')}>
 								{actionItem('newEvent', newEvent)}
 								{actionItem('goToDate', openGoToDate)}
