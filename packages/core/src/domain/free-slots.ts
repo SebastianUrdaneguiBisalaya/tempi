@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { DateRange } from './date-range';
 import { timeOfDaySchema, type WorkingHours } from './settings';
-import { idSchema, instantToUtc } from './values';
+import { idSchema, instantToUtc, plainDateSchema } from './values';
 
 /** The longest stretch of days one search covers, so a search stays a small, quick read. */
 export const MAX_FREE_SLOT_DAYS = 31;
@@ -11,16 +11,6 @@ export const DEFAULT_FREE_SLOT_MINUTES = 30;
 
 /** The daily window searched while working hours are off. */
 export const DEFAULT_FREE_SLOT_WINDOW = { days: [1, 2, 3, 4, 5], end: '18:00', start: '09:00' } as const;
-
-const plainDateSchema = z.string().refine(value => {
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-	try {
-		Temporal.PlainDate.from(value, { overflow: 'reject' });
-		return true;
-	} catch {
-		return false;
-	}
-}, 'validation.invalid_format');
 
 /**
  * A free time search: the days from `from` to `to` (both included, `YYYY-MM-DD` in the user's zone) and, for each, a

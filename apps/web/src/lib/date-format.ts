@@ -80,3 +80,19 @@ export const formatRelativeMinutes = (minutes: number, language: Language): stri
 	if (minutes < 24 * 60) return format.format(Math.round(minutes / 60), 'hour');
 	return format.format(Math.round(minutes / (24 * 60)), 'day');
 };
+
+const durationFormatters = new Map<Language, Intl.NumberFormat>();
+
+/** A length of time in hours, e.g. "12.5 hr" / "12,5 h"; under an hour, in minutes, e.g. "45 min". */
+export const formatDuration = (minutes: number, language: Language): string => {
+	if (minutes < 60) return new Intl.NumberFormat(language, { style: 'unit', unit: 'minute', unitDisplay: 'short' }).format(minutes);
+	let format = durationFormatters.get(language);
+	if (format === undefined) {
+		format = new Intl.NumberFormat(language, { maximumFractionDigits: 1, style: 'unit', unit: 'hour', unitDisplay: 'short' });
+		durationFormatters.set(language, format);
+	}
+	return format.format(minutes / 60);
+};
+
+/** A share as a percentage, e.g. "64 %" / "64 %". */
+export const formatPercent = (ratio: number, language: Language): string => new Intl.NumberFormat(language, { maximumFractionDigits: 0, style: 'percent' }).format(ratio);

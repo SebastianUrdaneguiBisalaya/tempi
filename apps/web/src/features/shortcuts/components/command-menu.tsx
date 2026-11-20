@@ -20,6 +20,7 @@ import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { quickAddProviderOf, useAiQuickAdd, useAiSettings } from '@/features/settings/hooks/use-ai';
 import { useSaveSettings, useSettings } from '@/features/settings/hooks/use-settings';
+import { useStats } from '@/features/stats/components/stats-provider';
 import { useTour } from '@/features/tour/components/tour-provider';
 import { formatDate, formatTimeRange } from '@/lib/date-format';
 import { nativeLanguageName } from '@/lib/language-name';
@@ -47,6 +48,7 @@ export function CommandMenu() {
 	const { setView } = useCalendarNavigation();
 	const { openGoToDate } = useGoToDate();
 	const { openShareAvailability } = useShareAvailability();
+	const { openStats } = useStats();
 	const { openSettings } = useSettingsDialog();
 	const newEvent = useNewEvent();
 	const { newEvent: openDraft } = useEventPanel();
@@ -213,6 +215,9 @@ export function CommandMenu() {
 								{actionItem('openSettings', openSettings)}
 								<CommandItem onSelect={run(openShareAvailability)} value={t('commandMenu.shareAvailability')}>
 									{t('commandMenu.shareAvailability')}
+								</CommandItem>
+								<CommandItem onSelect={run(openStats)} value={t('commandMenu.timeStats')}>
+									{t('commandMenu.timeStats')}
 								</CommandItem>
 								<CommandItem onSelect={() => showPage('import')} value={t('commandMenu.importIcs')}>
 									{t('commandMenu.importIcs')} ›

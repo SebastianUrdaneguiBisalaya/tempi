@@ -26,6 +26,8 @@ import { CommandMenu } from '@/features/shortcuts/components/command-menu';
 import { ShortcutsDialog } from '@/features/shortcuts/components/shortcuts-dialog';
 import { ShortcutsHint } from '@/features/shortcuts/components/shortcuts-hint';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
+import { StatsEntry } from '@/features/stats/components/stats-entry';
+import { StatsProvider } from '@/features/stats/components/stats-provider';
 import { TourProvider, useTour, useTourLayout } from '@/features/tour/components/tour-provider';
 import { TOUR_TARGETS } from '@/features/tour/tour-steps';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -44,16 +46,18 @@ export function AppShell() {
 					<SettingsDialogProvider>
 						<GoToDateProvider>
 							<ShareAvailabilityProvider>
-								<AssistantProvider>
-									<CalendarShortcuts />
-									<EventShortcuts />
-									<ShowEventRequests />
-									<GoogleSyncWatcher />
-									<UpdateWatcher />
-									<ShellLayout />
-									<ShortcutsDialog />
-									<CommandMenu />
-								</AssistantProvider>
+								<StatsProvider>
+									<AssistantProvider>
+										<CalendarShortcuts />
+										<EventShortcuts />
+										<ShowEventRequests />
+										<GoogleSyncWatcher />
+										<UpdateWatcher />
+										<ShellLayout />
+										<ShortcutsDialog />
+										<CommandMenu />
+									</AssistantProvider>
+								</StatsProvider>
 							</ShareAvailabilityProvider>
 						</GoToDateProvider>
 					</SettingsDialogProvider>
@@ -140,6 +144,7 @@ function ShellLayout() {
 						<CalendarList />
 					</SidebarContent>
 					<SidebarFooter data-tour={TOUR_TARGETS.assistant}>
+						<StatsEntry />
 						<AssistantEntry anchored={sidebarExpanded} />
 					</SidebarFooter>
 				</Sidebar>
@@ -163,6 +168,7 @@ function ShellLayout() {
 							<CalendarList />
 						</SidebarContent>
 						<SidebarFooter data-tour={TOUR_TARGETS.assistant}>
+							<StatsEntry onOpen={() => setSidebarDrawerOpen(false)} />
 							<AssistantEntry anchored={false} onOpenDrawer={() => setSidebarDrawerOpen(false)} />
 						</SidebarFooter>
 					</DrawerContent>

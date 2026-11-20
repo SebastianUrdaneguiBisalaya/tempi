@@ -142,6 +142,9 @@ const desktop: DesktopApi = {
 		previewTheme: theme => ipcRenderer.invoke(CHANNELS.settings.previewTheme, theme),
 		save: patch => ipcRenderer.invoke(CHANNELS.settings.save, patch),
 	},
+	stats: {
+		time: query => ipcRenderer.invoke(CHANNELS.stats.time, query),
+	},
 	updates: {
 		check: () => ipcRenderer.invoke(CHANNELS.updates.check),
 		install: () => ipcRenderer.invoke(CHANNELS.updates.install),

@@ -51,6 +51,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 		permissions: { openSystemSettings: answer, status: answer, testNotification: answer },
 		profile: { get: answer, update: answer },
 		settings: { get: answer, previewTheme: answer, save: answer },
+		stats: { time: answer },
 		updates: {
 			check: answer,
 			install: answer,

@@ -125,6 +125,8 @@ export {
 } from './domain/settings';
 export type { Speech, SpeechInput } from './domain/speech';
 export { MAX_SPEECH_LENGTH, SPEECH_AUDIO_TYPE, speechInputSchema, speechSchema } from './domain/speech';
+export type { StatsOccurrence, TimeStats, TimeStatsQuery, TimeStatsQueryInput } from './domain/time-stats';
+export { FOCUS_MINUTES, MAX_STATS_DAYS, timeStatsQuerySchema, timeStatsSchema, weekStartOf } from './domain/time-stats';
 export type { Timestamps } from './domain/timestamps';
 export { singletonTimestampsSchema, storedEntitySchema, timestampsSchema } from './domain/timestamps';
 export { UPCOMING_WINDOW_HOURS, upcomingEvents } from './domain/upcoming';
@@ -156,6 +158,7 @@ export { exportEvents } from './use-cases/export-events';
 export { findFreeSlots } from './use-cases/find-free-slots';
 export { getProfile } from './use-cases/get-profile';
 export { getSettings } from './use-cases/get-settings';
+export { getTimeStats } from './use-cases/get-time-stats';
 export { detachGoogleCalendar, disconnectGoogleCalendars, listGoogleCalendars, selectGoogleCalendars } from './use-cases/google-calendars';
 export { importEvents } from './use-cases/import-events';
 export { initializeSettings } from './use-cases/initialize-settings';

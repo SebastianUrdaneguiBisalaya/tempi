@@ -1,4 +1,4 @@
-import type { DateRange, DomainError, FreeSlotsQueryInput, Result } from '@tempi/core';
+import type { DateRange, DomainError, FreeSlotsQueryInput, Result, TimeStatsQueryInput } from '@tempi/core';
 
 /**
  * Turns a use-case `Result` into a query/mutation outcome: the value, or the `DomainError` thrown as is.
@@ -28,6 +28,7 @@ export const queryKeys = {
 		freeSlots: (query: FreeSlotsQueryInput) => ['events', 'freeSlots', query],
 		range: (range: DateRange) => ['events', range.start, range.end],
 		search: (query: string) => ['events', 'search', query],
+		stats: (query: TimeStatsQueryInput) => ['events', 'stats', query],
 	},
 	google: { account: ['google', 'account'], calendars: ['google', 'calendars'], syncStatus: ['google', 'syncStatus'] },
 	permissions: { status: ['permissions', 'status'] },

@@ -238,6 +238,11 @@ describe('registerIpc', () => {
 		expect(await invoke(CHANNELS.availability.freeSlots, { from: '2030-01-08', to: '2030-01-07' })).toMatchObject({ error: { code: 'validation' }, ok: false });
 	});
 
+	test('stats: reports a period and validates the query', async () => {
+		expect(await invoke(CHANNELS.stats.time, { from: '2030-01-07', to: '2030-01-13' })).toMatchObject({ ok: true, value: { from: '2030-01-07', heatmap: expect.any(Array), to: '2030-01-13' } });
+		expect(await invoke(CHANNELS.stats.time, { from: '2030-01-13', to: '2030-01-07' })).toMatchObject({ error: { code: 'validation' }, ok: false });
+	});
+
 	test('ai: validates the payload, saves a working key and never answers with it', async () => {
 		expect(await invoke(CHANNELS.ai.saveKey, { key: ' ', provider: 'mistral' })).toMatchObject({ error: { code: 'validation' }, ok: false });
 		expect(aiKeys.size).toBe(0);
