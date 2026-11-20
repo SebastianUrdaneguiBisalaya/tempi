@@ -60,6 +60,13 @@ const fakePorts = () => {
 			calls.push(`find ${id}`);
 			return Promise.resolve(id === standup.id ? standup : null);
 		},
+		findFreeSlots: query => {
+			calls.push(`free ${query.from} ${query.to} ${query.minMinutes}`);
+			return Promise.resolve({
+				days: [{ date: '2026-11-18', slots: [{ endAt: '2026-11-18T16:00:00.000Z', startAt: '2026-11-18T14:00:00.000Z' }] }],
+				timeZone: 'America/Lima',
+			});
+		},
 		listEvents: range => {
 			calls.push(`list ${range.start} ${range.end}`);
 			return Promise.resolve([{ ...standup, key: standup.id, series: null }]);
@@ -245,6 +252,21 @@ describe('runAssistant', () => {
 		expect(calls).toEqual(['list 2026-11-19T05:00:00.000Z 2026-11-20T05:00:00.000Z']);
 		expect(JSON.stringify(toolOutputs(model))).toContain('"start":"2026-11-19T09:00:00-05:00"');
 		expect(events.map(event => event.type)).toEqual(['tool-start', 'tool-end', 'text', 'done']);
+	});
+
+	test('finds free time without writing anything, with times in the user’s zone', async () => {
+		const model = scriptedModel(toolStep('findFreeTime', { from: '2026-11-18', minMinutes: 60, to: '2026-11-20' }), textStep('Tienes libre el miércoles.'));
+		const { calls, events } = await run(model, 'Búscame 1 h libre esta semana');
+		expect(calls).toEqual(['free 2026-11-18 2026-11-20 60']);
+		expect(JSON.stringify(toolOutputs(model))).toContain('"free":[{"end":"2026-11-18T11:00:00-05:00","start":"2026-11-18T09:00:00-05:00"}]');
+		expect(events.some(event => event.type === 'proposal')).toBe(false);
+	});
+
+	test('an invalid free time search returns its issues to the model', async () => {
+		const model = scriptedModel(toolStep('findFreeTime', { from: '2026-11-20', to: '2026-11-18' }), textStep('¿Qué días?'));
+		const { calls } = await run(model, '¿Cuándo estoy libre?');
+		expect(calls).toEqual([]);
+		expect(JSON.stringify(toolOutputs(model))).toContain('range.endBeforeStart');
 	});
 
 	test('a rejected key ends the reply with ai.invalidKey', async () => {

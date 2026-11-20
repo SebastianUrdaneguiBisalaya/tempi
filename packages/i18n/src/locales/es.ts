@@ -57,6 +57,7 @@ export const es = {
 			tools: {
 				createEvent: 'Preparando un evento nuevo',
 				deleteEvent: 'Preparando la eliminación de un evento',
+				findFreeTime: 'Buscando tiempo libre',
 				listCalendars: 'Leyendo tus calendarios',
 				listEvents: 'Revisando tus eventos',
 				searchEvents: 'Buscando en tus eventos',
@@ -747,6 +748,9 @@ export const es = {
 		backup: {
 			invalidFile: 'Este archivo no es una copia de seguridad de Tempi.',
 			newerVersion: 'Esta copia viene de una versión más nueva de Tempi. Actualiza Tempi para restaurarla.',
+		},
+		availability: {
+			rangeTooLong: 'Elige como máximo {{maximum}} días.',
 		},
 		calendar: {
 			color: 'Elige un color válido.',

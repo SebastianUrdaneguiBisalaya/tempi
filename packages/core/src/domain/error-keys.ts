@@ -13,6 +13,7 @@ export const ERROR_KEYS = {
 	'ai.recordingTooLong': 'The recording is longer or larger than a dictation may be',
 	'ai.speechFailed': 'The text could not be turned into speech (no voice to read it with, or ElevenLabs refused it); see detail',
 	'ai.transcriptionFailed': 'The audio could not be transcribed, or nothing was recognized; see detail',
+	'availability.rangeTooLong': 'A free time search covers too many days; see params.maximum',
 	'avatar.fileName': 'Avatar must be a stored file name (id plus jpg, png or webp extension)',
 	'avatar.tooLarge': 'Avatar image exceeds the maximum size',
 	'backup.invalidFile': 'The file is not a Tempi database backup',

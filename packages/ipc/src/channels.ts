@@ -31,6 +31,10 @@ export const CHANNELS = {
 		/** Brings the main window forward on an occurrence, e.g. one picked in the menu bar calendar. */
 		showEvent: 'app:showEvent',
 	},
+	availability: {
+		/** Free time in the user's zone over some days, for sharing availability. Reads only. */
+		freeSlots: 'availability:freeSlots',
+	},
 	calendars: {
 		create: 'calendars:create',
 		delete: 'calendars:delete',

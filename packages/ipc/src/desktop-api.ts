@@ -30,6 +30,9 @@ type Api<Raw extends boolean> = {
 		/** Calls `listener` each time the main process asks this window to show an occurrence; returns the unsubscribe function. */
 		onShowEvent: (listener: (ref: Raw extends true ? unknown : OccurrenceRef) => void) => () => void;
 	};
+	availability: {
+		freeSlots: Call<'availability:freeSlots', Raw>;
+	};
 	calendars: {
 		create: Call<'calendars:create', Raw>;
 		delete: Call<'calendars:delete', Raw>;

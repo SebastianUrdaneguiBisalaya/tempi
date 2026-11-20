@@ -53,6 +53,17 @@ export {
 	OCCURRENCE_SCOPES,
 	occurrenceTargetSchema,
 } from './domain/event';
+export type { FreeSlot, FreeSlots, FreeSlotsQuery, FreeSlotsQueryInput } from './domain/free-slots';
+export {
+	DEFAULT_FREE_SLOT_MINUTES,
+	DEFAULT_FREE_SLOT_WINDOW,
+	freeSlotSchema,
+	freeSlotsQuerySchema,
+	freeSlotsSchema,
+	MAX_FREE_SLOT_DAYS,
+	MAX_FREE_SLOT_MINUTES,
+	MIN_FREE_SLOT_MINUTES,
+} from './domain/free-slots';
 export type { GoogleAccount, GoogleConnectResult } from './domain/google-account';
 export { googleAccountSchema, googleConnectResultSchema } from './domain/google-account';
 export type { GoogleAccessRole, GoogleCalendarChoice, GoogleCalendarLink, GoogleEventLink, GoogleSyncState, GoogleSyncStatus, SelectGoogleCalendarsInput } from './domain/google-sync';
@@ -142,6 +153,7 @@ export type { CoreDeps } from './use-cases/deps';
 export { duplicateEvent } from './use-cases/duplicate-event';
 export type { ExportedCalendars } from './use-cases/export-events';
 export { exportEvents } from './use-cases/export-events';
+export { findFreeSlots } from './use-cases/find-free-slots';
 export { getProfile } from './use-cases/get-profile';
 export { getSettings } from './use-cases/get-settings';
 export { detachGoogleCalendar, disconnectGoogleCalendars, listGoogleCalendars, selectGoogleCalendars } from './use-cases/google-calendars';

@@ -5,7 +5,7 @@ import { domainErrorSchema } from './result';
 import { idSchema } from './values';
 
 /** The tools the assistant can call. Reads run against the calendar; changes only come back as proposals. */
-export const ASSISTANT_TOOLS = ['listCalendars', 'listEvents', 'searchEvents', 'createEvent', 'updateEvent', 'deleteEvent'] as const;
+export const ASSISTANT_TOOLS = ['listCalendars', 'listEvents', 'searchEvents', 'findFreeTime', 'createEvent', 'updateEvent', 'deleteEvent'] as const;
 
 export type AssistantTool = (typeof ASSISTANT_TOOLS)[number];
 
