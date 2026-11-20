@@ -85,6 +85,8 @@ export {
 	toRrule,
 	WEEKDAYS,
 } from './domain/recurrence';
+export type { RemainingToday } from './domain/remaining-today';
+export { remainingToday, todayRange } from './domain/remaining-today';
 export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';
 export { DOMAIN_ERROR_CODES, domainErrorSchema, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
 export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, UiSound, WeekStart } from './domain/settings';
@@ -110,6 +112,7 @@ export type { ProfileRepository } from './ports/profile-repository';
 export type { SettingsRepository } from './ports/settings-repository';
 export type { OnboardingResult } from './use-cases/complete-onboarding';
 export { completeOnboarding } from './use-cases/complete-onboarding';
+export { countRemainingToday } from './use-cases/count-remaining-today';
 export { createCalendar } from './use-cases/create-calendar';
 export { createEvent } from './use-cases/create-event';
 export { deleteCalendar } from './use-cases/delete-calendar';

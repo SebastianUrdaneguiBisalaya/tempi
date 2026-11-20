@@ -388,6 +388,8 @@ export const es = {
 			},
 			calendar: {
 				defaultEventDuration: 'Duración predeterminada de los eventos',
+				iconBadgeEnabled: 'Contador en el ícono de la app',
+				iconBadgeEnabledDescription: 'Muestra cuántos eventos de hoy quedan en el ícono del Dock, la barra de tareas o el lanzador.',
 				menuBarEnabled: 'Calendario en la barra de menús',
 				menuBarEnabledDescription: 'Muestra la agenda de hoy en la barra de menús o la bandeja. Ábrela con ⌥⌘K (Alt+Ctrl+K).',
 				minutes: 'minutos',
@@ -673,6 +675,9 @@ export const es = {
 					title: 'Ajustes',
 				},
 			},
+		},
+		appIcon: {
+			badge: 'Eventos que quedan hoy: {{count}}',
 		},
 		tray: {
 			allDay: 'Todo el día',

@@ -26,6 +26,8 @@ export type { PermissionsIo } from './permissions';
 export type IpcListeners = {
 	/** Events, or the calendars that show them, changed, e.g. to reschedule reminders. */
 	eventsChanged?: () => void;
+	/** The profile was saved, e.g. to count the icon badge in its time zone. */
+	profileSaved?: () => void;
 	/** The settings were saved, e.g. to sync `nativeTheme` with the selected theme. */
 	settingsSaved?: (settings: Settings) => void;
 	/** The renderer previews an unsaved theme, or drops the preview (null), e.g. to sync `nativeTheme` with it. */
@@ -49,7 +51,7 @@ export const registerIpc = (context: HandlerContext, deps: CoreDeps, io: AppIo, 
 	registerGoogleHandlers(context, deps, io.google, listeners.eventsChanged);
 	registerOnboardingHandlers(context, deps, listeners.settingsSaved);
 	registerPermissionHandlers(context, io.permissions);
-	registerProfileHandlers(context, deps);
+	registerProfileHandlers(context, deps, listeners.profileSaved);
 	registerSettingsHandlers(context, deps, listeners.settingsSaved, listeners.themePreviewed);
 	registerUpdateHandlers(context, io.updates);
 };

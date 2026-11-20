@@ -39,6 +39,14 @@ describe('UI sounds', () => {
 	});
 });
 
+describe('icon badge', () => {
+	test('is on by default and accepts only booleans', () => {
+		expect(DEFAULT_SETTINGS.iconBadgeEnabled).toBe(true);
+		expect(settingsPatchSchema.parse({ iconBadgeEnabled: false })).toEqual({ iconBadgeEnabled: false });
+		expect(settingsPatchSchema.safeParse({ iconBadgeEnabled: 'no' }).success).toBe(false);
+	});
+});
+
 describe('opening at login', () => {
 	test('is off by default and accepts only booleans', () => {
 		expect(DEFAULT_SETTINGS.openAtLoginEnabled).toBe(false);
