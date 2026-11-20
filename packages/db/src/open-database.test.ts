@@ -194,6 +194,26 @@ describe('migrate', () => {
 		db.close();
 	});
 
+	test('0013 keeps existing settings with working hours off, Monday to Friday 09:00–18:00', () => {
+		const db = new DatabaseSync(':memory:');
+		const migrations = loadMigrations();
+		migrate(db, migrations.slice(0, 12));
+		db.exec(`INSERT INTO settings (id, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			show_week_numbers, theme, time_format, week_start, created_at, updated_at)
+			VALUES (1, 30, 'es', 0, 1, 1, 1, 'dark', '24h', 'monday', '2026-11-15T10:00:00.000Z', '2026-11-15T10:00:00.000Z')`);
+		migrate(db, migrations);
+		expect(db.prepare('SELECT language, working_hours_enabled, working_hours_days, working_hours_start, working_hours_end FROM settings').get()).toEqual({
+			language: 'es',
+			working_hours_days: '[1,2,3,4,5]',
+			working_hours_enabled: 0,
+			working_hours_end: '18:00',
+			working_hours_start: '09:00',
+		});
+		expect(() => db.exec('UPDATE settings SET working_hours_enabled = 2')).toThrow();
+		expect(() => db.exec(`UPDATE settings SET working_hours_days = '1,2'`)).toThrow();
+		db.close();
+	});
+
 	test('rolls back a failing migration and leaves the version unchanged', () => {
 		const db = new DatabaseSync(':memory:');
 		const migrations = [

@@ -421,6 +421,11 @@ export const en = {
 					saturday: 'Saturday',
 					sunday: 'Sunday',
 				},
+				workingHours: 'Working hours',
+				workingHoursDays: 'Working days',
+				workingHoursDescription: 'Shade the hours outside them in the day and week views.',
+				workingHoursEnd: 'End',
+				workingHoursStart: 'Start',
 			},
 			data: {
 				backup: 'Create backup…',
@@ -782,6 +787,8 @@ export const en = {
 		},
 		settings: {
 			secondaryTimeZones: 'Pick up to two different time zones.',
+			workingDays: 'Pick at least one day.',
+			workingHoursEnd: 'The end must be after the start.',
 		},
 		system: {
 			unexpected: 'Something went wrong. Please try again.',

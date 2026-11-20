@@ -423,6 +423,11 @@ export const es = {
 					saturday: 'Sábado',
 					sunday: 'Domingo',
 				},
+				workingHours: 'Horario laboral',
+				workingHoursDays: 'Días laborables',
+				workingHoursDescription: 'Sombrea las horas fuera de él en las vistas de día y semana.',
+				workingHoursEnd: 'Fin',
+				workingHoursStart: 'Inicio',
 			},
 			data: {
 				backup: 'Crear copia…',
@@ -783,6 +788,8 @@ export const es = {
 		},
 		settings: {
 			secondaryTimeZones: 'Elige hasta dos zonas horarias distintas.',
+			workingDays: 'Elige al menos un día.',
+			workingHoursEnd: 'El fin debe ser posterior al inicio.',
 		},
 		system: {
 			unexpected: 'Algo salió mal. Vuelve a intentarlo.',

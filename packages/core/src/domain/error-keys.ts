@@ -40,6 +40,8 @@ export const ERROR_KEYS = {
 	'profile.country': 'Country must be an ISO 3166-1 alpha-2 code',
 	'range.endBeforeStart': 'Range end must be after its start',
 	'settings.secondaryTimeZones': 'Secondary time zones must be distinct, at most two',
+	'settings.workingDays': 'Working hours need at least one weekday, each once',
+	'settings.workingHoursEnd': 'Working hours must end after they start',
 	'system.unexpected': 'Unexpected failure; see detail',
 	'validation.custom': 'Invalid value',
 	'validation.instant': 'Value must be an ISO-8601 instant with offset',

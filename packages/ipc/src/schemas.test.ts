@@ -82,6 +82,7 @@ describe('payloadSchemas', () => {
 		['settings:save', { openAtLoginEnabled: true }],
 		['settings:save', { iconBadgeEnabled: false }],
 		['settings:save', { secondaryTimeZones: ['Asia/Kolkata'] }],
+		['settings:save', { workingHours: { days: [1, 2, 3, 4, 5], enabled: true, end: '18:00', start: '09:00' } }],
 	] as const)('%s accepts a valid payload', (channel, payload) => {
 		expect(parseWith(payloadSchemas[channel], payload).ok).toBe(true);
 	});
@@ -125,6 +126,7 @@ describe('payloadSchemas', () => {
 		['settings:save', { openAtLoginEnabled: 1 }, ['openAtLoginEnabled']],
 		['settings:save', { iconBadgeEnabled: 'off' }, ['iconBadgeEnabled']],
 		['settings:save', { secondaryTimeZones: ['UTC', 'Asia/Kolkata', 'Europe/Madrid'] }, ['secondaryTimeZones']],
+		['settings:save', { workingHours: { days: [], enabled: true, end: '08:00', start: '09:00' } }, ['workingHours.days', 'workingHours.end']],
 	] as const)('%s rejects an invalid payload, reporting every issue at form field paths', (channel, payload, fields) => {
 		const result = parseWith(payloadSchemas[channel], payload);
 		expect(result.ok).toBe(false);

@@ -95,9 +95,10 @@ export type { RemainingToday } from './domain/remaining-today';
 export { remainingToday, todayRange } from './domain/remaining-today';
 export type { DomainError, DomainErrorCode, DomainIssue, IssueParams, Result } from './domain/result';
 export { DOMAIN_ERROR_CODES, domainErrorSchema, fail, ok, parseWith, toDomainIssue, zodErrorKeyMap } from './domain/result';
-export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, UiSound, WeekStart } from './domain/settings';
+export type { Language, Settings, SettingsPatch, SettingsValues, Theme, TimeFormat, UiSound, WeekStart, WorkingHours } from './domain/settings';
 export {
 	DEFAULT_SETTINGS,
+	ISO_WEEKDAYS,
 	LANGUAGES,
 	MAX_SECONDARY_TIME_ZONES,
 	resolveLanguage,
@@ -106,8 +107,10 @@ export {
 	settingsValuesSchema,
 	THEMES,
 	TIME_FORMATS,
+	timeOfDaySchema,
 	UI_SOUNDS,
 	WEEK_STARTS,
+	workingHoursSchema,
 } from './domain/settings';
 export type { Speech, SpeechInput } from './domain/speech';
 export { MAX_SPEECH_LENGTH, SPEECH_AUDIO_TYPE, speechInputSchema, speechSchema } from './domain/speech';

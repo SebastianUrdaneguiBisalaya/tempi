@@ -18,6 +18,28 @@ export type UiSound = (typeof UI_SOUNDS)[number];
 /** How many extra hour columns the day and week views can show. */
 export const MAX_SECONDARY_TIME_ZONES = 2;
 
+/** Weekdays numbered like `Temporal.PlainDate#dayOfWeek`: 1 is Monday, 7 is Sunday. */
+export const ISO_WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
+
+/** A wall-clock time of day, `HH:MM` in 24-hour form, so times compare as text. */
+export const timeOfDaySchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'validation.invalid_format');
+
+/** One range of hours for the chosen weekdays, in the profile's time zone. Disabled, it marks nothing. */
+export const workingHoursSchema = z
+	.object({
+		days: z
+			.array(z.number().int('validation.integer').min(1, 'validation.min').max(7, 'validation.max'))
+			.min(1, 'settings.workingDays')
+			.refine(days => new Set(days).size === days.length, 'settings.workingDays')
+			.readonly(),
+		enabled: z.boolean(),
+		end: timeOfDaySchema,
+		start: timeOfDaySchema,
+	})
+	.refine(hours => hours.end > hours.start, { message: 'settings.workingHoursEnd', path: ['end'] });
+
+export type WorkingHours = z.output<typeof workingHoursSchema>;
+
 export const settingsValuesSchema = z.object({
 	/** The all-day lane above the week/day grid shows at most two rows. */
 	allDayCollapsed: z.boolean(),
@@ -51,6 +73,7 @@ export const settingsValuesSchema = z.object({
 	/** The guided tour of the main screen was finished or dismissed. Replaying it doesn't change this. */
 	tourCompleted: z.boolean(),
 	weekStart: z.enum(WEEK_STARTS),
+	workingHours: workingHoursSchema,
 });
 
 export const settingsPatchSchema = settingsValuesSchema.partial();
@@ -82,6 +105,7 @@ export const DEFAULT_SETTINGS = {
 	timeFormat: '24h',
 	tourCompleted: false,
 	weekStart: 'monday',
+	workingHours: { days: [1, 2, 3, 4, 5], enabled: false, end: '18:00', start: '09:00' },
 } as const satisfies SettingsValues;
 
 const isLanguage = (value: string): value is Language => (LANGUAGES as readonly string[]).includes(value);

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { DEFAULT_SETTINGS, resolveLanguage, settingsPatchSchema, settingsValuesSchema } from './settings';
+import { DEFAULT_SETTINGS, resolveLanguage, settingsPatchSchema, settingsValuesSchema, type WorkingHours } from './settings';
 
 describe('resolveLanguage', () => {
 	test.each([
@@ -91,5 +91,29 @@ describe('secondary time zones', () => {
 		const parsed = settingsPatchSchema.safeParse({ secondaryTimeZones: zones });
 		expect(parsed.success).toBe(false);
 		expect(parsed.error?.issues.map(issue => issue.message)).toContain(message);
+	});
+});
+
+describe('working hours', () => {
+	const hours = { days: [1, 2, 3, 4, 5], enabled: true, end: '18:00', start: '09:00' };
+
+	test('are off by default, Monday to Friday 09:00–18:00', () => {
+		const defaults: WorkingHours = DEFAULT_SETTINGS.workingHours;
+		expect(defaults).toEqual({ ...hours, enabled: false });
+		expect(settingsPatchSchema.parse({ workingHours: hours })).toEqual({ workingHours: hours });
+	});
+
+	test.each([
+		[{ ...hours, end: '09:00' }, 'settings.workingHoursEnd', ['workingHours', 'end']],
+		[{ ...hours, end: '08:30' }, 'settings.workingHoursEnd', ['workingHours', 'end']],
+		[{ ...hours, days: [] }, 'settings.workingDays', ['workingHours', 'days']],
+		[{ ...hours, days: [1, 1] }, 'settings.workingDays', ['workingHours', 'days']],
+		[{ ...hours, days: [0] }, 'validation.min', ['workingHours', 'days', 0]],
+		[{ ...hours, days: [8] }, 'validation.max', ['workingHours', 'days', 0]],
+		[{ ...hours, start: '9:00' }, 'validation.invalid_format', ['workingHours', 'start']],
+		[{ ...hours, end: '24:00' }, 'validation.invalid_format', ['workingHours', 'end']],
+	] satisfies [unknown, string, PropertyKey[]][])('rejects %p', (workingHours, message, path) => {
+		const parsed = settingsPatchSchema.safeParse({ workingHours });
+		expect(parsed.error?.issues.map(issue => ({ message: issue.message, path: issue.path }))).toContainEqual({ message, path });
 	});
 });
