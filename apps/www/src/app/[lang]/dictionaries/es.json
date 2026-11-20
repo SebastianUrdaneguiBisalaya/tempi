@@ -391,6 +391,40 @@
       "showShortcuts": "Mostrar atajos de teclado",
       "togglePanel": "Mostrar u ocultar panel de detalles",
       "toggleAssistant": "Abrir asistente de IA"
+    },
+    "cells": {
+      "commandMenu": {
+        "title": "Un menú para cada acción.",
+        "body": "Presiona ⌘K (Ctrl+K) para ejecutar un comando, cambiar un ajuste o buscar tus eventos escribiendo."
+      },
+      "navigation": {
+        "title": "Muévete en el tiempo con una tecla.",
+        "body": "J y K saltan a la semana, día o mes siguiente y anterior; T te devuelve a hoy."
+      },
+      "newEvent": {
+        "title": "Un evento nuevo en una tecla.",
+        "body": "Presiona C y escribe el título: el formulario se abre en el día que estás viendo, en el siguiente hueco libre."
+      },
+      "undo": {
+        "title": "Deshaz una eliminación.",
+        "body": "¿Eliminaste el evento equivocado? ⌘Z (Ctrl+Z), o Deshacer en el aviso, lo recupera."
+      }
+    },
+    "replicas": {
+      "newEvent": {
+        "newEvent": "Nuevo evento",
+        "title": "Título",
+        "titleValue": "Café con Ana",
+        "calendar": "Calendario",
+        "titlePlaceholder": "Añade un título",
+        "cancel": "Cancelar",
+        "create": "Crear"
+      },
+      "undo": {
+        "deleted": "Evento eliminado.",
+        "undo": "Deshacer",
+        "restored": "Evento restaurado."
+      }
     }
   },
   "faq": {

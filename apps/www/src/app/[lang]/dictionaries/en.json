@@ -391,6 +391,40 @@
       "showShortcuts": "Show keyboard shortcuts",
       "togglePanel": "Toggle details panel",
       "toggleAssistant": "Open AI assistant"
+    },
+    "cells": {
+      "commandMenu": {
+        "title": "One menu for every action.",
+        "body": "Press ⌘K (Ctrl+K) to run a command, change a setting or search your events by typing."
+      },
+      "navigation": {
+        "title": "Move through time with one key.",
+        "body": "J and K jump to the next and previous week, day or month; T brings you back to today."
+      },
+      "newEvent": {
+        "title": "New event in a keystroke.",
+        "body": "Press C and type the title: the form opens on the day you’re viewing, at the next free slot."
+      },
+      "undo": {
+        "title": "Undo a delete.",
+        "body": "Deleted the wrong event? ⌘Z (Ctrl+Z), or Undo on the toast, brings it back."
+      }
+    },
+    "replicas": {
+      "newEvent": {
+        "newEvent": "New event",
+        "title": "Title",
+        "titleValue": "Coffee with Ana",
+        "calendar": "Calendar",
+        "titlePlaceholder": "Add a title",
+        "cancel": "Cancel",
+        "create": "Create"
+      },
+      "undo": {
+        "deleted": "Event deleted.",
+        "undo": "Undo",
+        "restored": "Event restored."
+      }
     }
   },
   "faq": {
