@@ -35,7 +35,7 @@ export function EventPreview({ children, event, onPointerLeave, ...props }: Even
 		>
 			<PopoverTrigger
 				{...props}
-				delay={500}
+				delay={300}
 				onPointerLeave={pointer => {
 					pressed.current = false;
 					onPointerLeave?.(pointer);
