@@ -16,6 +16,7 @@ import { useSaveSettings } from '@/features/settings/hooks/use-settings';
 import { showFieldErrors } from './field-errors';
 import { SecondaryTimeZonesField } from './secondary-time-zones-field';
 import { SettingsFooter } from './settings-footer';
+import { WorkingHoursFields } from './working-hours-fields';
 
 const calendarSchema = settingsValuesSchema.pick({
 	defaultEventDuration: true,
@@ -27,6 +28,7 @@ const calendarSchema = settingsValuesSchema.pick({
 	showWeekNumbers: true,
 	timeFormat: true,
 	weekStart: true,
+	workingHours: true,
 });
 type CalendarValues = z.input<typeof calendarSchema>;
 
@@ -40,6 +42,7 @@ const FIELDS = [
 	'showWeekNumbers',
 	'timeFormat',
 	'weekStart',
+	'workingHours',
 ] as const satisfies readonly (keyof CalendarValues)[];
 const isField = (field: string): field is (typeof FIELDS)[number] => FIELDS.some(name => name === field);
 
@@ -53,6 +56,7 @@ const valuesOf = (settings: Settings): CalendarValues => ({
 	showWeekNumbers: settings.showWeekNumbers,
 	timeFormat: settings.timeFormat,
 	weekStart: settings.weekStart,
+	workingHours: settings.workingHours,
 });
 
 const SWITCHES = [
@@ -63,7 +67,7 @@ const SWITCHES = [
 	{ name: 'iconBadgeEnabled', withDescription: true },
 ] as const;
 
-/** How the calendar shows weeks, times and extra time zones, the default event length, the menu bar calendar, opening at login and the icon badge. */
+/** How the calendar shows weeks, times, extra time zones and working hours, the default event length, the menu bar calendar, opening at login and the icon badge. */
 export function CalendarSettings({ settings }: { settings: Settings }) {
 	const { t } = useTranslation();
 	const id = useId();
@@ -145,6 +149,7 @@ export function CalendarSettings({ settings }: { settings: Settings }) {
 						</Field>
 					)}
 				/>
+				<WorkingHoursFields control={form.control} name='workingHours' weekStart={settings.weekStart} />
 				<Controller
 					control={form.control}
 					name='defaultEventDuration'

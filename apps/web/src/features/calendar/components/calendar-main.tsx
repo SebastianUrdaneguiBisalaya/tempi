@@ -24,7 +24,7 @@ import { MonthMorePopover } from './month-more-popover';
 export function CalendarMain() {
 	const calendar = useCalendarNavigation();
 	const { data: settings } = useSettings();
-	const { allDayCollapsed, defaultEventDuration, secondaryTimeZones } = settings ?? DEFAULT_SETTINGS;
+	const { allDayCollapsed, defaultEventDuration, secondaryTimeZones, workingHours } = settings ?? DEFAULT_SETTINGS;
 	const timeZone = useTimeZone();
 	const { chooseScope, newEvent, openEvent, refreshEvent, selection } = useEventPanel();
 	const reschedule = useRescheduleEvent();
@@ -92,6 +92,7 @@ export function CalendarMain() {
 					</EventContextMenu>
 				)
 			}
+			workingHours={workingHours.enabled ? { days: workingHours.days, end: Temporal.PlainTime.from(workingHours.end), start: Temporal.PlainTime.from(workingHours.start) } : undefined}
 			selectedEventId={selection?.kind === 'event' ? selection.event.key : null}
 			// The app header holds the navigation and view switcher, next to the sidebar, panel and settings buttons.
 			toolbar={false}
