@@ -5,6 +5,7 @@
 export const ERROR_KEYS = {
 	'ai.encryptionUnavailable': 'The OS cannot encrypt AI provider keys (safeStorage unavailable); keys are never stored in clear',
 	'ai.invalidKey': 'The provider rejected the API key, or no key is stored for it',
+	'ai.invalidReply': 'The AI provider answered with something that is not a valid event; see detail',
 	'ai.microphoneDenied': 'The microphone permission was denied by the user or the OS',
 	'ai.network': 'The AI provider could not be reached',
 	'ai.providerError': 'The AI provider answered with an unexpected error; see detail',

@@ -17,6 +17,7 @@ type Api<Raw extends boolean> = {
 		stopChat: (requestId: string) => void;
 		getSettings: CallWithoutInput<'ai:getSettings', Raw>;
 		listVoices: CallWithoutInput<'ai:listVoices', Raw>;
+		quickAdd: Call<'ai:quickAdd', Raw>;
 		removeKey: Call<'ai:removeKey', Raw>;
 		saveKey: Call<'ai:saveKey', Raw>;
 		saveSettings: Call<'ai:saveSettings', Raw>;

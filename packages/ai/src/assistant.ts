@@ -1,8 +1,8 @@
-import { ASSISTANT_TOOLS, type AssistantMessage, type AssistantProposal, type AssistantStreamEvent, type AssistantTool, type DomainError, type TextProvider } from '@tempi/core';
-import { APICallError, type LanguageModel, RetryError, stepCountIs, streamText } from 'ai';
+import { ASSISTANT_TOOLS, type AssistantMessage, type AssistantProposal, type AssistantStreamEvent, type AssistantTool, type TextProvider } from '@tempi/core';
+import { type LanguageModel, stepCountIs, streamText } from 'ai';
 import { type AssistantContext, assistantInstructions } from './assistant-context';
 import { type AssistantPorts, assistantTools } from './assistant-tools';
-import { networkFailure, statusFailure } from './failures';
+import { providerFailure } from './failures';
 
 export type AssistantRequest = {
 	provider: TextProvider;
@@ -22,15 +22,6 @@ export type AssistantRequest = {
 const MAX_STEPS = 8;
 
 const isAssistantTool = (name: string): name is AssistantTool => (ASSISTANT_TOOLS as readonly string[]).includes(name);
-
-/** The `ai.*` failure a provider error means. Its message may echo the request, never the key. */
-const providerFailure = (provider: TextProvider, error: unknown): DomainError => {
-	const cause = RetryError.isInstance(error) ? error.lastError : error;
-	const result =
-		APICallError.isInstance(cause) && cause.statusCode !== undefined ? statusFailure(provider, cause.statusCode) : APICallError.isInstance(cause) ? networkFailure(provider, cause) : null;
-	if (result !== null && !result.ok) return result.error;
-	return { code: 'internal', issues: [{ detail: `${provider} failed: ${cause instanceof Error ? cause.message : String(cause)}`, key: 'ai.providerError' }] };
-};
 
 /**
  * One assistant reply: streams the model's text, runs read tools against the calendar and emits proposals for any

@@ -33,6 +33,7 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 			),
 		getSettings: () => call(CHANNELS.ai.getSettings, () => api.ai.getSettings()),
 		listVoices: () => call(CHANNELS.ai.listVoices, () => api.ai.listVoices()),
+		quickAdd: input => call(CHANNELS.ai.quickAdd, () => api.ai.quickAdd(input)),
 		removeKey: provider => call(CHANNELS.ai.removeKey, () => api.ai.removeKey(provider)),
 		stopChat: requestId => api.ai.stopChat(requestId),
 		saveKey: input => call(CHANNELS.ai.saveKey, () => api.ai.saveKey(input)),

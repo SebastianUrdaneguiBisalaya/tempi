@@ -167,8 +167,10 @@ export const es = {
 			title: 'Calendarios',
 		},
 		commandMenu: {
+			aiReading: 'Leyendo con IA…',
 			createEvent: 'Crear evento',
 			createNamedEvent: 'Crear “{{title}}”',
+			createWithAi: 'Crear un evento a partir de «{{text}}» con IA',
 			description: 'Escribe un comando, busca eventos o describe uno nuevo.',
 			empty: 'No se encontraron comandos.',
 			exportAll: 'Exportar todos los calendarios (.ics)…',
@@ -448,6 +450,16 @@ export const es = {
 						openai: { description: 'Modelos GPT para el asistente.', title: 'OpenAI' },
 						xai: { description: 'Modelos Grok para el asistente.', title: 'xAI' },
 					},
+					quickAdd: {
+						ai: 'Con IA',
+						description: 'Cómo lee el menú de comandos un evento nuevo que escribes, como «Café con Ana mañana 5pm». Siempre lo revisas antes de guardarlo.',
+						local: 'Local, en este dispositivo',
+						noKey: 'Guarda abajo una clave de un proveedor de texto para usar IA.',
+						note: 'Con IA, el texto que escribes se envía al proveedor que elijas cuando eliges «Crear» en el menú de comandos.',
+						provider: 'Proveedor',
+						providerPlaceholder: 'Elige un proveedor',
+						title: 'Creación rápida',
+					},
 					removeKey: 'Quitar clave',
 					saveKey: 'Probar y guardar',
 					sttModel: 'Modelo de voz a texto',
@@ -709,6 +721,7 @@ export const es = {
 		ai: {
 			encryptionUnavailable: 'Tu sistema no puede guardar claves de API de forma segura, así que Tempi no la guardará.',
 			invalidKey: 'El proveedor rechazó esta clave de API. Revísala e inténtalo de nuevo.',
+			invalidReply: 'No se pudo leer la respuesta del proveedor como un evento. Inténtalo de nuevo o escríbelo de otra forma.',
 			microphoneDenied:
 				'Tempi no puede usar el micrófono. Permítelo para Tempi en los ajustes de privacidad de tu sistema (en macOS: Ajustes del Sistema › Privacidad y seguridad › Micrófono) e inténtalo de nuevo.',
 			network: 'No se puede conectar con el proveedor. Revisa tu conexión e inténtalo de nuevo.',

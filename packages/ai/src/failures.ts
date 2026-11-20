@@ -1,4 +1,5 @@
-import { type AiProvider, fail, type Result } from '@tempi/core';
+import { type AiProvider, type DomainError, fail, type Result, type TextProvider } from '@tempi/core';
+import { APICallError, RetryError } from 'ai';
 
 /** How long a provider may take to answer a key check before it counts as unreachable. */
 export const REQUEST_TIMEOUT_MS = 15_000;
@@ -17,3 +18,11 @@ export const statusFailure = <T>(provider: AiProvider, status: number): Result<T
 /** The failure for a request that never got an answer (offline, DNS, timeout). Never includes the key. */
 export const networkFailure = <T>(provider: AiProvider, error: unknown): Result<T> =>
 	fail('internal', 'ai.network', { detail: `${provider} could not be reached: ${error instanceof Error ? error.message : String(error)}` });
+/** The `ai.*` failure a provider error means. Its message may echo the request, never the key. */
+export const providerFailure = (provider: TextProvider, error: unknown): DomainError => {
+	const cause = RetryError.isInstance(error) ? error.lastError : error;
+	const result =
+		APICallError.isInstance(cause) && cause.statusCode !== undefined ? statusFailure(provider, cause.statusCode) : APICallError.isInstance(cause) ? networkFailure(provider, cause) : null;
+	if (result !== null && !result.ok) return result.error;
+	return { code: 'internal', issues: [{ detail: `${provider} failed: ${cause instanceof Error ? cause.message : String(cause)}`, key: 'ai.providerError' }] };
+};

@@ -10,6 +10,11 @@ export const CHANNELS = {
 		getSettings: 'ai:getSettings',
 		/** The ElevenLabs voices of the saved key's account. */
 		listVoices: 'ai:listVoices',
+		/**
+		 * Reads one new event from quick add text with the provider chosen in Settings. Answers a proposal for the event
+		 * form; nothing is saved.
+		 */
+		quickAdd: 'ai:quickAdd',
 		/** Deletes a provider's key, which disables it. */
 		removeKey: 'ai:removeKey',
 		/** Tests a provider's key and, only if it works, stores it encrypted in the main process. */

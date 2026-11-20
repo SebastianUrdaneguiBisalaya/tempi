@@ -61,6 +61,7 @@ const desktop: DesktopApi = {
 		},
 		getSettings: () => ipcRenderer.invoke(CHANNELS.ai.getSettings),
 		listVoices: () => ipcRenderer.invoke(CHANNELS.ai.listVoices),
+		quickAdd: input => ipcRenderer.invoke(CHANNELS.ai.quickAdd, input),
 		removeKey: provider => ipcRenderer.invoke(CHANNELS.ai.removeKey, provider),
 		saveKey: input => ipcRenderer.invoke(CHANNELS.ai.saveKey, input),
 		saveSettings: patch => ipcRenderer.invoke(CHANNELS.ai.saveSettings, patch),

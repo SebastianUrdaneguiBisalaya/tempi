@@ -35,6 +35,7 @@ describe('AI settings', () => {
 		expect(withBoth).toEqual({
 			elevenlabs: { ...DEFAULT_AI_SETTINGS.elevenlabs, voices: { en: 'voice-en', es: 'voice-es' } },
 			models: { ...DEFAULT_AI_SETTINGS.models, groq: 'openai/gpt-oss-20b' },
+			quickAdd: DEFAULT_AI_SETTINGS.quickAdd,
 		});
 		expect(applyAiSettingsPatch(withBoth, aiSettingsPatchSchema.parse({ elevenlabs: { voices: { en: null } } })).elevenlabs.voices).toEqual({ en: null, es: 'voice-es' });
 	});
@@ -46,5 +47,19 @@ describe('AI settings', () => {
 			['key', 'validation.required'],
 			['provider', 'validation.invalid_value'],
 		]);
+	});
+
+	test('quick add reads text on this device until the user picks AI', () => {
+		expect(DEFAULT_AI_SETTINGS.quickAdd).toEqual({ mode: 'local', provider: null });
+		// Settings saved before quick add existed keep working, with the local parser.
+		const { quickAdd: _, ...older } = DEFAULT_AI_SETTINGS;
+		expect(aiSettingsValuesSchema.parse(older).quickAdd).toEqual({ mode: 'local', provider: null });
+	});
+
+	test('a quick add patch merges field by field and takes only text providers', () => {
+		const withAi = applyAiSettingsPatch(DEFAULT_AI_SETTINGS, aiSettingsPatchSchema.parse({ quickAdd: { mode: 'ai', provider: 'anthropic' } }));
+		expect(applyAiSettingsPatch(withAi, aiSettingsPatchSchema.parse({ quickAdd: { mode: 'local' } })).quickAdd).toEqual({ mode: 'local', provider: 'anthropic' });
+		expect(aiSettingsPatchSchema.safeParse({ quickAdd: { provider: 'elevenlabs' } }).success).toBe(false);
+		expect(aiSettingsPatchSchema.safeParse({ quickAdd: { mode: 'cloud' } }).success).toBe(false);
 	});
 });
