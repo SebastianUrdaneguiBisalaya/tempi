@@ -79,6 +79,7 @@ describe('payloadSchemas', () => {
 		['settings:save', { tourCompleted: true }],
 		['settings:save', { sound: 'toggle', soundsEnabled: false }],
 		['settings:save', { openAtLoginEnabled: true }],
+		['settings:save', { iconBadgeEnabled: false }],
 	] as const)('%s accepts a valid payload', (channel, payload) => {
 		expect(parseWith(payloadSchemas[channel], payload).ok).toBe(true);
 	});
@@ -118,6 +119,7 @@ describe('payloadSchemas', () => {
 		['settings:save', { tourCompleted: 'yes' }, ['tourCompleted']],
 		['settings:save', { sound: 'chime', soundsEnabled: 'on' }, ['sound', 'soundsEnabled']],
 		['settings:save', { openAtLoginEnabled: 1 }, ['openAtLoginEnabled']],
+		['settings:save', { iconBadgeEnabled: 'off' }, ['iconBadgeEnabled']],
 	] as const)('%s rejects an invalid payload, reporting every issue at form field paths', (channel, payload, fields) => {
 		const result = parseWith(payloadSchemas[channel], payload);
 		expect(result.ok).toBe(false);

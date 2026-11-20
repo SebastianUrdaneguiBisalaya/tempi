@@ -386,6 +386,8 @@ export const en = {
 			},
 			calendar: {
 				defaultEventDuration: 'Default event duration',
+				iconBadgeEnabled: 'Badge on the app icon',
+				iconBadgeEnabledDescription: 'Show how many of today’s events are left on the Dock, taskbar or launcher icon.',
 				menuBarEnabled: 'Menu bar calendar',
 				menuBarEnabledDescription: 'Show today’s agenda in the menu bar or tray. Open it with ⌥⌘K (Alt+Ctrl+K).',
 				minutes: 'minutes',
@@ -671,6 +673,10 @@ export const en = {
 					title: 'Settings',
 				},
 			},
+		},
+		appIcon: {
+			/** Read by screen readers on the Windows taskbar badge. */
+			badge: 'Events left today: {{count}}',
 		},
 		tray: {
 			allDay: 'All day',

@@ -18,6 +18,7 @@ import { SettingsFooter } from './settings-footer';
 
 const calendarSchema = settingsValuesSchema.pick({
 	defaultEventDuration: true,
+	iconBadgeEnabled: true,
 	menuBarEnabled: true,
 	openAtLoginEnabled: true,
 	showWeekends: true,
@@ -27,11 +28,21 @@ const calendarSchema = settingsValuesSchema.pick({
 });
 type CalendarValues = z.input<typeof calendarSchema>;
 
-const FIELDS = ['defaultEventDuration', 'menuBarEnabled', 'openAtLoginEnabled', 'showWeekends', 'showWeekNumbers', 'timeFormat', 'weekStart'] as const satisfies readonly (keyof CalendarValues)[];
+const FIELDS = [
+	'defaultEventDuration',
+	'iconBadgeEnabled',
+	'menuBarEnabled',
+	'openAtLoginEnabled',
+	'showWeekends',
+	'showWeekNumbers',
+	'timeFormat',
+	'weekStart',
+] as const satisfies readonly (keyof CalendarValues)[];
 const isField = (field: string): field is (typeof FIELDS)[number] => FIELDS.some(name => name === field);
 
 const valuesOf = (settings: Settings): CalendarValues => ({
 	defaultEventDuration: settings.defaultEventDuration,
+	iconBadgeEnabled: settings.iconBadgeEnabled,
 	menuBarEnabled: settings.menuBarEnabled,
 	openAtLoginEnabled: settings.openAtLoginEnabled,
 	showWeekends: settings.showWeekends,
@@ -45,9 +56,10 @@ const SWITCHES = [
 	{ name: 'showWeekends', withDescription: false },
 	{ name: 'menuBarEnabled', withDescription: true },
 	{ name: 'openAtLoginEnabled', withDescription: true },
+	{ name: 'iconBadgeEnabled', withDescription: true },
 ] as const;
 
-/** How the calendar shows weeks and times, the default event length, the menu bar calendar and opening at login. */
+/** How the calendar shows weeks and times, the default event length, the menu bar calendar, opening at login and the icon badge. */
 export function CalendarSettings({ settings }: { settings: Settings }) {
 	const { t } = useTranslation();
 	const id = useId();

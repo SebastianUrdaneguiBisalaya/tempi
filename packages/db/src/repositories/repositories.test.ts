@@ -351,6 +351,7 @@ describe('SqliteSettingsRepository', () => {
 		const changed = {
 			...settings,
 			allDayCollapsed: true,
+			iconBadgeEnabled: false,
 			microphoneEnabled: false,
 			notificationsEnabled: false,
 			openAtLoginEnabled: true,

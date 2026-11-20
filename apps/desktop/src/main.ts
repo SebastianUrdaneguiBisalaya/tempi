@@ -4,7 +4,21 @@ import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { listVoices, runAssistant, speak, testKey, textModel, transcribe } from '@tempi/ai';
-import { type CoreDeps, getProfile, getSettings, initializeSettings, type Language, listReminders, ok, type Reminder, type Settings, systemClock, type Theme, uuidv7Ids } from '@tempi/core';
+import {
+	type CoreDeps,
+	countRemainingToday,
+	getProfile,
+	getSettings,
+	initializeSettings,
+	type Language,
+	listReminders,
+	ok,
+	type Reminder,
+	type Settings,
+	systemClock,
+	type Theme,
+	uuidv7Ids,
+} from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
 import { resources } from '@tempi/i18n';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
@@ -46,6 +60,7 @@ import { signInLandingUrl } from './google/sign-in-landing.js';
 import { createSyncRunner, type SyncRunner } from './google/sync-runner.js';
 import { type Cipher, createTokenStore } from './google/token-store.js';
 import { createIcalWorker } from './ical-worker-client.js';
+import { createIconBadge, type IconBadge, OVERLAY_SIZE, platformBadge } from './icon-badge.js';
 import { type AiIo, type DataIo, type IcalIo, type IpcSender, type PermissionsIo, registerIpc } from './ipc/register-ipc.js';
 import { createLoginItem, HIDDEN_ARG } from './login-item.js';
 import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
@@ -90,6 +105,7 @@ let database: DatabaseSync | null = null;
 let reminders: ReminderScheduler | null = null;
 let googleSync: SyncRunner | null = null;
 let appUpdates: UpdateService | null = null;
+let iconBadge: IconBadge | null = null;
 // The stored language, for text the main process shows itself and the page the Google sign-in ends on.
 let language: Language = 'en';
 // The stored permission preferences, read synchronously by the permission check handler and each reminder.
@@ -122,6 +138,7 @@ function applySettings(settings: Settings) {
 	savedTheme = settings.theme;
 	nativeTheme.themeSource = settings.theme;
 	menuBar.setEnabled(settings.menuBarEnabled, settings.language);
+	void iconBadge?.setEnabled(settings.iconBadgeEnabled);
 	loginItem?.apply(settings.openAtLoginEnabled).catch(error => console.error('Failed to update opening at login', error));
 }
 
@@ -209,6 +226,8 @@ function createWindow({ minimized = false } = {}) {
 	// Reopen how the user left it; the first launch fills the work area
 	// (maximized, not fullscreen: menu bar/taskbar and dock stay visible).
 	mainWindow.once('ready-to-show', () => {
+		// On Windows the badge sits on the window's taskbar button, which a new window doesn't have yet.
+		if (process.platform === 'win32') void iconBadge?.refresh();
 		if (minimized) {
 			mainWindow?.minimize();
 			// Maximizing now would show the window, so it waits until the user brings it up.
@@ -275,6 +294,36 @@ function showInMainWindow(ref: OccurrenceRef) {
 	const send = () => window.webContents.send(PUSH_CHANNELS.events.show, ref);
 	if (window.webContents.isLoading()) window.webContents.once('did-finish-load', send);
 	else send();
+}
+
+// Counted in the calendar's time zone: the profile's, or the system's before onboarding.
+function startIconBadge(deps: CoreDeps, transaction: TransactionQueue): IconBadge {
+	const badge = createIconBadge({
+		count: async () => {
+			const result = await transaction(async () => {
+				const profile = await getProfile(deps);
+				const timeZone = profile?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+				return countRemainingToday(deps, Temporal.Now.instant(), timeZone);
+			});
+			if (!result.ok) throw new Error(result.error.issues.map(issue => issue.detail).join('; '));
+			return result.value;
+		},
+		now: () => new Date(),
+		setTimer: (callback, ms) => {
+			const timer = setTimeout(callback, ms);
+			return () => clearTimeout(timer);
+		},
+		show: platformBadge({
+			app,
+			description: count => resources[language].common.appIcon.badge.replace('{{count}}', String(count)),
+			image: pixels => nativeImage.createFromBuffer(Buffer.from(pixels), { height: OVERLAY_SIZE, scaleFactor: 2, width: OVERLAY_SIZE }),
+			platform: process.platform,
+			window: () => mainWindow,
+		}),
+	});
+	// The timer stalls while the computer sleeps: count again on wake, which also catches a missed midnight.
+	powerMonitor.on('resume', () => void badge.refresh());
+	return badge;
 }
 
 const electronNotifications: NotificationApi = {
@@ -394,6 +443,8 @@ function dataIo(db: DatabaseSync, deps: CoreDeps, transaction: TransactionQueue,
 				await transaction.exclusive(async () => {
 					reminders?.stop();
 					reminders = null;
+					iconBadge?.stop();
+					iconBadge = null;
 					db.close();
 					database = null;
 					swapInRestore(`${live}.restoring`, live);
@@ -530,7 +581,10 @@ function createGoogleSync(deps: CoreDeps, transaction: TransactionQueue, account
 		now: () => new Date(),
 		onStatus: (status, summary) => {
 			for (const window of BrowserWindow.getAllWindows()) window.webContents.send(PUSH_CHANNELS.google.syncStatus, status);
-			if (summary !== null && summary.pulled > 0) void reminders?.reschedule();
+			if (summary !== null && summary.pulled > 0) {
+				void reminders?.reschedule();
+				void iconBadge?.refresh();
+			}
 		},
 		setTimer: (callback, ms) => {
 			const timer = setTimeout(callback, ms);
@@ -618,8 +672,11 @@ if (!gotLock) {
 			{
 				eventsChanged: () => {
 					void reminders?.reschedule();
+					void iconBadge?.refresh();
 					googleSync?.schedule();
 				},
+				// The profile's time zone decides when today ends.
+				profileSaved: () => void iconBadge?.refresh(),
 				settingsSaved: applySettings,
 				// Previewing "system" must show the OS theme, which the renderer only sees once `themeSource` follows the preview.
 				themePreviewed: theme => {
@@ -628,6 +685,8 @@ if (!gotLock) {
 				showEvent: showInMainWindow,
 			}
 		);
+		// Before the settings load, so they turn it on.
+		iconBadge = startIconBadge(deps, transaction);
 		await loadSettings(deps, transaction);
 		// A login start shows nothing: the tray icon when the menu bar calendar is on, otherwise the Dock icon on macOS
 		// (clicking it opens the window) or a minimized window in the taskbar.
@@ -647,6 +706,8 @@ if (!gotLock) {
 		googleSync = null;
 		appUpdates?.stop();
 		appUpdates = null;
+		iconBadge?.stop();
+		iconBadge = null;
 		database?.close();
 		database = null;
 	});

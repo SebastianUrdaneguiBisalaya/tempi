@@ -8,6 +8,7 @@ const settingsRowSchema = z
 		all_day_collapsed: booleanColumn,
 		created_at: z.string(),
 		default_event_duration: z.number(),
+		icon_badge_enabled: booleanColumn,
 		language: z.string(),
 		menu_bar_enabled: booleanColumn,
 		microphone_enabled: booleanColumn,
@@ -29,6 +30,7 @@ const settingsRowSchema = z
 			allDayCollapsed: row.all_day_collapsed,
 			createdAt: row.created_at,
 			defaultEventDuration: row.default_event_duration,
+			iconBadgeEnabled: row.icon_badge_enabled,
 			language: row.language,
 			menuBarEnabled: row.menu_bar_enabled,
 			microphoneEnabled: row.microphone_enabled,
@@ -55,17 +57,18 @@ export class SqliteSettingsRepository implements SettingsRepository {
 
 	constructor(db: DatabaseSync) {
 		this.getStatement = db.prepare(
-			`SELECT all_day_collapsed, default_event_duration, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled, show_weekends,
+			`SELECT all_day_collapsed, default_event_duration, icon_badge_enabled, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled, show_weekends,
 				show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, week_start, created_at, updated_at
 			FROM settings WHERE id = 1`
 		);
 		this.saveStatement = db.prepare(
-			`INSERT INTO settings (id, all_day_collapsed, default_event_duration, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled,
+			`INSERT INTO settings (id, all_day_collapsed, default_event_duration, icon_badge_enabled, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled,
 				show_weekends, show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, week_start, created_at, updated_at)
-			VALUES (1, :all_day_collapsed, :default_event_duration, :language, :menu_bar_enabled, :microphone_enabled, :notifications_enabled, :onboarding_completed, :open_at_login_enabled,
+			VALUES (1, :all_day_collapsed, :default_event_duration, :icon_badge_enabled, :language, :menu_bar_enabled, :microphone_enabled, :notifications_enabled, :onboarding_completed, :open_at_login_enabled,
 				:show_weekends, :show_week_numbers, :sound, :sounds_enabled, :theme, :time_format, :tour_completed, :week_start, :created_at, :updated_at)
 			ON CONFLICT (id) DO UPDATE SET
-				all_day_collapsed = excluded.all_day_collapsed, default_event_duration = excluded.default_event_duration, language = excluded.language,
+				all_day_collapsed = excluded.all_day_collapsed, default_event_duration = excluded.default_event_duration,
+				icon_badge_enabled = excluded.icon_badge_enabled, language = excluded.language,
 				menu_bar_enabled = excluded.menu_bar_enabled, microphone_enabled = excluded.microphone_enabled,
 				notifications_enabled = excluded.notifications_enabled, onboarding_completed = excluded.onboarding_completed,
 				open_at_login_enabled = excluded.open_at_login_enabled,
@@ -89,6 +92,7 @@ export class SqliteSettingsRepository implements SettingsRepository {
 				all_day_collapsed: toBooleanColumn(settings.allDayCollapsed),
 				created_at: toInstantColumn(settings.createdAt),
 				default_event_duration: settings.defaultEventDuration,
+				icon_badge_enabled: toBooleanColumn(settings.iconBadgeEnabled),
 				language: settings.language,
 				menu_bar_enabled: toBooleanColumn(settings.menuBarEnabled),
 				microphone_enabled: toBooleanColumn(settings.microphoneEnabled),
