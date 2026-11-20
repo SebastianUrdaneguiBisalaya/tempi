@@ -490,6 +490,9 @@
     "terms": "Terms",
     "privacy": "Privacy"
   },
+  "wordmark": {
+    "label": "Tempi logo"
+  },
   "legal": {
     "updatedLabel": "Last updated",
     "updated": "November 17, 2026",

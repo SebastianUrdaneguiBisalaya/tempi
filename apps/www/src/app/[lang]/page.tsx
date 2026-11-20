@@ -5,6 +5,7 @@ import { Features } from '@/features/features/components/features';
 import { Hero } from '@/features/hero/components/hero';
 import { Keyboard } from '@/features/keyboard/components/keyboard';
 import { WhyTempi } from '@/features/why/components/why-tempi';
+import { Wordmark } from '@/features/wordmark/components/wordmark';
 
 export default function LandingPage() {
 	return (
@@ -15,6 +16,7 @@ export default function LandingPage() {
 			<Ai />
 			<Keyboard />
 			<Faq />
+			<Wordmark />
 			<Download />
 		</main>
 	);
