@@ -95,6 +95,56 @@
         "weeklyPlanning": "Weekly planning",
         "gaming": "Video games"
       }
+    },
+    "replicas": {
+      "settingsTabs": {
+        "profile": "Profile",
+        "appearance": "Appearance",
+        "calendar": "Calendar",
+        "permissions": "Permissions",
+        "integrations": "Integrations",
+        "shortcuts": "Shortcuts",
+        "data": "Data",
+        "about": "About"
+      },
+      "data": {
+        "backupTitle": "Backup",
+        "backupDescription": "Save a copy of your calendars, events, settings and profile photo to a file.",
+        "backup": "Create backup…",
+        "restoreTitle": "Restore",
+        "restoreDescription": "Replace everything in Tempi with a backup. Tempi restarts afterwards.",
+        "restore": "Restore backup…"
+      },
+      "search": {
+        "placeholder": "Search events",
+        "query": "review"
+      },
+      "google": {
+        "card": {
+          "title": "Google",
+          "description": "Sign in with Google in your browser. Only one account can be connected.",
+          "connect": "Connect Google account",
+          "notConnected": "No account connected.",
+          "disconnect": "Disconnect",
+          "connectedAs": "Connected as {email}",
+          "privacy": "Privacy Policy",
+          "terms": "Terms and Conditions"
+        },
+        "sync": {
+          "statusBefore": "Last synced 2 hours ago.",
+          "statusAfter": "Last synced just now.",
+          "syncNow": "Sync now",
+          "calendarsTitle": "Calendars to sync",
+          "calendarsDescription": "Choose which calendars of this account appear in Tempi. Unchecking one removes it from Tempi, not from Google.",
+          "readOnly": "Read-only",
+          "calendars": {
+            "work": "Work",
+            "personal": "Personal",
+            "holidays": "Holidays",
+            "birthdays": "Birthdays"
+          }
+        }
+      }
     }
   },
   "features": {

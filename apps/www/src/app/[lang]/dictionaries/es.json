@@ -95,6 +95,56 @@
         "weeklyPlanning": "Planificación semanal",
         "gaming": "Videojuegos"
       }
+    },
+    "replicas": {
+      "settingsTabs": {
+        "profile": "Perfil",
+        "appearance": "Apariencia",
+        "calendar": "Calendario",
+        "permissions": "Permisos",
+        "integrations": "Integraciones",
+        "shortcuts": "Atajos",
+        "data": "Datos",
+        "about": "Acerca de"
+      },
+      "data": {
+        "backupTitle": "Copia de seguridad",
+        "backupDescription": "Guarda una copia de tus calendarios, eventos, ajustes y foto de perfil en un archivo.",
+        "backup": "Crear copia…",
+        "restoreTitle": "Restaurar",
+        "restoreDescription": "Reemplaza todo lo que hay en Tempi por una copia de seguridad. Después Tempi se reinicia.",
+        "restore": "Restaurar copia…"
+      },
+      "search": {
+        "placeholder": "Buscar eventos",
+        "query": "revisión"
+      },
+      "google": {
+        "card": {
+          "title": "Google",
+          "description": "Inicia sesión con Google en tu navegador. Solo se puede conectar una cuenta.",
+          "connect": "Conectar cuenta de Google",
+          "notConnected": "Ninguna cuenta conectada.",
+          "disconnect": "Desconectar",
+          "connectedAs": "Conectada como {email}",
+          "privacy": "Política de Privacidad",
+          "terms": "Términos y Condiciones"
+        },
+        "sync": {
+          "statusBefore": "Última sincronización: hace 2 horas.",
+          "statusAfter": "Última sincronización: justo ahora.",
+          "syncNow": "Sincronizar ahora",
+          "calendarsTitle": "Calendarios para sincronizar",
+          "calendarsDescription": "Elige qué calendarios de esta cuenta aparecen en Tempi. Desmarcar uno lo quita de Tempi, no de Google.",
+          "readOnly": "Solo lectura",
+          "calendars": {
+            "work": "Trabajo",
+            "personal": "Personal",
+            "holidays": "Feriados",
+            "birthdays": "Cumpleaños"
+          }
+        }
+      }
     }
   },
   "features": {
