@@ -13,6 +13,7 @@ import { CalendarNavigationProvider, useCalendarNavigation } from '@/features/ca
 import { useCalendarLocale } from '@/features/calendar/hooks/use-calendar-locale';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { useEvents } from '@/features/calendar/hooks/use-events';
+import { JoinMeetingButton } from '@/features/events/components/join-meeting-button';
 import { useGoogleSyncUpdates } from '@/features/settings/hooks/use-google-sync';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { formatDate, formatTimeRange } from '@/lib/date-format';
@@ -97,10 +98,10 @@ function DayEvents({ day }: { day: Temporal.PlainDate }) {
 				{!isPending && shown.length === 0 && <p className='px-4 pb-3 text-xs text-muted-foreground'>{t('tray.empty')}</p>}
 				<ul aria-label={t('tray.events')} className='flex flex-col gap-0.5 px-2 pb-3'>
 					{shown.map(event => (
-						<li key={event.key}>
+						<li className='flex items-center gap-1' key={event.key}>
 							<button
 								className={cn(
-									'flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left text-xs outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/30',
+									'flex min-w-0 flex-1 items-start gap-2 rounded-md px-2 py-1.5 text-left text-xs outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/30',
 									isPast(event, now) && 'text-muted-foreground'
 								)}
 								onClick={() => void showInMainWindow(event)}
@@ -112,6 +113,8 @@ function DayEvents({ day }: { day: Temporal.PlainDate }) {
 									<span className='text-muted-foreground'>{event.allDay ? t('tray.allDay') : formatTimeRange(event.startAt, event.endAt, options)}</span>
 								</span>
 							</button>
+							{/* Beside the row, not inside it: a link can't sit in a button. */}
+							<JoinMeetingButton className='shrink-0' event={event} size='xs' />
 						</li>
 					))}
 				</ul>

@@ -1,4 +1,4 @@
-import type { Reminder } from '@tempi/core';
+import { type Language, meetingLink, type Reminder } from '@tempi/core';
 import { type ReminderDisplay, reminderContent } from './reminder-notification.js';
 
 /**
@@ -6,14 +6,17 @@ import { type ReminderDisplay, reminderContent } from './reminder-notification.j
  * isn't code-signed or the user blocked Tempi.
  */
 export type ShownNotification = {
+	on(event: 'action', listener: (details: { actionIndex: number }) => void): unknown;
 	on(event: 'click' | 'close' | 'show', listener: () => void): unknown;
 	on(event: 'failed', listener: (event: unknown, error: string) => void): unknown;
 	show(): void;
 };
 
+type NotificationOptions = { actions?: { text: string; type: 'button' }[]; body: string; icon?: string; title: string };
+
 /** Electron's `Notification`, injected so tests can stand in for the OS. */
 export type NotificationApi = {
-	create: (options: { body: string; icon?: string; title: string }) => ShownNotification;
+	create: (options: NotificationOptions) => ShownNotification;
 	isSupported: () => boolean;
 };
 
@@ -48,18 +51,35 @@ type ReminderNotifierOptions = {
 	enabled: () => boolean;
 	/** Windows and Linux show this next to the text; macOS always uses the app icon. */
 	icon?: string;
+	/**
+	 * A "Join" button on reminders of events with a call link, labelled in the reminder's language. Only macOS shows
+	 * notification buttons, so only it passes this.
+	 */
+	join?: { label: (language: Language) => string; open: (url: string) => void };
 	notifications: NotificationApi;
 	onClick: (reminder: Reminder) => void;
 };
 
 /** Shows each reminder as a native OS notification; clicking one calls `onClick`. One the OS refuses is logged. */
-export const createReminderNotifier = ({ display, enabled, icon, notifications, onClick }: ReminderNotifierOptions) => {
+export const createReminderNotifier = ({ display, enabled, icon, join, notifications, onClick }: ReminderNotifierOptions) => {
 	// Electron drops the click handler of a notification that has been garbage-collected, so keep each until it's done.
 	const shown = new Set<ShownNotification>();
 	const show = async (reminder: Reminder) => {
 		if (!enabled() || !notifications.isSupported()) return;
-		const notification = notifications.create({ ...reminderContent(reminder, await display()), ...(icon === undefined ? {} : { icon }) });
+		const settings = await display();
+		const link = join === undefined ? null : meetingLink(reminder.occurrence);
+		const notification = notifications.create({
+			...reminderContent(reminder, settings),
+			...(icon === undefined ? {} : { icon }),
+			...(join === undefined || link === null ? {} : { actions: [{ text: join.label(settings.language), type: 'button' }] }),
+		});
 		shown.add(notification);
+		if (join !== undefined && link !== null) {
+			notification.on('action', ({ actionIndex }) => {
+				shown.delete(notification);
+				if (actionIndex === 0) join.open(link.url);
+			});
+		}
 		notification.on('click', () => {
 			shown.delete(notification);
 			onClick(reminder);

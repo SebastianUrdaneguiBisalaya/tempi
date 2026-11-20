@@ -2,12 +2,12 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { asOccurrence, type Calendar, EVENT_STATUSES, type EventOccurrence, type EventPatch, zodErrorKeyMap } from '@tempi/core';
-import { Trash2Icon, VideoIcon, XIcon } from 'lucide-react';
+import { Trash2Icon, XIcon } from 'lucide-react';
 import { useEffect, useEffectEvent, useId, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormFieldError } from '@/components/form-field-error';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,6 +17,7 @@ import { convertFormTimes, type EventFormOutput, type EventFormValues, eventForm
 import { useCreateEvent, useUpdateEvent, useUpdateOccurrence } from '../hooks/use-event-mutations';
 import { DateTimeField } from './date-time-field';
 import { useEventPanel } from './event-panel-provider';
+import { JoinMeetingButton } from './join-meeting-button';
 import { RecurrenceFields } from './recurrence-fields';
 import { TimeZoneCombobox } from './time-zone-combobox';
 
@@ -247,13 +248,8 @@ export function EventForm({ calendars, changes, defaultValues, event }: EventFor
 								<FieldLabel htmlFor={`${id}-video`}>{t('events.form.videoUrl')}</FieldLabel>
 								<div className='flex gap-2'>
 									<Input aria-invalid={fieldState.invalid || undefined} id={`${id}-video`} inputMode='url' placeholder='https://' type='url' {...field} />
-									{/* The saved link only: core has validated it. The desktop app opens new-window links with shell.openExternal. */}
-									{event?.videoUrl && (
-										<a className={buttonVariants()} href={event.videoUrl} rel='noreferrer' target='_blank'>
-											<VideoIcon data-icon='inline-start' />
-											{t('events.join')}
-										</a>
-									)}
+									{/* The saved event's link only, never what is being typed. */}
+									{event !== null && <JoinMeetingButton event={event} size='default' />}
 								</div>
 								<FormFieldError error={fieldState.error} />
 							</Field>

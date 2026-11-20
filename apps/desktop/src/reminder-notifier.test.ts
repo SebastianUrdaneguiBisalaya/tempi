@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, spyOn, test } from 'bun:test';
-import type { Reminder } from '@tempi/core';
+import type { Language, Reminder } from '@tempi/core';
 import { createReminderNotifier, deliverNotification, type NotificationApi } from './reminder-notifier';
 
 const T0 = '2026-11-15T10:00:00.000Z';
@@ -35,9 +35,12 @@ const reminder: Reminder = {
 /** A fake OS. `outcome` decides what each notification emits once shown: `show`, `failed` with a reason, or nothing. */
 const fakeNotifications = (supported = true, outcome: () => { failed: string } | 'show' | 'silent' = () => 'show') => {
 	const shown: string[] = [];
+	const created: Parameters<NotificationApi['create']>[0][] = [];
 	const listeners: Map<string, (...args: unknown[]) => void>[] = [];
 	const api: NotificationApi = {
-		create: ({ title }) => {
+		create: options => {
+			const { title } = options;
+			created.push(options);
 			const own = new Map<string, (...args: unknown[]) => void>();
 			listeners.push(own);
 			return {
@@ -54,19 +57,22 @@ const fakeNotifications = (supported = true, outcome: () => { failed: string } |
 		},
 		isSupported: () => supported,
 	};
-	return { api, listeners, shown };
+	return { api, created, listeners, shown };
 };
 
-const setup = ({ enabled = () => true, outcome, supported = true }: { enabled?: () => boolean; outcome?: () => { failed: string } | 'show'; supported?: boolean } = {}) => {
+type Join = { label: (language: Language) => string; open: (url: string) => void };
+
+const setup = ({ enabled = () => true, join, outcome, supported = true }: { enabled?: () => boolean; join?: Join; outcome?: () => { failed: string } | 'show'; supported?: boolean } = {}) => {
 	const clicks: Reminder[] = [];
-	const { api, listeners, shown } = fakeNotifications(supported, outcome);
+	const { api, created, listeners, shown } = fakeNotifications(supported, outcome);
 	const notify = createReminderNotifier({
-		display: () => Promise.resolve({ language: 'en', timeFormat: '24h', timeZone: 'America/Lima' }),
+		display: () => Promise.resolve({ language: 'es', timeFormat: '24h', timeZone: 'America/Lima' }),
 		enabled,
+		join,
 		notifications: api,
 		onClick: clicked => clicks.push(clicked),
 	});
-	return { clicks, listeners: () => listeners[0] ?? new Map(), notify, shown };
+	return { clicks, created, listeners: () => listeners[0] ?? new Map(), notify, shown };
 };
 
 afterEach(() => {
@@ -115,6 +121,37 @@ describe('reminder notifier', () => {
 		refuse = false;
 		await notify(reminder);
 		expect(shown).toEqual(['Standup']);
+	});
+});
+
+describe('reminder notifier Join action', () => {
+	const withCall: Reminder = { ...reminder, occurrence: { ...reminder.occurrence, description: 'Link: https://meet.google.com/abc-defg-hij' } };
+	const join = () => {
+		const opened: string[] = [];
+		return { join: { label: (language: Language) => (language === 'es' ? 'Unirse' : 'Join'), open: (url: string) => void opened.push(url) }, opened };
+	};
+
+	test('offers Join, in the reminder language, and opens the call link with it', async () => {
+		const { join: options, opened } = join();
+		const { clicks, created, listeners, notify } = setup({ join: options });
+		await notify(withCall);
+		expect(created[0]?.actions).toEqual([{ text: 'Unirse', type: 'button' }]);
+		listeners().get('action')?.({ actionIndex: 0 });
+		expect(opened).toEqual(['https://meet.google.com/abc-defg-hij']);
+		expect(clicks).toEqual([]);
+	});
+
+	test('offers no action for an event without a call link', async () => {
+		const { join: options } = join();
+		const { created, notify } = setup({ join: options });
+		await notify(reminder);
+		expect(created[0]?.actions).toBeUndefined();
+	});
+
+	test('offers no action where the platform shows no buttons', async () => {
+		const { created, notify } = setup();
+		await notify(withCall);
+		expect(created[0]?.actions).toBeUndefined();
 	});
 });
 
