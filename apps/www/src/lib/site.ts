@@ -13,6 +13,7 @@ export const GITHUB_URL = 'https://github.com/SebastianUrdaneguiBisalaya/tempi';
 export const SECTION_IDS = {
 	why: 'why-tempi',
 	features: 'features',
+	planning: 'planning',
 	ai: 'ai',
 	faq: 'faq',
 	download: 'download',

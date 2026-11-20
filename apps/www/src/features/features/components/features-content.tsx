@@ -1,6 +1,20 @@
 'use client';
 
-import { ArchiveIcon, BellRingIcon, CalendarDaysIcon, CircleFadingArrowUpIcon, CommandIcon, GlobeIcon, LanguagesIcon, type LucideIcon, PanelTopIcon, RefreshCwIcon } from 'lucide-react';
+import {
+	ArchiveIcon,
+	BellRingIcon,
+	BriefcaseIcon,
+	CalendarCheckIcon,
+	CalendarDaysIcon,
+	ChartColumnIcon,
+	CircleFadingArrowUpIcon,
+	CommandIcon,
+	GlobeIcon,
+	LanguagesIcon,
+	type LucideIcon,
+	PanelTopIcon,
+	RefreshCwIcon,
+} from 'lucide-react';
 import { useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { gsap, useMotion } from '@/lib/gsap';
@@ -12,6 +26,9 @@ const FEATURES = [
 	{ key: 'googleSync', icon: RefreshCwIcon },
 	{ key: 'recurrence', icon: BellRingIcon },
 	{ key: 'timeZones', icon: GlobeIcon },
+	{ key: 'workingHours', icon: BriefcaseIcon },
+	{ key: 'availability', icon: CalendarCheckIcon },
+	{ key: 'stats', icon: ChartColumnIcon },
 	{ key: 'importExport', icon: ArchiveIcon },
 	{ key: 'tray', icon: PanelTopIcon },
 	{ key: 'keyboard', icon: CommandIcon },

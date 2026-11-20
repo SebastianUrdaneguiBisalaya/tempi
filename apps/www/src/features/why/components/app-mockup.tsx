@@ -4,64 +4,19 @@ import { cn } from 'cn';
 import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, PanelLeftIcon, PanelRightIcon, PlusIcon, SearchIcon, SettingsIcon, VideoIcon } from 'lucide-react';
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
-import { useSyncExternalStore } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Kbd } from '@/components/ui/kbd';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Hotkey } from '@/features/keyboard/components/hotkey';
+import { formatTimeZoneOffset } from '@/lib/date-format';
 import { SHOWN_SHORTCUTS } from '@/lib/hotkeys';
 import type { Locale } from '@/lib/i18n';
-
-const CALENDARS = {
-	work: '#3b82f6',
-	personal: '#22c55e',
-	project: '#8b5cf6',
-	holidays: '#f97316',
-} as const;
-
-type CalendarKey = keyof typeof CALENDARS;
-
-type MockEvent = {
-	key: string;
-	calendar: CalendarKey;
-	/** Days from today, so the visitor's today always has events. */
-	day: number;
-	start: number;
-	end: number;
-	location?: boolean;
-	video?: boolean;
-};
-
-const EVENTS = [
-	{ key: 'reading', calendar: 'personal', day: -3, start: 15.5, end: 16.5 },
-	{ key: 'gym', calendar: 'personal', day: -2, start: 8, end: 9 },
-	{ key: 'research', calendar: 'project', day: -2, start: 10, end: 12 },
-	{ key: 'standup', calendar: 'work', day: -1, start: 9, end: 9.5, video: true },
-	{ key: 'oneOnOne', calendar: 'work', day: -1, start: 11, end: 11.5, video: true },
-	{ key: 'planning', calendar: 'work', day: -1, start: 14, end: 15.5 },
-	{ key: 'designReview', calendar: 'work', day: 0, start: 9, end: 10, location: true },
-	{ key: 'lunch', calendar: 'personal', day: 0, start: 11.5, end: 12.5 },
-	{ key: 'teamSync', calendar: 'work', day: 0, start: 13, end: 14, video: true },
-	{ key: 'focus', calendar: 'project', day: 0, start: 15, end: 16.5 },
-	{ key: 'standup', calendar: 'work', day: 1, start: 9, end: 9.5, video: true },
-	{ key: 'docs', calendar: 'project', day: 1, start: 10, end: 11.5 },
-	{ key: 'call', calendar: 'personal', day: 1, start: 15.5, end: 16.5 },
-	{ key: 'gym', calendar: 'personal', day: 2, start: 8, end: 9 },
-	{ key: 'codeReview', calendar: 'project', day: 2, start: 11, end: 12 },
-	{ key: 'dentist', calendar: 'personal', day: 2, start: 15, end: 16 },
-	{ key: 'release', calendar: 'project', day: 3, start: 11, end: 12.5 },
-	{ key: 'retro', calendar: 'work', day: 3, start: 15, end: 16 },
-] as const satisfies readonly MockEvent[];
-
-const ALL_DAY = { key: 'holiday', calendar: 'holidays', day: 4 } as const;
-
-type EventKey = (typeof EVENTS)[number]['key'] | typeof ALL_DAY.key;
+import { ALL_DAY, addDays, at, CALENDARS, type CalendarKey, EVENTS, type EventKey, isoWeekday, NOW_HOUR, WORKING_HOURS, weekStartFor } from '@/lib/sample-calendar';
+import { useToday } from '@/lib/use-today';
 
 const FIRST_HOUR = 8;
 const LAST_HOUR = 17;
 const HOUR_REM = 4;
-// "Now" is fixed at 12:35 so the panel always reads "Upcoming in 25 minutes" for the team sync.
-const NOW_HOUR = 12 + 35 / 60;
 const UPCOMING = EVENTS.find(event => event.key === 'teamSync');
 
 export type MockupCopy = {
@@ -84,25 +39,11 @@ export type MockupCopy = {
 	events: Record<EventKey, string>;
 };
 
-// The date only changes at midnight; reading it once per visit is enough.
-const subscribe = () => () => {
-	// Nothing to unsubscribe from.
-};
-const todayKey = () => new Date().toDateString();
-
 /** Same tint as the desktop app's confirmed events (`eventSurface` in apps/web): the calendar color mixed into the background. */
 const eventStyle = (color: string): CSSProperties => ({
 	backgroundColor: `color-mix(in oklab, ${color} 22%, var(--background))`,
 	borderLeftColor: color,
 });
-
-const addDays = (date: Date, days: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
-
-const at = (date: Date, hour: number) => {
-	const copy = new Date(date);
-	copy.setHours(Math.floor(hour), Math.round((hour % 1) * 60), 0, 0);
-	return copy;
-};
 
 const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
 
@@ -112,12 +53,12 @@ type PartProps = { locale: Locale; copy: MockupCopy; today: Date | null };
 
 /**
  * Decorative replica of Tempi's week view (sidebar, header, time grid, right panel) with fixed sample data, built from
- * the same shadcn primitives and classes as apps/web. Every date and time is rendered on the client only: the server
+ * the same shadcn primitives and classes as apps/web, with working hours on and one secondary time zone set.
+ * Every date and time is rendered on the client only: the server
  * doesn't know the visitor's day, and Node and browsers format `Intl` output with different spaces.
  */
 export function AppMockup({ locale, copy }: { locale: Locale; copy: MockupCopy }) {
-	const key = useSyncExternalStore(subscribe, todayKey, () => null);
-	const today = key === null ? null : new Date(key);
+	const today = useToday();
 
 	return (
 		<div role='img' aria-label={copy.label} className='@container overflow-hidden rounded-xl border bg-background shadow-2xl shadow-black/50 ring-1 ring-foreground/5'>
@@ -185,7 +126,7 @@ function AssistantEntry({ copy }: { copy: MockupCopy['assistant'] }) {
 }
 
 function MiniCalendar({ locale, today }: Omit<PartProps, 'copy'>) {
-	const weekStart = locale === 'es' ? 1 : 0;
+	const weekStart = weekStartFor(locale);
 	const first = today && new Date(today.getFullYear(), today.getMonth(), 1);
 	const offset = first ? (first.getDay() - weekStart + 7) % 7 : 0;
 	const weekdays = today ? weekDays(locale, today).map(day => capitalize(new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(day).slice(0, 2), locale)) : [];
@@ -256,9 +197,28 @@ function Header({ locale, copy, today }: PartProps) {
 }
 
 function weekDays(locale: Locale, today: Date) {
-	const weekStart = locale === 'es' ? 1 : 0;
+	const weekStart = weekStartFor(locale);
 	const first = addDays(today, -((today.getDay() - weekStart + 7) % 7));
 	return Array.from({ length: 7 }, (_, index) => addDays(first, index));
+}
+
+/** Like the app's working hours (Settings › Calendar), the time grid shades every hour outside them. */
+const isOffHours = (day: Date, hour: number) => !WORKING_HOURS.days.some(weekday => weekday === isoWeekday(day)) || hour < WORKING_HOURS.start || hour >= WORKING_HOURS.end;
+
+// The one secondary time zone shown (Settings › Calendar): the first whose offset differs from the visitor's today.
+const SECONDARY_ZONES = ['Europe/London', 'America/New_York', 'Asia/Tokyo'] as const;
+
+const secondaryZone = (today: Date, locale: Locale) => SECONDARY_ZONES.find(zone => formatTimeZoneOffset(today, locale, zone) !== formatTimeZoneOffset(today, locale));
+
+/** Like the app's extra hour column: the hour alone when the zone is on the hour, else the time (e.g. "9:30" in India). */
+const zoneHour = (instant: Date, locale: Locale, timeZone: string) => {
+	const onHour = new Intl.DateTimeFormat('en', { minute: 'numeric', timeZone }).format(instant) === '0';
+	return new Intl.DateTimeFormat(locale, onHour ? { hour: 'numeric', timeZone } : { hour: 'numeric', minute: '2-digit', timeZone }).format(instant);
+};
+
+/** A zone name over its hour column, as the app's time grid writes it (e.g. "GMT+1"); narrow mockups drop the extra zone. */
+function ZoneName({ name }: { name: string | undefined }) {
+	return <div className='hidden w-12 shrink-0 items-end justify-end pr-2 pb-1 text-[0.6rem] text-muted-foreground @xl:flex'>{name}</div>;
 }
 
 function WeekGrid({ locale, copy, today }: PartProps) {
@@ -268,11 +228,14 @@ function WeekGrid({ locale, copy, today }: PartProps) {
 	const top = (hour: number) => `${(hour - FIRST_HOUR) * HOUR_REM}rem`;
 	const hourLabel = new Intl.DateTimeFormat(locale, { hour: 'numeric' });
 	const range = new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' });
+	const zone = today ? secondaryZone(today, locale) : undefined;
 
 	return (
 		<div className='flex min-w-0 flex-1 flex-col'>
 			<div className='flex border-b'>
-				<div className='w-12 shrink-0' />
+				{today && zone && <ZoneName name={formatTimeZoneOffset(today, locale, zone)} />}
+				<ZoneName name={today && zone ? formatTimeZoneOffset(today, locale) : undefined} />
+				<div className='w-12 shrink-0 @xl:hidden' />
 				{days.map((day, index) => (
 					<div
 						// biome-ignore lint/suspicious/noArrayIndexKey: the week always has seven positional columns.
@@ -293,6 +256,7 @@ function WeekGrid({ locale, copy, today }: PartProps) {
 			</div>
 			{/* All-day lane: one public holiday from the read-only calendar. */}
 			<div className='flex border-b'>
+				{zone && <div className='hidden w-12 shrink-0 @xl:block' />}
 				<div className='w-12 shrink-0' />
 				{days.map((_, index) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: positional columns.
@@ -307,6 +271,15 @@ function WeekGrid({ locale, copy, today }: PartProps) {
 				))}
 			</div>
 			<div className='relative flex' style={{ height: `${hours.length * HOUR_REM}rem` }}>
+				{today && zone && (
+					<div className='hidden w-12 shrink-0 @xl:block'>
+						{hours.map(hour => (
+							<div key={hour} className='pr-2 text-right text-[0.65rem] text-muted-foreground' style={{ height: `${HOUR_REM}rem` }}>
+								{hour > FIRST_HOUR && <span className='relative -top-2'>{zoneHour(at(today, hour), locale, zone)}</span>}
+							</div>
+						))}
+					</div>
+				)}
 				<div className='w-12 shrink-0'>
 					{hours.map(hour => (
 						<div key={hour} className='pr-2 text-right text-[0.65rem] text-muted-foreground' style={{ height: `${HOUR_REM}rem` }}>
@@ -321,7 +294,7 @@ function WeekGrid({ locale, copy, today }: PartProps) {
 						className={cn('relative flex-1 border-l', Math.abs(index - todayIndex) > 1 && 'hidden @2xl:block')}
 					>
 						{hours.map(hour => (
-							<div key={hour} className={cn(hour > FIRST_HOUR && 'border-t')} style={{ height: `${HOUR_REM}rem` }} />
+							<div key={hour} className={cn(hour > FIRST_HOUR && 'border-t', day && isOffHours(day, hour) && 'bg-muted/60')} style={{ height: `${HOUR_REM}rem` }} />
 						))}
 						{EVENTS.filter(event => index === todayIndex + event.day).map(event => (
 							<div
