@@ -8,6 +8,7 @@
     "navLabel": "Principal",
     "nav": {
       "features": "Funciones",
+      "planning": "Planificación",
       "ai": "IA",
       "faq": "Preguntas",
       "download": "Descargar"
@@ -47,7 +48,7 @@
       }
     },
     "mockup": {
-      "label": "Vista semanal de Tempi: calendarios en la barra lateral, eventos en la grilla horaria y el próximo evento en el panel derecho",
+      "label": "Vista semanal de Tempi: calendarios en la barra lateral, eventos en la grilla horaria con las horas fuera del horario laboral sombreadas y una segunda zona horaria, y el próximo evento en el panel derecho",
       "today": "Hoy",
       "calendarsTitle": "Calendarios",
       "newCalendar": "Nuevo calendario",
@@ -270,6 +271,107 @@
       }
     }
   },
+  "planning": {
+    "eyebrow": "Planificación",
+    "title": "Sabe cuándo estás libre y en qué se va tu tiempo.",
+    "subtitle": "Define tu horario laboral, ten otras zonas horarias junto a la tuya, comparte tu tiempo libre como texto y mira cómo suman tus semanas. Todo se calcula en tu dispositivo.",
+    "points": {
+      "workingHours": {
+        "title": "Horario laboral",
+        "body": "Elige tus días y horas de trabajo en Ajustes › Calendario; las vistas de día y semana sombrean las horas fuera de él."
+      },
+      "timeZones": {
+        "title": "Zonas horarias secundarias",
+        "body": "Muestra hasta dos zonas horarias más como columnas de horas extra en las vistas de día y semana."
+      },
+      "availability": {
+        "title": "Compartir disponibilidad",
+        "body": "Elige un rango, el horario de cada día y los calendarios que cuentan, y copia tus huecos libres como texto para coordinar una reunión."
+      },
+      "stats": {
+        "title": "Estadísticas de tiempo",
+        "body": "Tiempo por calendario, cuándo estás ocupado, tiempo de concentración y los próximos 7 días, por semana, mes o 3 meses."
+      }
+    },
+    "shortcut": "Ambos se abren desde el menú de comandos",
+    "replicas": {
+      "workingHours": {
+        "label": "Horario laboral",
+        "description": "Sombrea las horas fuera de él en las vistas de día y semana.",
+        "days": "Días laborables",
+        "start": "Inicio",
+        "end": "Fin"
+      },
+      "secondaryTimeZones": {
+        "label": "Zonas horarias secundarias",
+        "description": "Muestra hasta dos zonas horarias más como columnas de horas extra en las vistas de día y semana.",
+        "add": "Agregar zona horaria"
+      }
+    },
+    "availability": {
+      "title": "Compartir disponibilidad",
+      "description": "Copia tu tiempo libre como texto para coordinar una reunión.",
+      "range": "Rango",
+      "ranges": {
+        "thisWeek": "Esta semana",
+        "nextWeek": "Próxima semana",
+        "custom": "Fechas personalizadas"
+      },
+      "window": "Horario de cada día",
+      "windowStart": "Desde",
+      "windowEnd": "Hasta",
+      "days": "Días",
+      "minMinutes": "Hueco mínimo",
+      "minutes": "minutos",
+      "calendars": "Calendarios a considerar",
+      "preview": "Vista previa",
+      "empty": "No tienes tiempo libre en este rango.",
+      "timesIn": "Horas en {zone}.",
+      "copy": "Copiar"
+    },
+    "stats": {
+      "title": "Estadísticas de tiempo",
+      "description": "En qué se fue tu tiempo, según tus eventos en este dispositivo.",
+      "periods": {
+        "week": "Semana",
+        "month": "Mes",
+        "quarter": "3 meses"
+      },
+      "total": "Tiempo agendado",
+      "events": "Eventos",
+      "averageDuration": "Duración media",
+      "busiestDay": "Día más ocupado",
+      "occupancy": "Horario laboral ocupado",
+      "focus": "Tiempo de concentración",
+      "focusHint": "Bloques libres de 2 horas o más en tu horario laboral",
+      "change": "{value} frente al periodo anterior",
+      "noChange": "Igual que el periodo anterior",
+      "byCalendar": "Tiempo por calendario",
+      "heatmap": "Cuándo estás ocupado",
+      "venue": {
+        "title": "Dónde",
+        "virtual": "Videollamada",
+        "inPerson": "Presencial",
+        "none": "Sin lugar"
+      },
+      "recurrence": {
+        "title": "Recurrentes o puntuales",
+        "recurring": "Recurrentes",
+        "oneOff": "Puntuales"
+      },
+      "status": {
+        "title": "Estado",
+        "confirmed": "Confirmados",
+        "tentative": "Tentativos"
+      },
+      "top": "Lo que más tiempo tomó",
+      "topItem": {
+        "one": "{count} vez",
+        "other": "{count} veces"
+      },
+      "nextWeek": "Próximos 7 días"
+    }
+  },
   "ai": {
     "eyebrow": "Asistente de IA",
     "title": "Pregúntale a tu calendario.",
@@ -368,6 +470,8 @@
       "exportAll": "Exportar todos los calendarios (.ics)…",
       "setTheme": "Cambiar tema a",
       "setLanguage": "Cambiar idioma a",
+      "shareAvailability": "Compartir disponibilidad…",
+      "timeStats": "Estadísticas de tiempo",
       "searchEvents": "Buscar eventos con «{query}»"
     },
     "groups": {

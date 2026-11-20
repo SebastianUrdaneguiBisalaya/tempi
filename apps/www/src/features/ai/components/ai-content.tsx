@@ -31,7 +31,7 @@ const DEMO_PROVIDER = 'Anthropic';
 export function AiContent({ copy }: { copy: AiCopy }) {
 	const { points, replicas } = copy;
 	return (
-		<ShowcaseSection id={SECTION_IDS.ai} index={3} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
+		<ShowcaseSection id={SECTION_IDS.ai} index={4} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
 			<ShowcaseGrid>
 				<ShowcaseCell title={points.keys.title} body={points.keys.body}>
 					<ProviderKeysReplica copy={replicas.keys} />

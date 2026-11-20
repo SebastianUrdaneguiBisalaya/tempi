@@ -15,6 +15,8 @@ export type CommandMenuCopy = {
 	exportAll: string;
 	setTheme: string;
 	setLanguage: string;
+	shareAvailability: string;
+	timeStats: string;
 	/** With a `{query}` placeholder. */
 	searchEvents: string;
 };
@@ -40,6 +42,8 @@ export function CommandMenuDemo({ copy, actionLabels, typed, pressed }: CommandM
 			heading: copy.groups.actions,
 			items: [
 				...ACTION_ITEMS.map(action => ({ key: action, label: actionLabels[action], keys: SHOWN_SHORTCUTS[action] })),
+				{ key: 'shareAvailability', label: copy.shareAvailability },
+				{ key: 'timeStats', label: copy.timeStats },
 				{ key: 'importIcs', label: `${copy.importIcs} ›` },
 				{ key: 'exportAll', label: copy.exportAll },
 			].filter(matches),

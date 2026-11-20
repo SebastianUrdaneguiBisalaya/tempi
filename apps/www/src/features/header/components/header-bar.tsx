@@ -27,7 +27,7 @@ type HeaderBarProps = {
 	copy: HeaderCopy;
 };
 
-const NAV_ORDER = ['features', 'ai', 'faq', 'download'] as const;
+const NAV_ORDER = ['features', 'planning', 'ai', 'faq', 'download'] as const;
 
 export function HeaderBar({ locale, copy }: HeaderBarProps) {
 	const ref = useRef<HTMLElement>(null);

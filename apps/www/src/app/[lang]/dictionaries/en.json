@@ -8,6 +8,7 @@
     "navLabel": "Main",
     "nav": {
       "features": "Features",
+      "planning": "Planning",
       "ai": "AI",
       "faq": "FAQ",
       "download": "Download"
@@ -47,7 +48,7 @@
       }
     },
     "mockup": {
-      "label": "Tempi's week view: calendars in the sidebar, events in the time grid and the next event in the right panel",
+      "label": "Tempi's week view: calendars in the sidebar, events in the time grid with off hours shaded and a second time zone, and the next event in the right panel",
       "today": "Today",
       "calendarsTitle": "Calendars",
       "newCalendar": "New calendar",
@@ -270,6 +271,107 @@
       }
     }
   },
+  "planning": {
+    "eyebrow": "Planning",
+    "title": "Know when you're free and where your time goes.",
+    "subtitle": "Set your working hours, keep other time zones next to yours, share your free time as text and see how your weeks add up. All of it is worked out on your device.",
+    "points": {
+      "workingHours": {
+        "title": "Working hours",
+        "body": "Pick your working days and hours in Settings › Calendar; the day and week views shade the hours outside them."
+      },
+      "timeZones": {
+        "title": "Secondary time zones",
+        "body": "Show up to two more time zones as extra hour columns in the day and week views."
+      },
+      "availability": {
+        "title": "Share availability",
+        "body": "Choose a range, the hours of each day and the calendars that count, and copy your free slots as text to coordinate a meeting."
+      },
+      "stats": {
+        "title": "Time stats",
+        "body": "Time per calendar, when you are busy, focus time and the next 7 days, for a week, a month or 3 months."
+      }
+    },
+    "shortcut": "Both open from the command menu",
+    "replicas": {
+      "workingHours": {
+        "label": "Working hours",
+        "description": "Shade the hours outside them in the day and week views.",
+        "days": "Working days",
+        "start": "Start",
+        "end": "End"
+      },
+      "secondaryTimeZones": {
+        "label": "Secondary time zones",
+        "description": "Show up to two more time zones as extra hour columns in the day and week views.",
+        "add": "Add time zone"
+      }
+    },
+    "availability": {
+      "title": "Share availability",
+      "description": "Copy your free time as text to coordinate a meeting.",
+      "range": "Range",
+      "ranges": {
+        "thisWeek": "This week",
+        "nextWeek": "Next week",
+        "custom": "Custom dates"
+      },
+      "window": "Hours each day",
+      "windowStart": "From",
+      "windowEnd": "Until",
+      "days": "Days",
+      "minMinutes": "Shortest slot",
+      "minutes": "minutes",
+      "calendars": "Calendars to consider",
+      "preview": "Preview",
+      "empty": "No free time in this range.",
+      "timesIn": "Times in {zone}.",
+      "copy": "Copy"
+    },
+    "stats": {
+      "title": "Time stats",
+      "description": "Where your time went, from your events on this device.",
+      "periods": {
+        "week": "Week",
+        "month": "Month",
+        "quarter": "3 months"
+      },
+      "total": "Time booked",
+      "events": "Events",
+      "averageDuration": "Average length",
+      "busiestDay": "Busiest day",
+      "occupancy": "Working hours booked",
+      "focus": "Focus time",
+      "focusHint": "Free blocks of 2 hours or more in working hours",
+      "change": "{value} vs previous period",
+      "noChange": "Same as previous period",
+      "byCalendar": "Time per calendar",
+      "heatmap": "When you are busy",
+      "venue": {
+        "title": "Where",
+        "virtual": "Video call",
+        "inPerson": "In person",
+        "none": "No place"
+      },
+      "recurrence": {
+        "title": "Recurring or one-off",
+        "recurring": "Recurring",
+        "oneOff": "One-off"
+      },
+      "status": {
+        "title": "Status",
+        "confirmed": "Confirmed",
+        "tentative": "Tentative"
+      },
+      "top": "What took the most time",
+      "topItem": {
+        "one": "{count} time",
+        "other": "{count} times"
+      },
+      "nextWeek": "Next 7 days"
+    }
+  },
   "ai": {
     "eyebrow": "AI assistant",
     "title": "Ask your calendar.",
@@ -368,6 +470,8 @@
       "exportAll": "Export all calendars (.ics)…",
       "setTheme": "Set theme to",
       "setLanguage": "Set language to",
+      "shareAvailability": "Share availability…",
+      "timeStats": "Time stats",
       "searchEvents": "Search events for “{query}”"
     },
     "groups": {
