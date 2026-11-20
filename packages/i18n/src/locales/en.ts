@@ -213,6 +213,12 @@ export const en = {
 				videoUrl: 'Video call',
 			},
 			join: 'Join',
+			joinOn: 'Join on {{provider}}',
+			meetingProviders: {
+				meet: 'Google Meet',
+				teams: 'Microsoft Teams',
+				zoom: 'Zoom',
+			},
 			menu: {
 				calendar: 'Calendar',
 				label: 'Event actions',

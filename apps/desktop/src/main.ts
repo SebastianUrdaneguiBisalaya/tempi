@@ -342,6 +342,8 @@ function startReminders(deps: CoreDeps, transaction: TransactionQueue) {
 		},
 		enabled: () => preferences.notificationsEnabled,
 		icon: process.platform === 'darwin' ? undefined : ICON_PNG,
+		// Only macOS shows notification buttons.
+		join: process.platform === 'darwin' ? { label: locale => resources[locale].common.events.join, open: url => void openExternalUrl(url, shell.openExternal) } : undefined,
 		notifications: electronNotifications,
 		onClick: ({ occurrence }) => showInMainWindow({ key: occurrence.key, startAt: occurrence.startAt }),
 	});

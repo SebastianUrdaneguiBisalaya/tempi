@@ -66,6 +66,8 @@ export {
 } from './domain/google-sync';
 export type { ExportEventsInput, ImportEventsInput, ImportedEvent, ImportSummary } from './domain/ical-transfer';
 export { exportEventsInputSchema, importEventsInputSchema, importedEventSchema } from './domain/ical-transfer';
+export type { MeetingLink, MeetingProvider } from './domain/meeting-link';
+export { MEETING_PROVIDERS, meetingLink } from './domain/meeting-link';
 export type { OnboardingInput } from './domain/onboarding';
 export { onboardingInputSchema } from './domain/onboarding';
 export type { OsPermission, OsPermissionState, OsPermissionStatus, OsPermissionsStatus } from './domain/os-permission';

@@ -1,16 +1,16 @@
 'use client';
 
 import { DEFAULT_SETTINGS, type EventOccurrence, resolveLanguage } from '@tempi/core';
-import { MapPinIcon, VideoIcon } from 'lucide-react';
+import { MapPinIcon } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import { buttonVariants } from '@/components/ui/button';
 import { useCalendarNavigation } from '@/features/calendar/components/calendar-navigation-provider';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { useSettings } from '@/features/settings/hooks/use-settings';
 import { formatDate, formatRelativeMinutes, formatTimeRange } from '@/lib/date-format';
 import { useShowEvent } from '../hooks/use-show-event';
 import { useUpcomingEvents } from '../hooks/use-upcoming-events';
+import { JoinMeetingButton } from './join-meeting-button';
 
 const MINUTE = 60_000;
 
@@ -76,13 +76,7 @@ function UpcomingCard({ event, now }: { event: EventOccurrence; now: number }) {
 					</span>
 				)}
 			</button>
-			{/* Core has validated the link. The desktop app opens new-window links with shell.openExternal. */}
-			{event.videoUrl !== null && (
-				<a className={buttonVariants({ size: 'sm' })} href={event.videoUrl} rel='noreferrer' target='_blank'>
-					<VideoIcon data-icon='inline-start' />
-					{t('events.join')}
-				</a>
-			)}
+			<JoinMeetingButton event={event} />
 		</div>
 	);
 }

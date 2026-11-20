@@ -8,6 +8,7 @@ import { type ComponentProps, type ReactElement, type ReactNode, useRef, useStat
 import { useTranslation } from 'react-i18next';
 import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from '@/components/ui/popover';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
+import { JoinMeetingButton } from './join-meeting-button';
 
 type EventPreviewProps = Omit<ComponentProps<typeof PopoverTrigger>, 'children' | 'render'> & {
 	/** The event's own element (a button); it becomes the preview's trigger and keeps its props. */
@@ -83,6 +84,7 @@ function EventPreviewDetails({ event, occurrence }: { event: CalendarEvent<Event
 					</PreviewRow>
 				) : null}
 			</dl>
+			<JoinMeetingButton className='self-start' event={occurrence} />
 		</>
 	);
 }

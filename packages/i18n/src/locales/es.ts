@@ -215,6 +215,12 @@ export const es = {
 				videoUrl: 'Videollamada',
 			},
 			join: 'Unirse',
+			joinOn: 'Unirse en {{provider}}',
+			meetingProviders: {
+				meet: 'Google Meet',
+				teams: 'Microsoft Teams',
+				zoom: 'Zoom',
+			},
 			menu: {
 				calendar: 'Calendario',
 				label: 'Acciones del evento',
