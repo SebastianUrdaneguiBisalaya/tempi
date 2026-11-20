@@ -89,7 +89,11 @@
         "focus": "Focus time",
         "call": "Family call",
         "codeReview": "Code review",
-        "retro": "Sprint retro"
+        "retro": "Sprint retro",
+        "walkDog": "Walk the dog",
+        "familyVisit": "Visit the family",
+        "weeklyPlanning": "Weekly planning",
+        "gaming": "Video games"
       }
     }
   },

@@ -89,7 +89,11 @@
         "focus": "Tiempo de enfoque",
         "call": "Llamada familiar",
         "codeReview": "Revisión de código",
-        "retro": "Retrospectiva"
+        "retro": "Retrospectiva",
+        "walkDog": "Pasear al perro",
+        "familyVisit": "Visitar a la familia",
+        "weeklyPlanning": "Planificación semanal",
+        "gaming": "Videojuegos"
       }
     }
   },
