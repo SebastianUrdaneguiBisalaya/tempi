@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { singletonTimestampsSchema } from './timestamps';
+import { timeZoneSchema } from './values';
 
 export const THEMES = ['system', 'light', 'dark'] as const;
 export const LANGUAGES = ['en', 'es'] as const;
@@ -13,6 +14,9 @@ export type Language = (typeof LANGUAGES)[number];
 export type WeekStart = (typeof WEEK_STARTS)[number];
 export type TimeFormat = (typeof TIME_FORMATS)[number];
 export type UiSound = (typeof UI_SOUNDS)[number];
+
+/** How many extra hour columns the day and week views can show. */
+export const MAX_SECONDARY_TIME_ZONES = 2;
 
 export const settingsValuesSchema = z.object({
 	/** The all-day lane above the week/day grid shows at most two rows. */
@@ -30,6 +34,12 @@ export const settingsValuesSchema = z.object({
 	onboardingCompleted: z.boolean(),
 	/** Starts Tempi hidden when the user logs in to the computer, so reminders and the menu bar keep working after a restart. */
 	openAtLoginEnabled: z.boolean(),
+	/** IANA zones shown as extra hour columns in the day and week views, in order. */
+	secondaryTimeZones: z
+		.array(timeZoneSchema)
+		.max(MAX_SECONDARY_TIME_ZONES, 'settings.secondaryTimeZones')
+		.refine(zones => new Set(zones).size === zones.length, 'settings.secondaryTimeZones')
+		.readonly(),
 	showWeekends: z.boolean(),
 	showWeekNumbers: z.boolean(),
 	/** The sound every button plays while `soundsEnabled` is on. */
@@ -63,6 +73,7 @@ export const DEFAULT_SETTINGS = {
 	notificationsEnabled: true,
 	onboardingCompleted: false,
 	openAtLoginEnabled: false,
+	secondaryTimeZones: [],
 	showWeekends: true,
 	showWeekNumbers: false,
 	sound: 'tick',

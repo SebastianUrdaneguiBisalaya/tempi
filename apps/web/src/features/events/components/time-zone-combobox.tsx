@@ -10,21 +10,29 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { timeZoneLabel } from '@/lib/countries';
 
 type TimeZoneComboboxProps = {
+	/** Zones left out of the list, e.g. ones already chosen. */
+	exclude?: readonly string[];
 	id: string;
 	invalid: boolean;
 	onChange: (timeZone: string) => void;
 	ref: Ref<HTMLButtonElement>;
 	required?: boolean;
-	value: string;
+	/** The chosen zone; null shows `placeholder` instead. */
+	value: string | null;
+	placeholder?: string;
 };
 
 /** Searchable picker over every IANA time zone the platform knows, by name and offset. */
-export function TimeZoneCombobox({ id, invalid, onChange, ref, required = false, value }: TimeZoneComboboxProps) {
+export function TimeZoneCombobox({ exclude = [], id, invalid, onChange, placeholder, ref, required = false, value }: TimeZoneComboboxProps) {
 	const { i18n, t } = useTranslation();
 	const [open, setOpen] = useState(false);
 	const language = resolveLanguage([i18n.language]);
 	// Labels are only needed while the list is open; building ~400 of them on every form render would be waste.
-	const options = open ? Intl.supportedValuesOf('timeZone').map(zone => ({ label: timeZoneLabel(zone, language), zone })) : [];
+	const options = open
+		? Intl.supportedValuesOf('timeZone')
+				.filter(zone => !exclude.includes(zone))
+				.map(zone => ({ label: timeZoneLabel(zone, language), zone }))
+		: [];
 
 	return (
 		<Popover onOpenChange={setOpen} open={open}>
@@ -40,7 +48,7 @@ export function TimeZoneCombobox({ id, invalid, onChange, ref, required = false,
 						role='combobox'
 						variant='outline'
 					>
-						<span className='truncate'>{timeZoneLabel(value, language)}</span>
+						<span className={value === null ? 'truncate text-muted-foreground' : 'truncate'}>{value === null ? placeholder : timeZoneLabel(value, language)}</span>
 						<ChevronsUpDownIcon aria-hidden='true' className='text-muted-foreground' />
 					</Button>
 				}

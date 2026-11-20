@@ -74,3 +74,22 @@ describe('notification and microphone preferences', () => {
 		expect(settingsValuesSchema.safeParse(withoutMicrophone).success).toBe(false);
 	});
 });
+
+describe('secondary time zones', () => {
+	test('are empty by default and accept up to two distinct IANA zones', () => {
+		expect(DEFAULT_SETTINGS.secondaryTimeZones).toEqual([]);
+		expect(settingsPatchSchema.parse({ secondaryTimeZones: ['Asia/Kolkata', 'Europe/Madrid'] })).toEqual({
+			secondaryTimeZones: ['Asia/Kolkata', 'Europe/Madrid'],
+		});
+	});
+
+	test.each([
+		[['Asia/Kolkata', 'Europe/Madrid', 'America/Lima'], 'settings.secondaryTimeZones'],
+		[['Asia/Kolkata', 'Asia/Kolkata'], 'settings.secondaryTimeZones'],
+		[['Mars/Olympus'], 'validation.timeZone'],
+	])('rejects %p', (zones, message) => {
+		const parsed = settingsPatchSchema.safeParse({ secondaryTimeZones: zones });
+		expect(parsed.success).toBe(false);
+		expect(parsed.error?.issues.map(issue => issue.message)).toContain(message);
+	});
+});

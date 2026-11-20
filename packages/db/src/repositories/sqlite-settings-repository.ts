@@ -1,7 +1,7 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite';
 import { type Settings, type SettingsRepository, settingsSchema } from '@tempi/core';
 import { z } from 'zod';
-import { booleanColumn, type DomainFields, defer, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
+import { booleanColumn, type DomainFields, defer, jsonColumn, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
 
 const settingsRowSchema = z
 	.object({
@@ -15,6 +15,7 @@ const settingsRowSchema = z
 		notifications_enabled: booleanColumn,
 		onboarding_completed: booleanColumn,
 		open_at_login_enabled: booleanColumn,
+		secondary_time_zones: jsonColumn,
 		show_week_numbers: booleanColumn,
 		show_weekends: booleanColumn,
 		sound: z.string(),
@@ -37,6 +38,7 @@ const settingsRowSchema = z
 			notificationsEnabled: row.notifications_enabled,
 			onboardingCompleted: row.onboarding_completed,
 			openAtLoginEnabled: row.open_at_login_enabled,
+			secondaryTimeZones: row.secondary_time_zones,
 			showWeekends: row.show_weekends,
 			showWeekNumbers: row.show_week_numbers,
 			sound: row.sound,
@@ -57,21 +59,21 @@ export class SqliteSettingsRepository implements SettingsRepository {
 
 	constructor(db: DatabaseSync) {
 		this.getStatement = db.prepare(
-			`SELECT all_day_collapsed, default_event_duration, icon_badge_enabled, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled, show_weekends,
-				show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, week_start, created_at, updated_at
+			`SELECT all_day_collapsed, default_event_duration, icon_badge_enabled, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled, secondary_time_zones,
+				show_weekends, show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, week_start, created_at, updated_at
 			FROM settings WHERE id = 1`
 		);
 		this.saveStatement = db.prepare(
 			`INSERT INTO settings (id, all_day_collapsed, default_event_duration, icon_badge_enabled, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled,
-				show_weekends, show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, week_start, created_at, updated_at)
+				secondary_time_zones, show_weekends, show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, week_start, created_at, updated_at)
 			VALUES (1, :all_day_collapsed, :default_event_duration, :icon_badge_enabled, :language, :menu_bar_enabled, :microphone_enabled, :notifications_enabled, :onboarding_completed, :open_at_login_enabled,
-				:show_weekends, :show_week_numbers, :sound, :sounds_enabled, :theme, :time_format, :tour_completed, :week_start, :created_at, :updated_at)
+				:secondary_time_zones, :show_weekends, :show_week_numbers, :sound, :sounds_enabled, :theme, :time_format, :tour_completed, :week_start, :created_at, :updated_at)
 			ON CONFLICT (id) DO UPDATE SET
 				all_day_collapsed = excluded.all_day_collapsed, default_event_duration = excluded.default_event_duration,
 				icon_badge_enabled = excluded.icon_badge_enabled, language = excluded.language,
 				menu_bar_enabled = excluded.menu_bar_enabled, microphone_enabled = excluded.microphone_enabled,
 				notifications_enabled = excluded.notifications_enabled, onboarding_completed = excluded.onboarding_completed,
-				open_at_login_enabled = excluded.open_at_login_enabled,
+				open_at_login_enabled = excluded.open_at_login_enabled, secondary_time_zones = excluded.secondary_time_zones,
 				show_weekends = excluded.show_weekends, show_week_numbers = excluded.show_week_numbers,
 				sound = excluded.sound, sounds_enabled = excluded.sounds_enabled,
 				theme = excluded.theme, time_format = excluded.time_format, tour_completed = excluded.tour_completed, week_start = excluded.week_start,
@@ -99,6 +101,7 @@ export class SqliteSettingsRepository implements SettingsRepository {
 				notifications_enabled: toBooleanColumn(settings.notificationsEnabled),
 				onboarding_completed: toBooleanColumn(settings.onboardingCompleted),
 				open_at_login_enabled: toBooleanColumn(settings.openAtLoginEnabled),
+				secondary_time_zones: JSON.stringify(settings.secondaryTimeZones),
 				show_week_numbers: toBooleanColumn(settings.showWeekNumbers),
 				show_weekends: toBooleanColumn(settings.showWeekends),
 				sound: settings.sound,

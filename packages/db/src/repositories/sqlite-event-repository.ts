@@ -1,7 +1,7 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite';
 import { type CalendarEvent, calendarEventSchema, type DateRange, type EventRepository } from '@tempi/core';
 import { z } from 'zod';
-import { booleanColumn, type DomainFields, defer, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
+import { booleanColumn, type DomainFields, defer, jsonColumn, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
 
 export const eventRowSchema = z
 	.object({
@@ -12,15 +12,7 @@ export const eventRowSchema = z
 		description: z.string().nullable(),
 		end_at: z.string(),
 		ical_uid: z.string().nullable(),
-		// JSON text; the domain schema below checks what it holds.
-		ex_dates: z.string().transform((text, ctx): unknown => {
-			try {
-				return JSON.parse(text);
-			} catch {
-				ctx.addIssue({ code: 'custom', message: 'ex_dates is not JSON' });
-				return z.NEVER;
-			}
-		}),
+		ex_dates: jsonColumn,
 		id: z.string(),
 		location: z.string().nullable(),
 		original_start_at: z.string().nullable(),

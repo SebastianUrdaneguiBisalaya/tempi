@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { useSaveSettings } from '@/features/settings/hooks/use-settings';
 import { showFieldErrors } from './field-errors';
+import { SecondaryTimeZonesField } from './secondary-time-zones-field';
 import { SettingsFooter } from './settings-footer';
 
 const calendarSchema = settingsValuesSchema.pick({
@@ -21,6 +22,7 @@ const calendarSchema = settingsValuesSchema.pick({
 	iconBadgeEnabled: true,
 	menuBarEnabled: true,
 	openAtLoginEnabled: true,
+	secondaryTimeZones: true,
 	showWeekends: true,
 	showWeekNumbers: true,
 	timeFormat: true,
@@ -33,6 +35,7 @@ const FIELDS = [
 	'iconBadgeEnabled',
 	'menuBarEnabled',
 	'openAtLoginEnabled',
+	'secondaryTimeZones',
 	'showWeekends',
 	'showWeekNumbers',
 	'timeFormat',
@@ -45,6 +48,7 @@ const valuesOf = (settings: Settings): CalendarValues => ({
 	iconBadgeEnabled: settings.iconBadgeEnabled,
 	menuBarEnabled: settings.menuBarEnabled,
 	openAtLoginEnabled: settings.openAtLoginEnabled,
+	secondaryTimeZones: settings.secondaryTimeZones,
 	showWeekends: settings.showWeekends,
 	showWeekNumbers: settings.showWeekNumbers,
 	timeFormat: settings.timeFormat,
@@ -59,7 +63,7 @@ const SWITCHES = [
 	{ name: 'iconBadgeEnabled', withDescription: true },
 ] as const;
 
-/** How the calendar shows weeks and times, the default event length, the menu bar calendar, opening at login and the icon badge. */
+/** How the calendar shows weeks, times and extra time zones, the default event length, the menu bar calendar, opening at login and the icon badge. */
 export function CalendarSettings({ settings }: { settings: Settings }) {
 	const { t } = useTranslation();
 	const id = useId();
@@ -125,6 +129,20 @@ export function CalendarSettings({ settings }: { settings: Settings }) {
 							</RadioGroup>
 							<FormFieldError error={fieldState.error} />
 						</FieldSet>
+					)}
+				/>
+				<Controller
+					control={form.control}
+					name='secondaryTimeZones'
+					render={({ field, fieldState }) => (
+						<Field data-invalid={fieldState.invalid || undefined}>
+							<FieldContent>
+								<FieldLabel htmlFor={`${id}-secondary-time-zones`}>{t('settings.calendar.secondaryTimeZones')}</FieldLabel>
+								<FieldDescription>{t('settings.calendar.secondaryTimeZonesDescription')}</FieldDescription>
+							</FieldContent>
+							<SecondaryTimeZonesField id={`${id}-secondary-time-zones`} invalid={fieldState.invalid} onChange={field.onChange} ref={field.ref} value={field.value} />
+							<FormFieldError error={fieldState.error} />
+						</Field>
 					)}
 				/>
 				<Controller

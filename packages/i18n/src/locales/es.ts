@@ -406,6 +406,10 @@ export const es = {
 				minutes: 'minutos',
 				openAtLoginEnabled: 'Abrir Tempi al iniciar sesión',
 				openAtLoginEnabledDescription: 'Inicia Tempi en segundo plano al iniciar sesión, para que los recordatorios lleguen después de reiniciar.',
+				secondaryTimeZones: 'Zonas horarias secundarias',
+				secondaryTimeZonesAdd: 'Agregar zona horaria',
+				secondaryTimeZonesDescription: 'Muestra hasta dos zonas horarias más como columnas de horas extra en las vistas de día y semana.',
+				secondaryTimeZonesRemove: 'Quitar {{zone}}',
 				showWeekends: 'Mostrar fines de semana',
 				showWeekNumbers: 'Mostrar números de semana',
 				timeFormat: 'Formato de hora',
@@ -776,6 +780,9 @@ export const es = {
 		},
 		range: {
 			endBeforeStart: 'El fin del rango debe ser posterior a su inicio.',
+		},
+		settings: {
+			secondaryTimeZones: 'Elige hasta dos zonas horarias distintas.',
 		},
 		system: {
 			unexpected: 'Algo salió mal. Vuelve a intentarlo.',

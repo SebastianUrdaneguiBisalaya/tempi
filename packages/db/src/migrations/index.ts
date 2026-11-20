@@ -12,6 +12,7 @@ import tourCompleted from './0008_tour_completed.sql' with { type: 'text' };
 import uiSounds from './0009_ui_sounds.sql' with { type: 'text' };
 import openAtLogin from './0010_open_at_login.sql' with { type: 'text' };
 import iconBadge from './0011_icon_badge.sql' with { type: 'text' };
+import secondaryTimeZones from './0012_secondary_time_zones.sql' with { type: 'text' };
 
 export const MIGRATION_FILES: Record<string, string> = {
 	'0001_init.sql': init,
@@ -25,4 +26,5 @@ export const MIGRATION_FILES: Record<string, string> = {
 	'0009_ui_sounds.sql': uiSounds,
 	'0010_open_at_login.sql': openAtLogin,
 	'0011_icon_badge.sql': iconBadge,
+	'0012_secondary_time_zones.sql': secondaryTimeZones,
 };
