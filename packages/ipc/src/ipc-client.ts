@@ -43,6 +43,7 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 		transcribe: input => call(CHANNELS.ai.transcribe, () => api.ai.transcribe(input)),
 	},
 	app: {
+		copyText: text => call(CHANNELS.app.copyText, () => api.app.copyText(text)),
 		// Pushed payloads are as untrusted as answers: a malformed one is logged and dropped.
 		onShowEvent: listener =>
 			api.app.onShowEvent(payload => {

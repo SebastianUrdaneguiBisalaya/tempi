@@ -512,6 +512,17 @@ describe('eventsChanged listener', () => {
 	});
 });
 
+describe('copyText listener', () => {
+	test('copies text from the trusted origin only', async () => {
+		const copied: string[] = [];
+		setup(undefined, { copyText: text => copied.push(text) });
+		expect(await invoke(CHANNELS.app.copyText, 'Tue: 10:00–12:00')).toEqual({ ok: true, value: null });
+		expect(await invoke(CHANNELS.app.copyText, '')).toMatchObject({ ok: false });
+		expect(await invoke(CHANNELS.app.copyText, 'stolen', 'https://evil.example/')).toMatchObject({ ok: false });
+		expect(copied).toEqual(['Tue: 10:00–12:00']);
+	});
+});
+
 describe('showEvent listener', () => {
 	test('receives the validated occurrence', async () => {
 		const shown: unknown[] = [];

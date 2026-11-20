@@ -26,6 +26,7 @@ type Api<Raw extends boolean> = {
 		transcribe: Call<'ai:transcribe', Raw>;
 	};
 	app: {
+		copyText: Call<'app:copyText', Raw>;
 		showEvent: Call<'app:showEvent', Raw>;
 		/** Calls `listener` each time the main process asks this window to show an occurrence; returns the unsubscribe function. */
 		onShowEvent: (listener: (ref: Raw extends true ? unknown : OccurrenceRef) => void) => () => void;

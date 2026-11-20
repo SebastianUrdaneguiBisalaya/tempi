@@ -46,6 +46,18 @@ export const formatTimeRange = (start: Date | string, end: Date | string, { lang
 export const formatWeekday = (instant: Date | string, { language, timeZone }: DateFormatOptions, style: 'long' | 'narrow' | 'short' = 'short'): string =>
 	formatter(language, { timeZone, weekday: style }).format(toDate(instant));
 
+/** Weekday, month and day, e.g. "Tue, Nov 25" / "mar, 25 nov". */
+export const formatShortDate = (instant: Date | string, { language, timeZone }: DateFormatOptions): string =>
+	formatter(language, { day: 'numeric', month: 'short', timeZone, weekday: 'short' }).format(toDate(instant));
+
+/** The zone's offset name at `instant`, e.g. "GMT-5". */
+export const formatTimeZoneOffset = (instant: Date | string, { language, timeZone }: DateFormatOptions): string =>
+	formatter(language, { timeZone, timeZoneName: 'shortOffset' })
+		.formatToParts(toDate(instant))
+		.find(part => part.type === 'timeZoneName')?.value ??
+	timeZone ??
+	'';
+
 /** Month and day, e.g. "March 5" / "5 de marzo". */
 export const formatMonthDay = (instant: Date | string, { language, timeZone }: DateFormatOptions): string => formatter(language, { day: 'numeric', month: 'long', timeZone }).format(toDate(instant));
 

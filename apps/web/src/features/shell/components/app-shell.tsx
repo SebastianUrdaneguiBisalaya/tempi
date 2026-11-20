@@ -6,6 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/u
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AssistantDrawer, AssistantEntry } from '@/features/assistant/components/assistant';
 import { AssistantProvider } from '@/features/assistant/components/assistant-provider';
+import { ShareAvailabilityProvider } from '@/features/availability/components/share-availability-provider';
 import { CalendarMain } from '@/features/calendar/components/calendar-main';
 import { CalendarNavigationProvider } from '@/features/calendar/components/calendar-navigation-provider';
 import { CalendarShortcuts } from '@/features/calendar/components/calendar-shortcuts';
@@ -17,7 +18,6 @@ import { EventPanelProvider, useEventPanel } from '@/features/events/components/
 import { SearchablePanel } from '@/features/events/components/event-search';
 import { EventShortcuts } from '@/features/events/components/event-shortcuts';
 import { ShowEventRequests } from '@/features/events/components/show-event-requests';
-
 import { UpcomingEvents } from '@/features/events/components/upcoming-events';
 import { GoogleSyncWatcher } from '@/features/settings/components/google-sync-watcher';
 import { SettingsDialogProvider } from '@/features/settings/components/settings-dialog-provider';
@@ -43,16 +43,18 @@ export function AppShell() {
 				<TourProvider>
 					<SettingsDialogProvider>
 						<GoToDateProvider>
-							<AssistantProvider>
-								<CalendarShortcuts />
-								<EventShortcuts />
-								<ShowEventRequests />
-								<GoogleSyncWatcher />
-								<UpdateWatcher />
-								<ShellLayout />
-								<ShortcutsDialog />
-								<CommandMenu />
-							</AssistantProvider>
+							<ShareAvailabilityProvider>
+								<AssistantProvider>
+									<CalendarShortcuts />
+									<EventShortcuts />
+									<ShowEventRequests />
+									<GoogleSyncWatcher />
+									<UpdateWatcher />
+									<ShellLayout />
+									<ShortcutsDialog />
+									<CommandMenu />
+								</AssistantProvider>
+							</ShareAvailabilityProvider>
 						</GoToDateProvider>
 					</SettingsDialogProvider>
 				</TourProvider>

@@ -71,6 +71,7 @@ const desktop: DesktopApi = {
 		transcribe: input => ipcRenderer.invoke(CHANNELS.ai.transcribe, input),
 	},
 	app: {
+		copyText: text => ipcRenderer.invoke(CHANNELS.app.copyText, text),
 		onShowEvent: listener => {
 			showEventListeners.add(listener);
 			if (pendingShowEvent !== null) {

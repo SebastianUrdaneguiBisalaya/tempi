@@ -35,6 +35,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 			transcribe: answer,
 		},
 		app: {
+			copyText: answer,
 			onShowEvent: listener => {
 				showListeners.push(listener);
 				return () => showListeners.splice(showListeners.indexOf(listener), 1);

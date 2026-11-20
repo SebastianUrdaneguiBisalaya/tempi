@@ -74,6 +74,7 @@ describe('payloadSchemas', () => {
 		['profile:update', { ...profile, avatar: { bytes: new Uint8Array([1]), type: 'image/png' } }],
 		['availability:freeSlots', { from: '2026-11-16', to: '2026-11-22' }],
 		['availability:freeSlots', { calendarIds: ['c1'], days: [1, 3], from: '2026-11-16', minMinutes: 60, to: '2026-11-16', windowEnd: '12:00', windowStart: '08:00' }],
+		['app:copyText', 'Tue, Nov 25: 10:00–12:00'],
 		['settings:get', undefined],
 		['settings:previewTheme', 'system'],
 		['settings:previewTheme', null],
@@ -129,6 +130,8 @@ describe('payloadSchemas', () => {
 		['settings:save', { iconBadgeEnabled: 'off' }, ['iconBadgeEnabled']],
 		['settings:save', { secondaryTimeZones: ['UTC', 'Asia/Kolkata', 'Europe/Madrid'] }, ['secondaryTimeZones']],
 		['settings:save', { workingHours: { days: [], enabled: true, end: '08:00', start: '09:00' } }, ['workingHours.days', 'workingHours.end']],
+		['app:copyText', '', ['']],
+		['availability:freeSlots', { calendarIds: [], from: '2026-11-16', to: '2026-11-16' }, ['calendarIds']],
 		['availability:freeSlots', { from: '2026-11-16', minMinutes: 1000, to: '2026-11-16', windowEnd: '08:00', windowStart: '09:00' }, ['minMinutes', 'windowEnd']],
 	] as const)('%s rejects an invalid payload, reporting every issue at form field paths', (channel, payload, fields) => {
 		const result = parseWith(payloadSchemas[channel], payload);
