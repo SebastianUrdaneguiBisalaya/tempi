@@ -49,3 +49,14 @@ export const utcInstantSchema = z.string().transform((value, ctx) => {
 });
 
 export const timeZoneSchema = z.string().refine(isValidTimeZone, 'validation.timeZone');
+
+/** A calendar day, `YYYY-MM-DD`, that exists (no February 30). */
+export const plainDateSchema = z.string().refine(value => {
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+	try {
+		Temporal.PlainDate.from(value, { overflow: 'reject' });
+		return true;
+	} catch {
+		return false;
+	}
+}, 'validation.invalid_format');

@@ -41,6 +41,7 @@ export const ERROR_KEYS = {
 	'recurrence.untilBeforeStart': 'A recurrence must end on or after its first day',
 	'profile.country': 'Country must be an ISO 3166-1 alpha-2 code',
 	'range.endBeforeStart': 'Range end must be after its start',
+	'range.tooLong': 'The range covers too many days; see params.maximum',
 	'settings.secondaryTimeZones': 'Secondary time zones must be distinct, at most two',
 	'settings.workingDays': 'Working hours need at least one weekday, each once',
 	'settings.workingHoursEnd': 'Working hours must end after they start',

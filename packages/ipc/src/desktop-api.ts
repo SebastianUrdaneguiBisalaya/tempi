@@ -85,6 +85,9 @@ type Api<Raw extends boolean> = {
 		previewTheme: Call<'settings:previewTheme', Raw>;
 		save: Call<'settings:save', Raw>;
 	};
+	stats: {
+		time: Call<'stats:time', Raw>;
+	};
 	updates: {
 		check: CallWithoutInput<'updates:check', Raw>;
 		install: CallWithoutInput<'updates:install', Raw>;

@@ -111,6 +111,9 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 		previewTheme: theme => call(CHANNELS.settings.previewTheme, () => api.settings.previewTheme(theme)),
 		save: patch => call(CHANNELS.settings.save, () => api.settings.save(patch)),
 	},
+	stats: {
+		time: query => call(CHANNELS.stats.time, () => api.stats.time(query)),
+	},
 	updates: {
 		check: () => call(CHANNELS.updates.check, () => api.updates.check()),
 		install: () => call(CHANNELS.updates.install, () => api.updates.install()),

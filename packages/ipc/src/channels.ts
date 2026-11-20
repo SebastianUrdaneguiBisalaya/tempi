@@ -101,6 +101,10 @@ export const CHANNELS = {
 		previewTheme: 'settings:previewTheme',
 		save: 'settings:save',
 	},
+	stats: {
+		/** Where the time of a period went, over the visible calendars. Reads only. */
+		time: 'stats:time',
+	},
 	updates: {
 		/** Looks for a newer release now and answers with where the update stands. */
 		check: 'updates:check',
