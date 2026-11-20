@@ -156,6 +156,10 @@
         "title": "Day, week and month views",
         "body": "Switch views in a keystroke, with a mini calendar and “go to date” always at hand."
       },
+      "calendars": {
+        "title": "Calendars with colors",
+        "body": "Keep work, personal and side projects apart, each in its own color. Hide one with a click and choose the default."
+      },
       "googleSync": {
         "title": "Google Calendar sync",
         "body": "Optional two-way sync, including read-only calendars such as holidays.",
@@ -168,7 +172,15 @@
       },
       "timeZones": {
         "title": "Time zones and all-day events",
-        "body": "Every event keeps its own time zone, plus all-day and multi-day events."
+        "body": "Every event keeps its own time zone, and all-day events get their own lane."
+      },
+      "meetings": {
+        "title": "Places and video calls",
+        "body": "Events keep where they happen and their call link; Join opens Meet, Zoom or Teams right from the preview."
+      },
+      "quickAdd": {
+        "title": "Quick add in plain words",
+        "body": "Type “Lunch with Ana tomorrow 1pm” in the command menu and the event is ready to create. With an AI key, AI can read it for you."
       },
       "importExport": {
         "title": "Import, export and backups",
@@ -189,6 +201,72 @@
       "updates": {
         "title": "Automatic updates",
         "body": "New versions install in the background on Windows and Linux; macOS tells you when one is out."
+      }
+    },
+    "replicas": {
+      "recurrence": {
+        "repeat": "Repeat",
+        "custom": "Custom…",
+        "every": "Repeat every",
+        "unit": "weeks",
+        "on": "Repeat on",
+        "notificationApp": "Tempi"
+      },
+      "timeZones": {
+        "allDay": "All day",
+        "timeZone": "Time zone",
+        "search": "Search time zones…",
+        "query": "tokyo"
+      },
+      "importExport": {
+        "importIcs": "Import .ics into…",
+        "exportAll": "Export all calendars (.ics)…",
+        "file": "team-offsite.ics",
+        "done": "Import done: 12 new, 0 updated, 0 skipped."
+      },
+      "appearance": {
+        "theme": "Theme",
+        "language": "Language",
+        "themes": {
+          "light": "Light",
+          "dark": "Dark",
+          "system": "System"
+        }
+      },
+      "updates": {
+        "title": "Tempi",
+        "version": "Version {version}",
+        "updatesTitle": "Updates",
+        "status": {
+          "checking": "Checking for updates…",
+          "downloading": "Downloading version {version}…",
+          "ready": "Version {version} is ready. Restart Tempi to install it."
+        },
+        "restart": "Restart to update",
+        "check": "Check for updates"
+      },
+      "shortcutsTitle": "Keyboard shortcuts",
+      "calendars": {
+        "name": "Name",
+        "color": "Color",
+        "nameValue": "Gym",
+        "cancel": "Cancel",
+        "create": "Create"
+      },
+      "meetings": {
+        "calendar": "Calendar",
+        "location": "Location",
+        "locationValue": "Room 4B",
+        "join": "Join"
+      },
+      "quickAdd": {
+        "placeholder": "Type a command or search…",
+        "group": "New event",
+        "create": "Create “{title}”",
+        "reading": "Reading with AI…",
+        "typed": "Lunch with Ana tomorrow 1pm",
+        "title": "Lunch with Ana",
+        "hour": 13
       }
     }
   },

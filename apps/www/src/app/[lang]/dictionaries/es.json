@@ -156,6 +156,10 @@
         "title": "Vistas de día, semana y mes",
         "body": "Cambia de vista con una tecla, con el mini calendario y “ir a fecha” siempre a mano."
       },
+      "calendars": {
+        "title": "Calendarios con colores",
+        "body": "Separa el trabajo, lo personal y tus proyectos, cada uno con su color. Oculta uno con un clic y elige el predeterminado."
+      },
       "googleSync": {
         "title": "Sincronización con Google Calendar",
         "body": "Sincronización opcional en ambos sentidos, incluso con calendarios de solo lectura como los feriados.",
@@ -168,7 +172,15 @@
       },
       "timeZones": {
         "title": "Zonas horarias y eventos de todo el día",
-        "body": "Cada evento guarda su propia zona horaria, además de eventos de todo el día y de varios días."
+        "body": "Cada evento guarda su propia zona horaria, y los eventos de todo el día tienen su propio carril."
+      },
+      "meetings": {
+        "title": "Lugares y videollamadas",
+        "body": "Los eventos guardan dónde son y su enlace de llamada; Unirse abre Meet, Zoom o Teams desde la vista previa."
+      },
+      "quickAdd": {
+        "title": "Crea eventos escribiendo",
+        "body": "Escribe “Almuerzo con Ana mañana 1pm” en el menú de comandos y el evento queda listo para crear. Con una clave de IA, la IA puede leerlo por ti."
       },
       "importExport": {
         "title": "Importar, exportar y respaldos",
@@ -189,6 +201,72 @@
       "updates": {
         "title": "Actualizaciones automáticas",
         "body": "Las nuevas versiones se instalan en segundo plano en Windows y Linux; en macOS Tempi te avisa cuando hay una."
+      }
+    },
+    "replicas": {
+      "recurrence": {
+        "repeat": "Repetir",
+        "custom": "Personalizado…",
+        "every": "Repetir cada",
+        "unit": "semanas",
+        "on": "Repetir el",
+        "notificationApp": "Tempi"
+      },
+      "timeZones": {
+        "allDay": "Todo el día",
+        "timeZone": "Zona horaria",
+        "search": "Buscar zonas horarias…",
+        "query": "tokyo"
+      },
+      "importExport": {
+        "importIcs": "Importar .ics en…",
+        "exportAll": "Exportar todos los calendarios (.ics)…",
+        "file": "retiro-del-equipo.ics",
+        "done": "Importación lista: 12 nuevos, 0 actualizados, 0 omitidos."
+      },
+      "appearance": {
+        "theme": "Tema",
+        "language": "Idioma",
+        "themes": {
+          "light": "Claro",
+          "dark": "Oscuro",
+          "system": "Sistema"
+        }
+      },
+      "updates": {
+        "title": "Tempi",
+        "version": "Versión {version}",
+        "updatesTitle": "Actualizaciones",
+        "status": {
+          "checking": "Buscando actualizaciones…",
+          "downloading": "Descargando la versión {version}…",
+          "ready": "La versión {version} está lista. Reinicia Tempi para instalarla."
+        },
+        "restart": "Reiniciar para actualizar",
+        "check": "Buscar actualizaciones"
+      },
+      "shortcutsTitle": "Atajos de teclado",
+      "calendars": {
+        "name": "Nombre",
+        "color": "Color",
+        "nameValue": "Gimnasio",
+        "cancel": "Cancelar",
+        "create": "Crear"
+      },
+      "meetings": {
+        "calendar": "Calendario",
+        "location": "Ubicación",
+        "locationValue": "Sala 4B",
+        "join": "Unirse"
+      },
+      "quickAdd": {
+        "placeholder": "Escribe un comando o busca…",
+        "group": "Nuevo evento",
+        "create": "Crear “{title}”",
+        "reading": "Leyendo con IA…",
+        "typed": "Almuerzo con Ana mañana 1pm",
+        "title": "Almuerzo con Ana",
+        "hour": 13
       }
     }
   },
