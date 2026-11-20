@@ -490,6 +490,9 @@
     "terms": "Términos",
     "privacy": "Privacidad"
   },
+  "wordmark": {
+    "label": "Logo de Tempi"
+  },
   "legal": {
     "updatedLabel": "Última actualización",
     "updated": "17 de noviembre de 2026",
