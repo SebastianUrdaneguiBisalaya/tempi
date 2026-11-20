@@ -1,7 +1,7 @@
 'use client';
 
 import { CopyIcon, XIcon } from 'lucide-react';
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field';
@@ -11,12 +11,12 @@ import { formatShortDate, formatTimeRange, formatTimeZoneOffset } from '@/lib/da
 import type { Locale } from '@/lib/i18n';
 import { addDays, at, CALENDARS, type CalendarKey, type FreeDay, freeSlots, presetRange, WORKING_HOURS, weekStartFor } from '@/lib/sample-calendar';
 import { useToday } from '@/lib/use-today';
+import { useAutoScroll } from './use-auto-scroll';
+import { WeekdayToggles } from './weekday-toggles';
 
 const RANGES = ['thisWeek', 'nextWeek', 'custom'] as const;
 
 export type AvailabilityCopy = {
-	/** Describes the replica for assistive tech, which skips the replica itself. */
-	label: string;
 	title: string;
 	description: string;
 	range: string;
@@ -37,9 +37,6 @@ export type AvailabilityCopy = {
 
 const pad = (hour: number) => `${String(hour).padStart(2, '0')}:00`;
 
-// 2024-01-01 was a Monday, so day N of that week has ISO weekday N.
-const weekdayName = (day: number, locale: Locale, width: 'long' | 'short') => new Intl.DateTimeFormat(locale, { timeZone: 'UTC', weekday: width }).format(Date.UTC(2024, 0, day));
-
 /** The free time as the app's `availabilityText` writes it: one line per day with free slots, then the zone. */
 const availabilityText = (days: readonly FreeDay[], today: Date, locale: Locale, copy: AvailabilityCopy) => {
 	const withSlots = days.filter(day => day.slots.length > 0);
@@ -56,25 +53,22 @@ const availabilityText = (days: readonly FreeDay[], today: Date, locale: Locale,
 /**
  * Static replica of the app's Share availability dialog (apps/web `share-availability-form.tsx`) with the form's
  * defaults: this week, working hours, slots of 30 minutes or more and every calendar, over the landing's sample week.
+ * Like the app's dialog, the whole content scrolls inside it.
  */
-export function AvailabilityMockup({ locale, copy, calendars }: { locale: Locale; copy: AvailabilityCopy; calendars: Record<CalendarKey, string> }) {
+export function AvailabilityReplica({ locale, copy, calendars }: { locale: Locale; copy: AvailabilityCopy; calendars: Record<CalendarKey, string> }) {
 	const id = useId();
+	const viewport = useRef<HTMLDivElement>(null);
 	const today = useToday();
+	useAutoScroll(viewport, today !== null);
 	const weekStart = weekStartFor(locale);
 	const thisWeek = today === null ? [] : freeSlots(today, presetRange('thisWeek', today, weekStart));
 	// Late in the week no working day is left; "Next week" is what anyone would pick then.
 	const range = today !== null && thisWeek.length === 0 ? 'nextWeek' : 'thisWeek';
 	const text = today === null ? null : availabilityText(range === 'thisWeek' ? thisWeek : freeSlots(today, presetRange('nextWeek', today, weekStart)), today, locale, copy);
-	const weekdays = Array.from({ length: 7 }, (_, offset) => (((weekStart === 0 ? 6 : 0) + offset) % 7) + 1);
 
 	return (
-		<div
-			role='img'
-			aria-label={copy.label}
-			className='relative overflow-hidden rounded-xl bg-popover p-4 text-xs/relaxed text-popover-foreground shadow-2xl shadow-black/50 ring-1 ring-foreground/10'
-		>
-			{/* Inert: the replica's fields and buttons look real but can't be focused, clicked or read out. */}
-			<div inert className='grid gap-4 select-none'>
+		<div ref={viewport} className='h-[21rem] w-full max-w-md overflow-hidden rounded-xl bg-popover text-xs/relaxed text-popover-foreground shadow-2xl shadow-black/50 ring-1 ring-foreground/10'>
+			<div className='relative grid gap-4 p-4'>
 				<div className='flex flex-col gap-1'>
 					<h3 className='font-heading text-sm font-medium'>{copy.title}</h3>
 					<p className='text-xs/relaxed text-muted-foreground'>{copy.description}</p>
@@ -112,13 +106,7 @@ export function AvailabilityMockup({ locale, copy, calendars }: { locale: Locale
 						</FieldSet>
 						<Field>
 							<FieldLegend variant='label'>{copy.days}</FieldLegend>
-							<ToggleGroup className='flex-wrap' multiple size='sm' value={WORKING_HOURS.days.map(String)} variant='outline'>
-								{weekdays.map(day => (
-									<ToggleGroupItem key={day} aria-label={weekdayName(day, locale, 'long')} value={String(day)}>
-										{weekdayName(day, locale, 'short')}
-									</ToggleGroupItem>
-								))}
-							</ToggleGroup>
+							<WeekdayToggles locale={locale} />
 						</Field>
 						<Field>
 							<FieldLabel htmlFor={`${id}-min`}>{copy.minMinutes}</FieldLabel>

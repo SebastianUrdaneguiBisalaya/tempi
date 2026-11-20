@@ -1,17 +1,17 @@
 'use client';
 
+import { useRef } from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { formatDuration, formatPercent, formatShortDate } from '@/lib/date-format';
 import type { Locale } from '@/lib/i18n';
 import { addDays, CALENDARS, type CalendarKey, type EventKey, type WeekStats, weekStartFor, weekStats } from '@/lib/sample-calendar';
 import { useToday } from '@/lib/use-today';
 import { Heatmap, RankedBars, SplitBar, StackedBars, StatsSection } from './stats-charts';
+import { useAutoScroll } from './use-auto-scroll';
 
 const PERIODS = ['week', 'month', 'quarter'] as const;
 
 export type StatsCopy = {
-	/** Describes the replica for assistive tech, which skips the replica itself. */
-	label: string;
 	title: string;
 	description: string;
 	periods: Record<(typeof PERIODS)[number], string>;
@@ -125,34 +125,31 @@ function StatsReport({ copy, locale, sample, stats, today }: { copy: StatsCopy; 
 
 /**
  * Static replica of the app's Time stats drawer (apps/web `stats-panel.tsx`) on its "Week" period, over the landing's
- * sample week with working hours on. The report scrolls inside `[data-stats-scroll]`, which the section animates.
+ * sample week with working hours on. Like the app's scroll area, the report scrolls under the header and picker.
  */
-export function StatsMockup({ locale, copy, sample }: { locale: Locale; copy: StatsCopy; sample: SampleCopy }) {
+export function StatsReplica({ locale, copy, sample }: { locale: Locale; copy: StatsCopy; sample: SampleCopy }) {
+	const viewport = useRef<HTMLDivElement>(null);
 	const today = useToday();
+	useAutoScroll(viewport, today !== null);
 
 	return (
-		<div role='img' aria-label={copy.label} className='overflow-hidden rounded-xl border bg-popover text-xs/relaxed text-popover-foreground shadow-2xl shadow-black/50'>
-			{/* Inert: the replica's period picker looks real but can't be focused, clicked or read out. */}
-			<div inert className='flex h-[38rem] flex-col select-none'>
-				<div className='flex shrink-0 flex-col gap-1 p-4 pb-0 text-left'>
-					<h3 className='font-heading text-sm font-medium text-foreground'>{copy.title}</h3>
-					<p className='text-xs/relaxed text-balance text-muted-foreground'>{copy.description}</p>
+		<div className='flex h-[21rem] w-full max-w-md flex-col overflow-hidden rounded-xl border bg-popover text-xs/relaxed text-popover-foreground shadow-2xl shadow-black/50'>
+			<div className='flex shrink-0 flex-col gap-1 p-4 pb-0 text-left'>
+				<h3 className='font-heading text-sm font-medium text-foreground'>{copy.title}</h3>
+				<p className='text-xs/relaxed text-balance text-muted-foreground'>{copy.description}</p>
+			</div>
+			<div className='flex min-h-0 flex-1 flex-col gap-4 pt-4'>
+				<div className='px-4'>
+					<ToggleGroup size='sm' value={['week']} variant='outline'>
+						{PERIODS.map(option => (
+							<ToggleGroupItem key={option} value={option}>
+								{copy.periods[option]}
+							</ToggleGroupItem>
+						))}
+					</ToggleGroup>
 				</div>
-				<div className='flex min-h-0 flex-1 flex-col gap-4 pt-4'>
-					<div className='px-4'>
-						<ToggleGroup size='sm' value={['week']} variant='outline'>
-							{PERIODS.map(option => (
-								<ToggleGroupItem key={option} value={option}>
-									{copy.periods[option]}
-								</ToggleGroupItem>
-							))}
-						</ToggleGroup>
-					</div>
-					<div data-stats-viewport className='min-h-0 flex-1 overflow-hidden'>
-						<div data-stats-scroll className='px-4 pb-6'>
-							{today !== null && <StatsReport copy={copy} locale={locale} sample={sample} stats={weekStats(today, weekStartFor(locale))} today={today} />}
-						</div>
-					</div>
+				<div ref={viewport} className='min-h-0 flex-1 overflow-hidden'>
+					<div className='px-4 pb-6'>{today !== null && <StatsReport copy={copy} locale={locale} sample={sample} stats={weekStats(today, weekStartFor(locale))} today={today} />}</div>
 				</div>
 			</div>
 		</div>

@@ -11,8 +11,11 @@ import { Hotkey } from '@/features/keyboard/components/hotkey';
 import { formatTimeZoneOffset } from '@/lib/date-format';
 import { SHOWN_SHORTCUTS } from '@/lib/hotkeys';
 import type { Locale } from '@/lib/i18n';
-import { ALL_DAY, addDays, at, CALENDARS, type CalendarKey, EVENTS, type EventKey, isoWeekday, NOW_HOUR, WORKING_HOURS, weekStartFor } from '@/lib/sample-calendar';
+import { ALL_DAY, addDays, at, CALENDARS, type CalendarKey, EVENTS, type EventKey, eventsOn, isoWeekday, NOW_HOUR, secondaryZone, WORKING_HOURS, weekStartFor } from '@/lib/sample-calendar';
 import { useToday } from '@/lib/use-today';
+
+// Other replicas name the sample calendars and events through this module.
+export { CALENDARS, type CalendarKey, type EventKey } from '@/lib/sample-calendar';
 
 const FIRST_HOUR = 8;
 const LAST_HOUR = 17;
@@ -40,7 +43,7 @@ export type MockupCopy = {
 };
 
 /** Same tint as the desktop app's confirmed events (`eventSurface` in apps/web): the calendar color mixed into the background. */
-const eventStyle = (color: string): CSSProperties => ({
+export const eventStyle = (color: string): CSSProperties => ({
 	backgroundColor: `color-mix(in oklab, ${color} 22%, var(--background))`,
 	borderLeftColor: color,
 });
@@ -205,11 +208,6 @@ function weekDays(locale: Locale, today: Date) {
 /** Like the app's working hours (Settings › Calendar), the time grid shades every hour outside them. */
 const isOffHours = (day: Date, hour: number) => !WORKING_HOURS.days.some(weekday => weekday === isoWeekday(day)) || hour < WORKING_HOURS.start || hour >= WORKING_HOURS.end;
 
-// The one secondary time zone shown (Settings › Calendar): the first whose offset differs from the visitor's today.
-const SECONDARY_ZONES = ['Europe/London', 'America/New_York', 'Asia/Tokyo'] as const;
-
-const secondaryZone = (today: Date, locale: Locale) => SECONDARY_ZONES.find(zone => formatTimeZoneOffset(today, locale, zone) !== formatTimeZoneOffset(today, locale));
-
 /** Like the app's extra hour column: the hour alone when the zone is on the hour, else the time (e.g. "9:30" in India). */
 const zoneHour = (instant: Date, locale: Locale, timeZone: string) => {
 	const onHour = new Intl.DateTimeFormat('en', { minute: 'numeric', timeZone }).format(instant) === '0';
@@ -296,9 +294,9 @@ function WeekGrid({ locale, copy, today }: PartProps) {
 						{hours.map(hour => (
 							<div key={hour} className={cn(hour > FIRST_HOUR && 'border-t', day && isOffHours(day, hour) && 'bg-muted/60')} style={{ height: `${HOUR_REM}rem` }} />
 						))}
-						{EVENTS.filter(event => index === todayIndex + event.day).map(event => (
+						{eventsOn(today, index - todayIndex).map(event => (
 							<div
-								key={`${event.day}-${event.key}`}
+								key={`${event.key}-${event.start}`}
 								data-mockup-event
 								// Like the app, events shorter than an hour put the time next to the title so both fit on one line.
 								className={cn(

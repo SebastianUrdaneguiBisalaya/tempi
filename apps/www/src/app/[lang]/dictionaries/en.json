@@ -90,7 +90,61 @@
         "focus": "Focus time",
         "call": "Family call",
         "codeReview": "Code review",
-        "retro": "Sprint retro"
+        "retro": "Sprint retro",
+        "walkDog": "Walk the dog",
+        "familyVisit": "Visit the family",
+        "weeklyPlanning": "Weekly planning",
+        "gaming": "Video games"
+      }
+    },
+    "replicas": {
+      "settingsTabs": {
+        "profile": "Profile",
+        "appearance": "Appearance",
+        "calendar": "Calendar",
+        "permissions": "Permissions",
+        "integrations": "Integrations",
+        "shortcuts": "Shortcuts",
+        "data": "Data",
+        "about": "About"
+      },
+      "data": {
+        "backupTitle": "Backup",
+        "backupDescription": "Save a copy of your calendars, events, settings and profile photo to a file.",
+        "backup": "Create backup…",
+        "restoreTitle": "Restore",
+        "restoreDescription": "Replace everything in Tempi with a backup. Tempi restarts afterwards.",
+        "restore": "Restore backup…"
+      },
+      "search": {
+        "placeholder": "Search events",
+        "query": "review"
+      },
+      "google": {
+        "card": {
+          "title": "Google",
+          "description": "Sign in with Google in your browser. Only one account can be connected.",
+          "connect": "Connect Google account",
+          "notConnected": "No account connected.",
+          "disconnect": "Disconnect",
+          "connectedAs": "Connected as {email}",
+          "privacy": "Privacy Policy",
+          "terms": "Terms and Conditions"
+        },
+        "sync": {
+          "statusBefore": "Last synced 2 hours ago.",
+          "statusAfter": "Last synced just now.",
+          "syncNow": "Sync now",
+          "calendarsTitle": "Calendars to sync",
+          "calendarsDescription": "Choose which calendars of this account appear in Tempi. Unchecking one removes it from Tempi, not from Google.",
+          "readOnly": "Read-only",
+          "calendars": {
+            "work": "Work",
+            "personal": "Personal",
+            "holidays": "Holidays",
+            "birthdays": "Birthdays"
+          }
+        }
       }
     }
   },
@@ -102,6 +156,10 @@
       "views": {
         "title": "Day, week and month views",
         "body": "Switch views in a keystroke, with a mini calendar and “go to date” always at hand."
+      },
+      "calendars": {
+        "title": "Calendars with colors",
+        "body": "Keep work, personal and side projects apart, each in its own color. Hide one with a click and choose the default."
       },
       "googleSync": {
         "title": "Google Calendar sync",
@@ -115,7 +173,15 @@
       },
       "timeZones": {
         "title": "Time zones and all-day events",
-        "body": "Every event keeps its own time zone, the time grid can show up to two more, plus all-day and multi-day events."
+        "body": "Every event keeps its own time zone, and all-day events get their own lane."
+      },
+      "meetings": {
+        "title": "Places and video calls",
+        "body": "Events keep where they happen and their call link; Join opens Meet, Zoom or Teams right from the preview."
+      },
+      "quickAdd": {
+        "title": "Quick add in plain words",
+        "body": "Type “Lunch with Ana tomorrow 1pm” in the command menu and the event is ready to create. With an AI key, AI can read it for you."
       },
       "importExport": {
         "title": "Import, export and backups",
@@ -136,18 +202,72 @@
       "updates": {
         "title": "Automatic updates",
         "body": "New versions install in the background on Windows and Linux; macOS tells you when one is out."
+      }
+    },
+    "replicas": {
+      "recurrence": {
+        "repeat": "Repeat",
+        "custom": "Custom…",
+        "every": "Repeat every",
+        "unit": "weeks",
+        "on": "Repeat on",
+        "notificationApp": "Tempi"
       },
-      "workingHours": {
-        "title": "Working hours",
-        "body": "Set your working days and hours; the day and week views shade the rest."
+      "timeZones": {
+        "allDay": "All day",
+        "timeZone": "Time zone",
+        "search": "Search time zones…",
+        "query": "tokyo"
       },
-      "availability": {
-        "title": "Share availability",
-        "body": "Copy your free slots as text to coordinate a meeting."
+      "importExport": {
+        "importIcs": "Import .ics into…",
+        "exportAll": "Export all calendars (.ics)…",
+        "file": "team-offsite.ics",
+        "done": "Import done: 12 new, 0 updated, 0 skipped."
       },
-      "stats": {
-        "title": "Time stats",
-        "body": "See where your time went by calendar, day and hour."
+      "appearance": {
+        "theme": "Theme",
+        "language": "Language",
+        "themes": {
+          "light": "Light",
+          "dark": "Dark",
+          "system": "System"
+        }
+      },
+      "updates": {
+        "title": "Tempi",
+        "version": "Version {version}",
+        "updatesTitle": "Updates",
+        "status": {
+          "checking": "Checking for updates…",
+          "downloading": "Downloading version {version}…",
+          "ready": "Version {version} is ready. Restart Tempi to install it."
+        },
+        "restart": "Restart to update",
+        "check": "Check for updates"
+      },
+      "shortcutsTitle": "Keyboard shortcuts",
+      "calendars": {
+        "name": "Name",
+        "color": "Color",
+        "nameValue": "Gym",
+        "cancel": "Cancel",
+        "create": "Create"
+      },
+      "meetings": {
+        "calendar": "Calendar",
+        "location": "Location",
+        "locationValue": "Room 4B",
+        "join": "Join"
+      },
+      "quickAdd": {
+        "placeholder": "Type a command or search…",
+        "group": "New event",
+        "create": "Create “{title}”",
+        "reading": "Reading with AI…",
+        "typed": "Lunch with Ana tomorrow 1pm",
+        "title": "Lunch with Ana",
+        "hour": 13
       }
     }
   },
@@ -155,10 +275,6 @@
     "eyebrow": "Planning",
     "title": "Know when you're free and where your time goes.",
     "subtitle": "Set your working hours, keep other time zones next to yours, share your free time as text and see how your weeks add up. All of it is worked out on your device.",
-    "tabs": {
-      "availability": "Share availability",
-      "stats": "Time stats"
-    },
     "points": {
       "workingHours": {
         "title": "Working hours",
@@ -178,8 +294,21 @@
       }
     },
     "shortcut": "Both open from the command menu",
+    "replicas": {
+      "workingHours": {
+        "label": "Working hours",
+        "description": "Shade the hours outside them in the day and week views.",
+        "days": "Working days",
+        "start": "Start",
+        "end": "End"
+      },
+      "secondaryTimeZones": {
+        "label": "Secondary time zones",
+        "description": "Show up to two more time zones as extra hour columns in the day and week views.",
+        "add": "Add time zone"
+      }
+    },
     "availability": {
-      "label": "Tempi's Share availability dialog: this week, 9:00 to 18:00 on weekdays, slots of 30 minutes or more, with a preview of the free time as text",
       "title": "Share availability",
       "description": "Copy your free time as text to coordinate a meeting.",
       "range": "Range",
@@ -201,7 +330,6 @@
       "copy": "Copy"
     },
     "stats": {
-      "label": "Tempi's Time stats drawer for this week: headline numbers, time per calendar, when you are busy, where, recurring or one-off, status, what took the most time and the next 7 days",
       "title": "Time stats",
       "description": "Where your time went, from your events on this device.",
       "periods": {
@@ -249,11 +377,6 @@
     "title": "Ask your calendar.",
     "subtitle": "Optional and off by default. Chat or talk with Tempi about your schedule using your own AI provider, and confirm every change before it is saved.",
     "mockup": {
-      "label": "Animated demo: the assistant is asked for a lunch tomorrow, checks the calendar, proposes a new event that is confirmed and saved, then the Voice tab listens, thinks and answers aloud",
-      "tabs": {
-        "chat": "Chat",
-        "voice": "Voice"
-      },
       "chat": {
         "welcome": "Ask about your calendar or describe an event, and I'll prepare it for you to confirm.",
         "placeholder": "Ask about your calendar or describe an event…",
@@ -301,7 +424,34 @@
       }
     },
     "providers": "Supported providers",
-    "shortcut": "Open it from anywhere in Tempi with"
+    "shortcut": "Open it from anywhere in Tempi with",
+    "replicas": {
+      "keys": {
+        "keyPlaceholder": "Paste your API key",
+        "saveKey": "Test and save",
+        "keySaved": "API key saved",
+        "testKey": "Test key",
+        "removeKey": "Remove key",
+        "providers": {
+          "anthropic": {
+            "title": "Anthropic",
+            "description": "Claude models for the assistant."
+          },
+          "openai": {
+            "title": "OpenAI",
+            "description": "GPT models for the assistant."
+          }
+        }
+      },
+      "privacy": {
+        "device": "Your computer",
+        "keyEncrypted": "Key encrypted",
+        "provider": "Your AI provider",
+        "sent": "Messages and the events it reads",
+        "tempi": "Tempi servers",
+        "never": "there are none"
+      }
+    }
   },
   "keyboard": {
     "eyebrow": "Keyboard first",
@@ -345,6 +495,40 @@
       "showShortcuts": "Show keyboard shortcuts",
       "togglePanel": "Toggle details panel",
       "toggleAssistant": "Open AI assistant"
+    },
+    "cells": {
+      "commandMenu": {
+        "title": "One menu for every action.",
+        "body": "Press ⌘K (Ctrl+K) to run a command, change a setting or search your events by typing."
+      },
+      "navigation": {
+        "title": "Move through time with one key.",
+        "body": "J and K jump to the next and previous week, day or month; T brings you back to today."
+      },
+      "newEvent": {
+        "title": "New event in a keystroke.",
+        "body": "Press C and type the title: the form opens on the day you’re viewing, at the next free slot."
+      },
+      "undo": {
+        "title": "Undo a delete.",
+        "body": "Deleted the wrong event? ⌘Z (Ctrl+Z), or Undo on the toast, brings it back."
+      }
+    },
+    "replicas": {
+      "newEvent": {
+        "newEvent": "New event",
+        "title": "Title",
+        "titleValue": "Coffee with Ana",
+        "calendar": "Calendar",
+        "titlePlaceholder": "Add a title",
+        "cancel": "Cancel",
+        "create": "Create"
+      },
+      "undo": {
+        "deleted": "Event deleted.",
+        "undo": "Undo",
+        "restored": "Event restored."
+      }
     }
   },
   "faq": {
@@ -409,6 +593,9 @@
     "legal": "Legal",
     "terms": "Terms",
     "privacy": "Privacy"
+  },
+  "wordmark": {
+    "label": "Tempi logo"
   },
   "legal": {
     "updatedLabel": "Last updated",

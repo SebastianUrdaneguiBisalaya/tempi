@@ -51,9 +51,10 @@ describe('freeSlots', () => {
 describe('weekStats', () => {
 	const stats = weekStats(TODAY, 0);
 
-	test('totals the timed events of the week and compares them with the empty week before', () => {
+	test('totals the timed events of the week and compares them with the week before', () => {
 		expect(stats.totals).toEqual({ minutes: 1170, events: 18, averageMinutes: 65 });
-		expect(stats.previous).toEqual({ minutes: 0, events: 0, averageMinutes: 0 });
+		// Only the weekday-anchored events fall in the week before: Sunday's walk and visit, Monday's planning and games.
+		expect(stats.previous).toEqual({ minutes: 360, events: 4, averageMinutes: 90 });
 		expect(stats.busiestDay).toEqual({ day: 0, minutes: 270 });
 	});
 
@@ -88,7 +89,7 @@ describe('weekStats', () => {
 		expect(stats.working).toEqual({ minutes: 2700, busyMinutes: 840, focusMinutes: 1320 });
 	});
 
-	test('sums the next seven days from today', () => {
-		expect(stats.nextWeek.map(day => day.minutes)).toEqual([270, 180, 180, 150, 0, 0, 0]);
+	test('sums the next seven days from today, weekday-anchored events filling the days without relative ones', () => {
+		expect(stats.nextWeek.map(day => day.minutes)).toEqual([270, 180, 180, 150, 210, 150, 0]);
 	});
 });

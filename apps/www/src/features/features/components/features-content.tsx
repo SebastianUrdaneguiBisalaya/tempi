@@ -1,94 +1,108 @@
 'use client';
 
-import {
-	ArchiveIcon,
-	BellRingIcon,
-	BriefcaseIcon,
-	CalendarCheckIcon,
-	CalendarDaysIcon,
-	ChartColumnIcon,
-	CircleFadingArrowUpIcon,
-	CommandIcon,
-	GlobeIcon,
-	LanguagesIcon,
-	type LucideIcon,
-	PanelTopIcon,
-	RefreshCwIcon,
-} from 'lucide-react';
-import { useRef } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { gsap, useMotion } from '@/lib/gsap';
+import type { SettingsTab } from '@/components/settings-replica';
+import { ShowcaseCell, ShowcaseGrid, ShowcaseSection } from '@/components/showcase';
+import type { MockupCopy } from '@/features/why/components/app-mockup';
+import { type GoogleCardCopy, type GoogleSyncCopy, GoogleSyncReplica } from '@/features/why/components/google-sync-replica';
+import type { ShownShortcut } from '@/lib/hotkeys';
+import type { Locale } from '@/lib/i18n';
 import { SECTION_IDS } from '@/lib/site';
-
-// Only what Tempi ships today (see the README feature list).
-const FEATURES = [
-	{ key: 'views', icon: CalendarDaysIcon },
-	{ key: 'googleSync', icon: RefreshCwIcon },
-	{ key: 'recurrence', icon: BellRingIcon },
-	{ key: 'timeZones', icon: GlobeIcon },
-	{ key: 'workingHours', icon: BriefcaseIcon },
-	{ key: 'availability', icon: CalendarCheckIcon },
-	{ key: 'stats', icon: ChartColumnIcon },
-	{ key: 'importExport', icon: ArchiveIcon },
-	{ key: 'tray', icon: PanelTopIcon },
-	{ key: 'keyboard', icon: CommandIcon },
-	{ key: 'languages', icon: LanguagesIcon },
-	{ key: 'updates', icon: CircleFadingArrowUpIcon },
-] as const satisfies readonly { key: string; icon: LucideIcon }[];
+import { type AppearanceCopy, AppearanceReplica } from './appearance-replica';
+import { type CalendarsCopy, CalendarsReplica } from './calendars-replica';
+import { type EventPreviewCopy, EventPreviewReplica } from './event-preview-replica';
+import { type ImportExportCopy, ImportExportReplica } from './import-export-replica';
+import { type QuickAddCopy, QuickAddReplica } from './quick-add-replica';
+import { type RecurrenceCopy, RecurrenceReplica } from './recurrence-replica';
+import { ShortcutsReplica } from './shortcuts-replica';
+import { type TimeZonesCopy, TimeZonesReplica } from './time-zones-replica';
+import { TrayReplica } from './tray-replica';
+import { type UpdatesCopy, UpdatesReplica } from './updates-replica';
+import { ViewsReplica } from './views-replica';
 
 // `badge` and `note` flag a feature that isn't open to everyone yet (Google sync while Google reviews the app).
 type Feature = { title: string; body: string; badge?: string; note?: string };
+
+// Only what Tempi ships today (see the README feature list and the command menu's quick add).
+type FeatureKey = 'views' | 'calendars' | 'googleSync' | 'recurrence' | 'timeZones' | 'meetings' | 'quickAdd' | 'importExport' | 'tray' | 'keyboard' | 'languages' | 'updates';
 
 export type FeaturesCopy = {
 	eyebrow: string;
 	title: string;
 	subtitle: string;
-	items: Record<(typeof FEATURES)[number]['key'], Feature>;
+	items: Record<FeatureKey, Feature>;
+	replicas: {
+		calendars: CalendarsCopy;
+		recurrence: RecurrenceCopy;
+		meetings: EventPreviewCopy;
+		quickAdd: QuickAddCopy;
+		timeZones: TimeZonesCopy;
+		importExport: ImportExportCopy;
+		appearance: AppearanceCopy;
+		updates: UpdatesCopy;
+		shortcutsTitle: string;
+	};
 };
 
-export function FeaturesContent({ copy }: { copy: FeaturesCopy }) {
-	const ref = useRef<HTMLElement>(null);
+/** Names shared with other sections, so every replica calls things the same. */
+export type SharedCopy = {
+	mockup: MockupCopy;
+	settingsTabs: Record<SettingsTab, string>;
+	google: { card: GoogleCardCopy; sync: GoogleSyncCopy };
+	shortcuts: { groups: Record<'navigation' | 'views' | 'general', string>; actions: Record<ShownShortcut, string> };
+};
 
-	useMotion(ref, () => {
-		gsap.from('[data-features-intro]', { y: 24, autoAlpha: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out', scrollTrigger: { trigger: ref.current, start: 'top 70%' } });
-		gsap.from('[data-feature]', {
-			y: 24,
-			autoAlpha: 0,
-			duration: 0.6,
-			stagger: 0.08,
-			ease: 'power3.out',
-			scrollTrigger: { trigger: '[data-feature]', start: 'top 85%' },
-		});
-	});
+type FeaturesContentProps = {
+	locale: Locale;
+	copy: FeaturesCopy;
+	shared: SharedCopy;
+};
+
+export function FeaturesContent({ locale, copy, shared }: FeaturesContentProps) {
+	const { items, replicas } = copy;
+	const { mockup } = shared;
+	// Each cell's badge and note show only where the feature has them.
+	const cell = (key: FeatureKey) => ({ title: items[key].title, body: items[key].body, badge: items[key].badge, note: items[key].note });
 
 	return (
-		<section ref={ref} id={SECTION_IDS.features} className='mx-auto w-full max-w-6xl px-4 sm:px-6'>
-			<div className='grid gap-12 border-t py-24 md:py-32 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16'>
-				<div className='lg:sticky lg:top-28 lg:self-start'>
-					<p data-features-intro className='text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase'>
-						{copy.eyebrow}
-					</p>
-					<h2 data-features-intro className='mt-4 font-heading text-4xl leading-[1.1] font-medium tracking-tight text-balance sm:text-5xl'>
-						{copy.title}
-					</h2>
-					<p data-features-intro className='mt-5 max-w-sm text-base leading-relaxed text-foreground/70'>
-						{copy.subtitle}
-					</p>
-				</div>
-				<ul className='grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3'>
-					{FEATURES.map(({ key, icon: Icon }) => (
-						<li key={key} data-feature>
-							<Icon aria-hidden className='size-5 text-foreground/90' />
-							<h3 className='mt-4 flex flex-wrap items-center gap-2 text-sm font-semibold'>
-								{copy.items[key].title}
-								{copy.items[key].badge && <Badge variant='outline'>{copy.items[key].badge}</Badge>}
-							</h3>
-							<p className='mt-1.5 text-sm leading-relaxed text-muted-foreground'>{copy.items[key].body}</p>
-							{copy.items[key].note && <p className='mt-1.5 text-xs leading-relaxed text-muted-foreground/80'>{copy.items[key].note}</p>}
-						</li>
-					))}
-				</ul>
-			</div>
-		</section>
+		<ShowcaseSection id={SECTION_IDS.features} index={2} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
+			<ShowcaseGrid>
+				<ShowcaseCell {...cell('views')}>
+					<ViewsReplica labels={mockup.views} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('calendars')}>
+					<CalendarsReplica copy={replicas.calendars} mockup={mockup} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('googleSync')}>
+					<GoogleSyncReplica card={shared.google.card} copy={shared.google.sync} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('recurrence')}>
+					<RecurrenceReplica locale={locale} copy={replicas.recurrence} title={mockup.events.standup} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('timeZones')}>
+					<TimeZonesReplica locale={locale} copy={replicas.timeZones} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('meetings')}>
+					<EventPreviewReplica locale={locale} copy={replicas.meetings} title={mockup.events.teamSync} calendarName={mockup.calendars.work} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('quickAdd')}>
+					<QuickAddReplica locale={locale} copy={replicas.quickAdd} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('importExport')}>
+					<ImportExportReplica copy={replicas.importExport} calendars={mockup.calendars} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('tray')}>
+					<TrayReplica locale={locale} today={mockup.today} events={mockup.events} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('keyboard')}>
+					<ShortcutsReplica title={replicas.shortcutsTitle} groups={shared.shortcuts.groups} actions={shared.shortcuts.actions} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('languages')}>
+					<AppearanceReplica locale={locale} copy={replicas.appearance} tabs={shared.settingsTabs} />
+				</ShowcaseCell>
+				<ShowcaseCell {...cell('updates')}>
+					<UpdatesReplica copy={replicas.updates} tabs={shared.settingsTabs} />
+				</ShowcaseCell>
+			</ShowcaseGrid>
+		</ShowcaseSection>
 	);
 }
