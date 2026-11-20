@@ -353,6 +353,7 @@ describe('SqliteSettingsRepository', () => {
 			allDayCollapsed: true,
 			microphoneEnabled: false,
 			notificationsEnabled: false,
+			openAtLoginEnabled: true,
 			showWeekNumbers: true,
 			sound: 'pop',
 			soundsEnabled: false,

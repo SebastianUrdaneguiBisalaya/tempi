@@ -389,6 +389,8 @@ export const en = {
 				menuBarEnabled: 'Menu bar calendar',
 				menuBarEnabledDescription: 'Show today’s agenda in the menu bar or tray. Open it with ⌥⌘K (Alt+Ctrl+K).',
 				minutes: 'minutes',
+				openAtLoginEnabled: 'Open Tempi at login',
+				openAtLoginEnabledDescription: 'Start Tempi in the background when you log in, so reminders arrive after a restart.',
 				showWeekends: 'Show weekends',
 				showWeekNumbers: 'Show week numbers',
 				timeFormat: 'Time format',

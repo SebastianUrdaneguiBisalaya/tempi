@@ -78,6 +78,7 @@ describe('payloadSchemas', () => {
 		['settings:save', { microphoneEnabled: false, notificationsEnabled: true }],
 		['settings:save', { tourCompleted: true }],
 		['settings:save', { sound: 'toggle', soundsEnabled: false }],
+		['settings:save', { openAtLoginEnabled: true }],
 	] as const)('%s accepts a valid payload', (channel, payload) => {
 		expect(parseWith(payloadSchemas[channel], payload).ok).toBe(true);
 	});
@@ -116,6 +117,7 @@ describe('payloadSchemas', () => {
 		['settings:save', { microphoneEnabled: 'off', notificationsEnabled: 1 }, ['microphoneEnabled', 'notificationsEnabled']],
 		['settings:save', { tourCompleted: 'yes' }, ['tourCompleted']],
 		['settings:save', { sound: 'chime', soundsEnabled: 'on' }, ['sound', 'soundsEnabled']],
+		['settings:save', { openAtLoginEnabled: 1 }, ['openAtLoginEnabled']],
 	] as const)('%s rejects an invalid payload, reporting every issue at form field paths', (channel, payload, fields) => {
 		const result = parseWith(payloadSchemas[channel], payload);
 		expect(result.ok).toBe(false);

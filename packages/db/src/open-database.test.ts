@@ -154,6 +154,19 @@ describe('migrate', () => {
 		db.close();
 	});
 
+	test('0010 keeps existing settings and leaves opening at login off', () => {
+		const db = new DatabaseSync(':memory:');
+		const migrations = loadMigrations();
+		migrate(db, migrations.slice(0, 9));
+		db.exec(`INSERT INTO settings (id, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			show_week_numbers, theme, time_format, week_start, created_at, updated_at)
+			VALUES (1, 30, 'es', 1, 1, 1, 1, 'dark', '24h', 'monday', '2026-11-15T10:00:00.000Z', '2026-11-15T10:00:00.000Z')`);
+		migrate(db, migrations);
+		expect(db.prepare('SELECT language, menu_bar_enabled, open_at_login_enabled FROM settings').get()).toEqual({ language: 'es', menu_bar_enabled: 1, open_at_login_enabled: 0 });
+		expect(() => db.exec('UPDATE settings SET open_at_login_enabled = 2')).toThrow();
+		db.close();
+	});
+
 	test('rolls back a failing migration and leaves the version unchanged', () => {
 		const db = new DatabaseSync(':memory:');
 		const migrations = [
