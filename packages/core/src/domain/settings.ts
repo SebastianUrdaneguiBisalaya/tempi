@@ -26,6 +26,8 @@ export const settingsValuesSchema = z.object({
 	/** Shows reminders as native notifications. The OS may still block them. */
 	notificationsEnabled: z.boolean(),
 	onboardingCompleted: z.boolean(),
+	/** Starts Tempi hidden when the user logs in to the computer, so reminders and the menu bar keep working after a restart. */
+	openAtLoginEnabled: z.boolean(),
 	showWeekends: z.boolean(),
 	showWeekNumbers: z.boolean(),
 	/** The sound every button plays while `soundsEnabled` is on. */
@@ -57,6 +59,7 @@ export const DEFAULT_SETTINGS = {
 	microphoneEnabled: true,
 	notificationsEnabled: true,
 	onboardingCompleted: false,
+	openAtLoginEnabled: false,
 	showWeekends: true,
 	showWeekNumbers: false,
 	sound: 'tick',

@@ -391,6 +391,8 @@ export const es = {
 				menuBarEnabled: 'Calendario en la barra de menús',
 				menuBarEnabledDescription: 'Muestra la agenda de hoy en la barra de menús o la bandeja. Ábrela con ⌥⌘K (Alt+Ctrl+K).',
 				minutes: 'minutos',
+				openAtLoginEnabled: 'Abrir Tempi al iniciar sesión',
+				openAtLoginEnabledDescription: 'Inicia Tempi en segundo plano al iniciar sesión, para que los recordatorios lleguen después de reiniciar.',
 				showWeekends: 'Mostrar fines de semana',
 				showWeekNumbers: 'Mostrar números de semana',
 				timeFormat: 'Formato de hora',

@@ -16,15 +16,24 @@ import { useSaveSettings } from '@/features/settings/hooks/use-settings';
 import { showFieldErrors } from './field-errors';
 import { SettingsFooter } from './settings-footer';
 
-const calendarSchema = settingsValuesSchema.pick({ defaultEventDuration: true, menuBarEnabled: true, showWeekends: true, showWeekNumbers: true, timeFormat: true, weekStart: true });
+const calendarSchema = settingsValuesSchema.pick({
+	defaultEventDuration: true,
+	menuBarEnabled: true,
+	openAtLoginEnabled: true,
+	showWeekends: true,
+	showWeekNumbers: true,
+	timeFormat: true,
+	weekStart: true,
+});
 type CalendarValues = z.input<typeof calendarSchema>;
 
-const FIELDS = ['defaultEventDuration', 'menuBarEnabled', 'showWeekends', 'showWeekNumbers', 'timeFormat', 'weekStart'] as const satisfies readonly (keyof CalendarValues)[];
+const FIELDS = ['defaultEventDuration', 'menuBarEnabled', 'openAtLoginEnabled', 'showWeekends', 'showWeekNumbers', 'timeFormat', 'weekStart'] as const satisfies readonly (keyof CalendarValues)[];
 const isField = (field: string): field is (typeof FIELDS)[number] => FIELDS.some(name => name === field);
 
 const valuesOf = (settings: Settings): CalendarValues => ({
 	defaultEventDuration: settings.defaultEventDuration,
 	menuBarEnabled: settings.menuBarEnabled,
+	openAtLoginEnabled: settings.openAtLoginEnabled,
 	showWeekends: settings.showWeekends,
 	showWeekNumbers: settings.showWeekNumbers,
 	timeFormat: settings.timeFormat,
@@ -35,9 +44,10 @@ const SWITCHES = [
 	{ name: 'showWeekNumbers', withDescription: false },
 	{ name: 'showWeekends', withDescription: false },
 	{ name: 'menuBarEnabled', withDescription: true },
+	{ name: 'openAtLoginEnabled', withDescription: true },
 ] as const;
 
-/** How the calendar shows weeks and times, the default event length and the menu bar calendar. */
+/** How the calendar shows weeks and times, the default event length, the menu bar calendar and opening at login. */
 export function CalendarSettings({ settings }: { settings: Settings }) {
 	const { t } = useTranslation();
 	const id = useId();

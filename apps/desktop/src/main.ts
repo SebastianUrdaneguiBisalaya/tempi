@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
@@ -46,6 +47,7 @@ import { createSyncRunner, type SyncRunner } from './google/sync-runner.js';
 import { type Cipher, createTokenStore } from './google/token-store.js';
 import { createIcalWorker } from './ical-worker-client.js';
 import { type AiIo, type DataIo, type IcalIo, type IpcSender, type PermissionsIo, registerIpc } from './ipc/register-ipc.js';
+import { createLoginItem, HIDDEN_ARG } from './login-item.js';
 import { createMenuBar, TRAY_WINDOW_SIZE } from './menu-bar.js';
 import { osPermissionsStatus, systemSettingsUrl } from './os-permissions.js';
 import { createPermissionRequestHandler, isPermissionCheckAllowed, microphoneAccess } from './permissions.js';
@@ -95,6 +97,12 @@ let preferences: Pick<Settings, 'microphoneEnabled' | 'notificationsEnabled'> = 
 // The saved theme, which a dropped preview goes back to.
 let savedTheme: Theme = 'system';
 
+// Started by the OS at login: Windows and Linux pass `--hidden`; macOS passes no arguments to login items.
+const openedAtLogin = process.argv.includes(HIDDEN_ARG) || (process.platform === 'darwin' && app.getLoginItemSettings().wasOpenedAtLogin);
+
+// Dev builds never register themselves: the login item would point at the stock Electron binary.
+const loginItem = app.isPackaged ? createLoginItem({ app, env: process.env, execPath: process.execPath, homeDir: homedir(), platform: process.platform }) : null;
+
 function isTrustedUrl(url: string) {
 	return url === WEB_URL || url.startsWith(`${WEB_URL}/`);
 }
@@ -114,6 +122,7 @@ function applySettings(settings: Settings) {
 	savedTheme = settings.theme;
 	nativeTheme.themeSource = settings.theme;
 	menuBar.setEnabled(settings.menuBarEnabled, settings.language);
+	loginItem?.apply(settings.openAtLoginEnabled).catch(error => console.error('Failed to update opening at login', error));
 }
 
 // Seeds the language from the OS on first run, then applies the stored theme before the window exists.
@@ -185,7 +194,8 @@ function createSecureWindow(options: BrowserWindowConstructorOptions): BrowserWi
 	return window;
 }
 
-function createWindow() {
+// `minimized`: shown only in the taskbar, for a login start without the menu bar calendar.
+function createWindow({ minimized = false } = {}) {
 	const windowState = loadWindowState();
 
 	mainWindow = createSecureWindow({
@@ -199,6 +209,12 @@ function createWindow() {
 	// Reopen how the user left it; the first launch fills the work area
 	// (maximized, not fullscreen: menu bar/taskbar and dock stay visible).
 	mainWindow.once('ready-to-show', () => {
+		if (minimized) {
+			mainWindow?.minimize();
+			// Maximizing now would show the window, so it waits until the user brings it up.
+			if (windowState.isMaximized) mainWindow?.once('restore', () => mainWindow?.maximize());
+			return;
+		}
 		if (windowState.isMaximized) mainWindow?.maximize();
 		mainWindow?.show();
 	});
@@ -613,7 +629,10 @@ if (!gotLock) {
 			}
 		);
 		await loadSettings(deps, transaction);
-		createWindow();
+		// A login start shows nothing: the tray icon when the menu bar calendar is on, otherwise the Dock icon on macOS
+		// (clicking it opens the window) or a minimized window in the taskbar.
+		if (!openedAtLogin) createWindow();
+		else if (!menuBar.isEnabled() && process.platform !== 'darwin') createWindow({ minimized: true });
 		reminders = startReminders(deps, transaction);
 		if ((await account.account()) !== null) sync.start();
 		updates.start();

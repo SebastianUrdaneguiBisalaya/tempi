@@ -39,6 +39,14 @@ describe('UI sounds', () => {
 	});
 });
 
+describe('opening at login', () => {
+	test('is off by default and accepts only booleans', () => {
+		expect(DEFAULT_SETTINGS.openAtLoginEnabled).toBe(false);
+		expect(settingsPatchSchema.parse({ openAtLoginEnabled: true })).toEqual({ openAtLoginEnabled: true });
+		expect(settingsPatchSchema.safeParse({ openAtLoginEnabled: 'yes' }).success).toBe(false);
+	});
+});
+
 describe('notification and microphone preferences', () => {
 	test('are on by default', () => {
 		expect(DEFAULT_SETTINGS.notificationsEnabled).toBe(true);
