@@ -275,11 +275,6 @@
     "title": "Ask your calendar.",
     "subtitle": "Optional and off by default. Chat or talk with Tempi about your schedule using your own AI provider, and confirm every change before it is saved.",
     "mockup": {
-      "label": "Animated demo: the assistant is asked for a lunch tomorrow, checks the calendar, proposes a new event that is confirmed and saved, then the Voice tab listens, thinks and answers aloud",
-      "tabs": {
-        "chat": "Chat",
-        "voice": "Voice"
-      },
       "chat": {
         "welcome": "Ask about your calendar or describe an event, and I'll prepare it for you to confirm.",
         "placeholder": "Ask about your calendar or describe an event…",
@@ -327,7 +322,34 @@
       }
     },
     "providers": "Supported providers",
-    "shortcut": "Open it from anywhere in Tempi with"
+    "shortcut": "Open it from anywhere in Tempi with",
+    "replicas": {
+      "keys": {
+        "keyPlaceholder": "Paste your API key",
+        "saveKey": "Test and save",
+        "keySaved": "API key saved",
+        "testKey": "Test key",
+        "removeKey": "Remove key",
+        "providers": {
+          "anthropic": {
+            "title": "Anthropic",
+            "description": "Claude models for the assistant."
+          },
+          "openai": {
+            "title": "OpenAI",
+            "description": "GPT models for the assistant."
+          }
+        }
+      },
+      "privacy": {
+        "device": "Your computer",
+        "keyEncrypted": "Key encrypted",
+        "provider": "Your AI provider",
+        "sent": "Messages and the events it reads",
+        "tempi": "Tempi servers",
+        "never": "there are none"
+      }
+    }
   },
   "keyboard": {
     "eyebrow": "Keyboard first",

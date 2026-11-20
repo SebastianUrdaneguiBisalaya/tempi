@@ -3,7 +3,7 @@ import type { SVGProps } from 'react';
 import { Marquee } from '@/components/marquee';
 
 /** svgl has no ElevenLabs logo; its mark is two upright bars, drawn here in the current color. */
-function ElevenLabsMark(props: SVGProps<SVGSVGElement>) {
+export function ElevenLabsMark(props: SVGProps<SVGSVGElement>) {
 	return (
 		<svg viewBox='0 0 24 24' fill='currentColor' {...props}>
 			<rect x='6' y='3' width='4' height='18' rx='0.5' />

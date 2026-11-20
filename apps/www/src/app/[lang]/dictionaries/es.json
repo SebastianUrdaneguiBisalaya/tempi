@@ -275,11 +275,6 @@
     "title": "Pregúntale a tu calendario.",
     "subtitle": "Opcional y desactivado por defecto. Escribe o habla con Tempi sobre tu agenda usando tu propio proveedor de IA, y confirma cada cambio antes de que se guarde.",
     "mockup": {
-      "label": "Demo animada: se le pide al asistente un almuerzo para mañana, revisa el calendario, propone un evento nuevo que se confirma y se guarda, y luego la pestaña Voz escucha, piensa y responde en voz alta",
-      "tabs": {
-        "chat": "Chat",
-        "voice": "Voz"
-      },
       "chat": {
         "welcome": "Pregunta por tu calendario o describe un evento, y lo prepararé para que lo confirmes.",
         "placeholder": "Pregunta por tu calendario o describe un evento…",
@@ -327,7 +322,34 @@
       }
     },
     "providers": "Proveedores compatibles",
-    "shortcut": "Ábrelo desde cualquier parte de Tempi con"
+    "shortcut": "Ábrelo desde cualquier parte de Tempi con",
+    "replicas": {
+      "keys": {
+        "keyPlaceholder": "Pega tu clave de API",
+        "saveKey": "Probar y guardar",
+        "keySaved": "Clave de API guardada",
+        "testKey": "Probar clave",
+        "removeKey": "Quitar clave",
+        "providers": {
+          "anthropic": {
+            "title": "Anthropic",
+            "description": "Modelos Claude para el asistente."
+          },
+          "openai": {
+            "title": "OpenAI",
+            "description": "Modelos GPT para el asistente."
+          }
+        }
+      },
+      "privacy": {
+        "device": "Tu computadora",
+        "keyEncrypted": "Clave cifrada",
+        "provider": "Tu proveedor de IA",
+        "sent": "Mensajes y los eventos que lee",
+        "tempi": "Servidores de Tempi",
+        "never": "no existen"
+      }
+    }
   },
   "keyboard": {
     "eyebrow": "Teclado primero",
