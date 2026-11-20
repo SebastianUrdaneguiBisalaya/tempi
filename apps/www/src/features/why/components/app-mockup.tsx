@@ -12,14 +12,14 @@ import { Hotkey } from '@/features/keyboard/components/hotkey';
 import { SHOWN_SHORTCUTS } from '@/lib/hotkeys';
 import type { Locale } from '@/lib/i18n';
 
-const CALENDARS = {
+export const CALENDARS = {
 	work: '#3b82f6',
 	personal: '#22c55e',
 	project: '#8b5cf6',
 	holidays: '#f97316',
 } as const;
 
-type CalendarKey = keyof typeof CALENDARS;
+export type CalendarKey = keyof typeof CALENDARS;
 
 type MockEvent = {
 	key: string;
@@ -53,9 +53,20 @@ const EVENTS = [
 	{ key: 'retro', calendar: 'work', day: 3, start: 15, end: 16 },
 ] as const satisfies readonly MockEvent[];
 
+/**
+ * Anchored to a weekday (`Date.getDay()`, 0 = Sunday) instead of today, so the week's edges aren't empty
+ * when today sits late or early in the week. They only fill days the relative events above leave free.
+ */
+const WEEKDAY_EVENTS = [
+	{ key: 'walkDog', calendar: 'personal', weekday: 0, start: 9, end: 10 },
+	{ key: 'familyVisit', calendar: 'personal', weekday: 0, start: 12.5, end: 15 },
+	{ key: 'weeklyPlanning', calendar: 'work', weekday: 1, start: 9, end: 10 },
+	{ key: 'gaming', calendar: 'personal', weekday: 1, start: 15.5, end: 17 },
+] as const satisfies readonly (Omit<MockEvent, 'day'> & { weekday: number })[];
+
 const ALL_DAY = { key: 'holiday', calendar: 'holidays', day: 4 } as const;
 
-type EventKey = (typeof EVENTS)[number]['key'] | typeof ALL_DAY.key;
+export type EventKey = (typeof EVENTS)[number]['key'] | (typeof WEEKDAY_EVENTS)[number]['key'] | typeof ALL_DAY.key;
 
 const FIRST_HOUR = 8;
 const LAST_HOUR = 17;
@@ -91,7 +102,7 @@ const subscribe = () => () => {
 const todayKey = () => new Date().toDateString();
 
 /** Same tint as the desktop app's confirmed events (`eventSurface` in apps/web): the calendar color mixed into the background. */
-const eventStyle = (color: string): CSSProperties => ({
+export const eventStyle = (color: string): CSSProperties => ({
 	backgroundColor: `color-mix(in oklab, ${color} 22%, var(--background))`,
 	borderLeftColor: color,
 });
@@ -261,6 +272,12 @@ function weekDays(locale: Locale, today: Date) {
 	return Array.from({ length: 7 }, (_, index) => addDays(first, index));
 }
 
+function dayEvents(day: Date | null, offset: number) {
+	const relative = EVENTS.filter(event => event.day === offset);
+	if (relative.length > 0 || day === null) return relative;
+	return WEEKDAY_EVENTS.filter(event => event.weekday === day.getDay());
+}
+
 function WeekGrid({ locale, copy, today }: PartProps) {
 	const hours = Array.from({ length: LAST_HOUR - FIRST_HOUR }, (_, index) => FIRST_HOUR + index);
 	const days = today ? weekDays(locale, today) : Array.from({ length: 7 }, () => null);
@@ -323,9 +340,9 @@ function WeekGrid({ locale, copy, today }: PartProps) {
 						{hours.map(hour => (
 							<div key={hour} className={cn(hour > FIRST_HOUR && 'border-t')} style={{ height: `${HOUR_REM}rem` }} />
 						))}
-						{EVENTS.filter(event => index === todayIndex + event.day).map(event => (
+						{dayEvents(day, index - todayIndex).map(event => (
 							<div
-								key={`${event.day}-${event.key}`}
+								key={`${event.key}-${event.start}`}
 								data-mockup-event
 								// Like the app, events shorter than an hour put the time next to the title so both fit on one line.
 								className={cn(

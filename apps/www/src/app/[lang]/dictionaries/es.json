@@ -89,7 +89,61 @@
         "focus": "Tiempo de enfoque",
         "call": "Llamada familiar",
         "codeReview": "Revisión de código",
-        "retro": "Retrospectiva"
+        "retro": "Retrospectiva",
+        "walkDog": "Pasear al perro",
+        "familyVisit": "Visitar a la familia",
+        "weeklyPlanning": "Planificación semanal",
+        "gaming": "Videojuegos"
+      }
+    },
+    "replicas": {
+      "settingsTabs": {
+        "profile": "Perfil",
+        "appearance": "Apariencia",
+        "calendar": "Calendario",
+        "permissions": "Permisos",
+        "integrations": "Integraciones",
+        "shortcuts": "Atajos",
+        "data": "Datos",
+        "about": "Acerca de"
+      },
+      "data": {
+        "backupTitle": "Copia de seguridad",
+        "backupDescription": "Guarda una copia de tus calendarios, eventos, ajustes y foto de perfil en un archivo.",
+        "backup": "Crear copia…",
+        "restoreTitle": "Restaurar",
+        "restoreDescription": "Reemplaza todo lo que hay en Tempi por una copia de seguridad. Después Tempi se reinicia.",
+        "restore": "Restaurar copia…"
+      },
+      "search": {
+        "placeholder": "Buscar eventos",
+        "query": "revisión"
+      },
+      "google": {
+        "card": {
+          "title": "Google",
+          "description": "Inicia sesión con Google en tu navegador. Solo se puede conectar una cuenta.",
+          "connect": "Conectar cuenta de Google",
+          "notConnected": "Ninguna cuenta conectada.",
+          "disconnect": "Desconectar",
+          "connectedAs": "Conectada como {email}",
+          "privacy": "Política de Privacidad",
+          "terms": "Términos y Condiciones"
+        },
+        "sync": {
+          "statusBefore": "Última sincronización: hace 2 horas.",
+          "statusAfter": "Última sincronización: justo ahora.",
+          "syncNow": "Sincronizar ahora",
+          "calendarsTitle": "Calendarios para sincronizar",
+          "calendarsDescription": "Elige qué calendarios de esta cuenta aparecen en Tempi. Desmarcar uno lo quita de Tempi, no de Google.",
+          "readOnly": "Solo lectura",
+          "calendars": {
+            "work": "Trabajo",
+            "personal": "Personal",
+            "holidays": "Feriados",
+            "birthdays": "Cumpleaños"
+          }
+        }
       }
     }
   },
@@ -101,6 +155,10 @@
       "views": {
         "title": "Vistas de día, semana y mes",
         "body": "Cambia de vista con una tecla, con el mini calendario y “ir a fecha” siempre a mano."
+      },
+      "calendars": {
+        "title": "Calendarios con colores",
+        "body": "Separa el trabajo, lo personal y tus proyectos, cada uno con su color. Oculta uno con un clic y elige el predeterminado."
       },
       "googleSync": {
         "title": "Sincronización con Google Calendar",
@@ -114,7 +172,15 @@
       },
       "timeZones": {
         "title": "Zonas horarias y eventos de todo el día",
-        "body": "Cada evento guarda su propia zona horaria, además de eventos de todo el día y de varios días."
+        "body": "Cada evento guarda su propia zona horaria, y los eventos de todo el día tienen su propio carril."
+      },
+      "meetings": {
+        "title": "Lugares y videollamadas",
+        "body": "Los eventos guardan dónde son y su enlace de llamada; Unirse abre Meet, Zoom o Teams desde la vista previa."
+      },
+      "quickAdd": {
+        "title": "Crea eventos escribiendo",
+        "body": "Escribe “Almuerzo con Ana mañana 1pm” en el menú de comandos y el evento queda listo para crear. Con una clave de IA, la IA puede leerlo por ti."
       },
       "importExport": {
         "title": "Importar, exportar y respaldos",
@@ -136,6 +202,72 @@
         "title": "Actualizaciones automáticas",
         "body": "Las nuevas versiones se instalan en segundo plano en Windows y Linux; en macOS Tempi te avisa cuando hay una."
       }
+    },
+    "replicas": {
+      "recurrence": {
+        "repeat": "Repetir",
+        "custom": "Personalizado…",
+        "every": "Repetir cada",
+        "unit": "semanas",
+        "on": "Repetir el",
+        "notificationApp": "Tempi"
+      },
+      "timeZones": {
+        "allDay": "Todo el día",
+        "timeZone": "Zona horaria",
+        "search": "Buscar zonas horarias…",
+        "query": "tokyo"
+      },
+      "importExport": {
+        "importIcs": "Importar .ics en…",
+        "exportAll": "Exportar todos los calendarios (.ics)…",
+        "file": "retiro-del-equipo.ics",
+        "done": "Importación lista: 12 nuevos, 0 actualizados, 0 omitidos."
+      },
+      "appearance": {
+        "theme": "Tema",
+        "language": "Idioma",
+        "themes": {
+          "light": "Claro",
+          "dark": "Oscuro",
+          "system": "Sistema"
+        }
+      },
+      "updates": {
+        "title": "Tempi",
+        "version": "Versión {version}",
+        "updatesTitle": "Actualizaciones",
+        "status": {
+          "checking": "Buscando actualizaciones…",
+          "downloading": "Descargando la versión {version}…",
+          "ready": "La versión {version} está lista. Reinicia Tempi para instalarla."
+        },
+        "restart": "Reiniciar para actualizar",
+        "check": "Buscar actualizaciones"
+      },
+      "shortcutsTitle": "Atajos de teclado",
+      "calendars": {
+        "name": "Nombre",
+        "color": "Color",
+        "nameValue": "Gimnasio",
+        "cancel": "Cancelar",
+        "create": "Crear"
+      },
+      "meetings": {
+        "calendar": "Calendario",
+        "location": "Ubicación",
+        "locationValue": "Sala 4B",
+        "join": "Unirse"
+      },
+      "quickAdd": {
+        "placeholder": "Escribe un comando o busca…",
+        "group": "Nuevo evento",
+        "create": "Crear “{title}”",
+        "reading": "Leyendo con IA…",
+        "typed": "Almuerzo con Ana mañana 1pm",
+        "title": "Almuerzo con Ana",
+        "hour": 13
+      }
     }
   },
   "ai": {
@@ -143,11 +275,6 @@
     "title": "Pregúntale a tu calendario.",
     "subtitle": "Opcional y desactivado por defecto. Escribe o habla con Tempi sobre tu agenda usando tu propio proveedor de IA, y confirma cada cambio antes de que se guarde.",
     "mockup": {
-      "label": "Demo animada: se le pide al asistente un almuerzo para mañana, revisa el calendario, propone un evento nuevo que se confirma y se guarda, y luego la pestaña Voz escucha, piensa y responde en voz alta",
-      "tabs": {
-        "chat": "Chat",
-        "voice": "Voz"
-      },
       "chat": {
         "welcome": "Pregunta por tu calendario o describe un evento, y lo prepararé para que lo confirmes.",
         "placeholder": "Pregunta por tu calendario o describe un evento…",
@@ -195,7 +322,34 @@
       }
     },
     "providers": "Proveedores compatibles",
-    "shortcut": "Ábrelo desde cualquier parte de Tempi con"
+    "shortcut": "Ábrelo desde cualquier parte de Tempi con",
+    "replicas": {
+      "keys": {
+        "keyPlaceholder": "Pega tu clave de API",
+        "saveKey": "Probar y guardar",
+        "keySaved": "Clave de API guardada",
+        "testKey": "Probar clave",
+        "removeKey": "Quitar clave",
+        "providers": {
+          "anthropic": {
+            "title": "Anthropic",
+            "description": "Modelos Claude para el asistente."
+          },
+          "openai": {
+            "title": "OpenAI",
+            "description": "Modelos GPT para el asistente."
+          }
+        }
+      },
+      "privacy": {
+        "device": "Tu computadora",
+        "keyEncrypted": "Clave cifrada",
+        "provider": "Tu proveedor de IA",
+        "sent": "Mensajes y los eventos que lee",
+        "tempi": "Servidores de Tempi",
+        "never": "no existen"
+      }
+    }
   },
   "keyboard": {
     "eyebrow": "Teclado primero",
@@ -237,6 +391,40 @@
       "showShortcuts": "Mostrar atajos de teclado",
       "togglePanel": "Mostrar u ocultar panel de detalles",
       "toggleAssistant": "Abrir asistente de IA"
+    },
+    "cells": {
+      "commandMenu": {
+        "title": "Un menú para cada acción.",
+        "body": "Presiona ⌘K (Ctrl+K) para ejecutar un comando, cambiar un ajuste o buscar tus eventos escribiendo."
+      },
+      "navigation": {
+        "title": "Muévete en el tiempo con una tecla.",
+        "body": "J y K saltan a la semana, día o mes siguiente y anterior; T te devuelve a hoy."
+      },
+      "newEvent": {
+        "title": "Un evento nuevo en una tecla.",
+        "body": "Presiona C y escribe el título: el formulario se abre en el día que estás viendo, en el siguiente hueco libre."
+      },
+      "undo": {
+        "title": "Deshaz una eliminación.",
+        "body": "¿Eliminaste el evento equivocado? ⌘Z (Ctrl+Z), o Deshacer en el aviso, lo recupera."
+      }
+    },
+    "replicas": {
+      "newEvent": {
+        "newEvent": "Nuevo evento",
+        "title": "Título",
+        "titleValue": "Café con Ana",
+        "calendar": "Calendario",
+        "titlePlaceholder": "Añade un título",
+        "cancel": "Cancelar",
+        "create": "Crear"
+      },
+      "undo": {
+        "deleted": "Evento eliminado.",
+        "undo": "Deshacer",
+        "restored": "Evento restaurado."
+      }
     }
   },
   "faq": {
