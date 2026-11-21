@@ -16,6 +16,9 @@ export type VoiceState = {
  * The calls one exchange makes, supplied by the app (they go through the API and its error toasts). Each answers null
  * when it failed, which ends the exchange.
  */
+/** A press held at least this long talks only while held; a shorter one is a tap. */
+export const HOLD_TO_TALK_MS = 300;
+
 export type VoiceSteps = {
 	transcribe: (audio: DictationAudio) => Promise<string | null>;
 	/** Sends what the user said and answers with what to read aloud once the reply ended. */
@@ -29,6 +32,12 @@ export type VoiceActions = {
 	setSteps: (steps: VoiceSteps | null) => void;
 	/** Moves the exchange on: talk (with `talkTo` answering), send what was said, cancel the reply, or stop speaking. */
 	tap: (talkTo: TextProvider) => void;
+	/**
+	 * Push-to-talk: a press taps; if it started talking and is held `HOLD_TO_TALK_MS` or longer, `release` sends.
+	 * A shorter press leaves it listening, as a tap does.
+	 */
+	press: (talkTo: TextProvider) => void;
+	release: () => void;
 	/** Drops whatever is in progress, e.g. when the app view goes away. */
 	cancel: () => void;
 };
@@ -37,9 +46,11 @@ export type VoiceActions = {
  * One spoken exchange at a time: record, transcribe, reply, read the reply aloud. Tapping moves it on: start talking,
  * send, cancel while thinking, or stop the speech. Lives above the panel, like the conversation it adds to.
  */
-export const createVoiceStore = (recorder: DictationStore, player: SpeechPlayer) =>
+export const createVoiceStore = (recorder: DictationStore, player: SpeechPlayer, now: () => number = () => performance.now()) =>
 	createStore<VoiceState & VoiceActions>()((set, get) => {
 		let steps: VoiceSteps | null = null;
+		// When the press that started talking went down; null when no press is pending a release.
+		let pressedAt: number | null = null;
 		let provider: TextProvider | null = null;
 		// Bumped by every cancel, so the answers of an exchange that was left behind are ignored.
 		let exchange = 0;
@@ -103,6 +114,16 @@ export const createVoiceStore = (recorder: DictationStore, player: SpeechPlayer)
 					recorder.getState().start();
 				} else if (phase === 'listening') recorder.getState().stop();
 				else cancel();
+			},
+			press: talkTo => {
+				pressedAt = get().phase === 'idle' ? now() : null;
+				get().tap(talkTo);
+			},
+			release: () => {
+				if (pressedAt === null) return;
+				const held = now() - pressedAt;
+				pressedAt = null;
+				if (held >= HOLD_TO_TALK_MS && get().phase === 'listening') recorder.getState().stop();
 			},
 			cancel,
 		};

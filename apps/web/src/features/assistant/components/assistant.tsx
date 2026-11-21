@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShortcutKeys } from '@/features/shortcuts/components/shortcut-keys';
 import { SHORTCUTS } from '@/features/shortcuts/shortcuts';
 import type { AssistantTab } from '../assistant-store';
-import { useAssistant, useAssistantPanel, useAssistantRequests } from './assistant-provider';
+import { assistantFocusTarget, useAssistant, useAssistantPanel, useAssistantRequests } from './assistant-provider';
 import { ChatTab } from './chat-tab';
 import { VoiceTab } from './voice-tab';
 
@@ -66,7 +66,7 @@ function EntryContent() {
 		<>
 			<TempiMark />
 			<span className='min-w-0 flex-1 truncate font-medium text-xs'>{t('assistant.entry.label')}</span>
-			<ShortcutKeys keys={[SHORTCUTS.toggleAssistant.keys]} />
+			<ShortcutKeys keys={[SHORTCUTS.openAssistantChat.keys]} />
 		</>
 	);
 }
@@ -83,7 +83,7 @@ type AssistantEntryProps = {
 
 /**
  * "Ask Tempi" at the bottom of the left sidebar. In the inline sidebar the panel floats beside it, non-modal so the
- * calendar stays usable; only the entry, ⌘J, Esc and Minimize close it.
+ * calendar stays usable; only the entry, its tab's shortcut (⌘J, ⌘⇧J), Esc and Minimize close it.
  */
 export function AssistantEntry({ anchored, onOpenDrawer }: AssistantEntryProps) {
 	const { t } = useTranslation();
@@ -123,6 +123,7 @@ export function AssistantEntry({ anchored, onOpenDrawer }: AssistantEntryProps) 
 				align='end'
 				aria-label={t('assistant.title')}
 				className='h-[min(38rem,calc(100svh-2rem))] w-[min(26rem,calc(100vw-18rem))] gap-0 overflow-hidden p-0 duration-200 motion-reduce:animate-none'
+				initialFocus={() => assistantFocusTarget() ?? true}
 				side='right'
 				sideOffset={12}
 			>
@@ -134,7 +135,7 @@ export function AssistantEntry({ anchored, onOpenDrawer }: AssistantEntryProps) 
 
 /**
  * The panel as a bottom drawer, used whenever the sidebar entry isn't on screen to anchor it: narrow windows and the
- * collapsed sidebar. ⌘J and the entry open it.
+ * collapsed sidebar. ⌘J, ⌘⇧J and the entry open it.
  */
 export function AssistantDrawer() {
 	const { t } = useTranslation();
@@ -142,7 +143,7 @@ export function AssistantDrawer() {
 	const minimize = () => setOpen(false);
 	return (
 		<Drawer onOpenChange={setOpen} open={open}>
-			<DrawerContent className='h-[85svh]'>
+			<DrawerContent className='h-[85svh]' initialFocus={() => assistantFocusTarget() ?? true}>
 				<DrawerHeader className='sr-only'>
 					<DrawerTitle>{t('assistant.title')}</DrawerTitle>
 				</DrawerHeader>

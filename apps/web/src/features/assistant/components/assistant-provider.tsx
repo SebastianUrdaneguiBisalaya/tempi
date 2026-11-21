@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import { useShortcut } from '@/features/shortcuts/hooks/use-shortcut';
 import { useApi } from '@/providers/api-provider';
-import { type AssistantActions, type AssistantState, type AssistantStore, type AssistantTurn, createAssistantStore } from '../assistant-store';
+import { type AssistantActions, type AssistantState, type AssistantStore, type AssistantTab, type AssistantTurn, createAssistantStore } from '../assistant-store';
 import { createDictationStore, type DictationActions, type DictationAudio, type DictationState, type DictationStore } from '../dictation-store';
 import { useSpeak } from '../hooks/use-speak';
 import { useTranscribe } from '../hooks/use-transcribe';
@@ -16,6 +16,7 @@ import { createVoiceStore, type VoiceActions, type VoiceState, type VoiceStore }
 type AssistantContextValue = {
 	dictation: DictationStore;
 	open: boolean;
+	openTab: (tab: AssistantTab) => void;
 	setOpen: (open: boolean) => void;
 	store: AssistantStore;
 	voice: { store: VoiceStore; recorder: DictationStore; player: SpeechPlayer };
@@ -23,7 +24,15 @@ type AssistantContextValue = {
 
 const AssistantContext = createContext<AssistantContextValue | null>(null);
 
-/** Owns the assistant for the session: its conversation and whether the panel is open. ⌘J toggles it. */
+/** Marks the control a tab focuses when it opens: the prompt in Chat, the orb in Voice. Only the shown tab renders one. */
+export const ASSISTANT_FOCUS = { 'data-assistant-focus': '' } as const;
+
+/** The shown tab's control, for the panel's initial focus. */
+export const assistantFocusTarget = (): HTMLElement | null => document.querySelector<HTMLElement>('[data-assistant-focus]');
+
+const focusAssistantTarget = () => assistantFocusTarget()?.focus();
+
+/** Owns the assistant for the session: its conversation and whether the panel is open. ⌘J opens Chat and ⌘⇧J Voice. */
 export function AssistantProvider({ children }: { children: ReactNode }) {
 	const { i18n, t } = useTranslation();
 	const [store] = useState(createAssistantStore);
@@ -38,7 +47,16 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 	const api = useApi();
 	const transcribe = useTranscribe();
 	const speak = useSpeak();
-	useShortcut('toggleAssistant', () => setOpen(current => !current));
+	// Each shortcut opens its tab, or closes the panel when that tab is already shown.
+	const openTab = (tab: AssistantTab) => {
+		if (open && store.getState().tab === tab) return setOpen(false);
+		store.getState().setTab(tab);
+		setOpen(true);
+		// A panel that was already open keeps its focus; move it to the tab's control once that tab renders.
+		requestAnimationFrame(focusAssistantTarget);
+	};
+	useShortcut('openAssistantChat', () => openTab('chat'));
+	useShortcut('openAssistantVoice', () => openTab('voice'));
 
 	// Each finished recording is transcribed here, above the panel, so it lands in the prompt even if the panel collapsed.
 	const onAudio = useEffectEvent(({ audio, mimeType }: DictationAudio) => {
@@ -91,7 +109,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 		};
 	}, [voice]);
 
-	return <AssistantContext value={{ dictation, open, setOpen, store, voice }}>{children}</AssistantContext>;
+	return <AssistantContext value={{ dictation, open, openTab, setOpen, store, voice }}>{children}</AssistantContext>;
 }
 
 const useAssistantContext = (): AssistantContextValue => {
@@ -146,8 +164,8 @@ export const useVoiceLevels = () => {
 	};
 };
 
-/** Whether the panel is open, and a way to change it. */
+/** Whether the panel is open, and ways to change it: `openTab` opens a tab (or closes the panel already on it). */
 export const useAssistantPanel = () => {
-	const { open, setOpen } = useAssistantContext();
-	return { open, setOpen, toggle: () => setOpen(!open) };
+	const { open, openTab, setOpen } = useAssistantContext();
+	return { open, openTab, setOpen, toggle: () => setOpen(!open) };
 };

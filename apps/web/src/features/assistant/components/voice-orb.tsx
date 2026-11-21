@@ -4,7 +4,7 @@ import { cn } from 'cn';
 import { useId, useRef } from 'react';
 import { gsap, MOTION_ALLOWED, useGSAP } from '@/lib/gsap';
 import type { VoicePhase } from '../voice-store';
-import { useVoiceLevels } from './assistant-provider';
+import { ASSISTANT_FOCUS, useVoiceLevels } from './assistant-provider';
 
 /** How fast the gradient turns in each phase, relative to idle. */
 const SPIN_SPEED = { idle: 1, listening: 2.5, speaking: 2, thinking: 6 } as const satisfies Record<VoicePhase, number>;
@@ -91,6 +91,7 @@ export function VoiceOrb({ disabled, label, onTap, phase }: VoiceOrbProps) {
 
 	return (
 		<button
+			{...ASSISTANT_FOCUS}
 			aria-label={label}
 			aria-pressed={phase === 'listening'}
 			className='group relative flex size-40 shrink-0 items-center justify-center rounded-full outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:size-44'

@@ -46,7 +46,10 @@ export const SHORTCUTS = {
 	// that never reaches the page as a plain keypress.
 	toggleSidebar: { group: 'general', keys: '`', layout: 'physical', scope: HOTKEY_SCOPES.global },
 	togglePanel: { group: 'general', keys: 'p', scope: HOTKEY_SCOPES.grid },
-	toggleAssistant: { group: 'general', keys: 'mod+j', scope: HOTKEY_SCOPES.global },
+	openAssistantChat: { group: 'general', keys: 'mod+j', scope: HOTKEY_SCOPES.global },
+	openAssistantVoice: { group: 'general', keys: 'mod+shift+j', scope: HOTKEY_SCOPES.global },
+	// Bound only by the Voice tab, while focus is in it; a short press taps the orb, a long one talks until released.
+	holdToTalk: { group: 'general', keys: 'space', scope: HOTKEY_SCOPES.global },
 	close: { ...close, scope: HOTKEY_SCOPES.grid },
 } as const satisfies Record<string, ShortcutDefinition>;
 
