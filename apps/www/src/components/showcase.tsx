@@ -66,17 +66,22 @@ type ShowcaseCellProps = {
 	note?: string;
 	/** The replica on top. It is decorative: the title and body say what it shows. */
 	children: ReactNode;
+	/** `top` pins a tall replica so only its bottom is cut; `center` suits replicas shorter than the cell. */
+	align?: 'top' | 'center';
 	className?: string;
 };
 
-export function ShowcaseCell({ title, body, badge, note, children, className }: ShowcaseCellProps) {
+export function ShowcaseCell({ title, body, badge, note, children, align = 'top', className }: ShowcaseCellProps) {
 	return (
 		<li data-showcase-cell className={cn('flex min-w-0 flex-col border-b', className)}>
-			{/* Pinned to the top: a replica taller than the cell is cut only at the bottom, where it fades out, as at the sides. */}
+			{/* When pinned to the top, a replica taller than the cell is cut only at the bottom, where it fades out, as at the sides. */}
 			<div
 				aria-hidden
 				inert
-				className='relative flex h-96 justify-center overflow-hidden px-6 select-none mask-intersect sm:px-10 items-start pt-10 mask-[linear-gradient(to_bottom,black_75%,transparent),linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]'
+				className={cn(
+					'relative flex h-96 justify-center overflow-hidden px-6 select-none mask-intersect sm:px-10 mask-[linear-gradient(to_bottom,black_75%,transparent),linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]',
+					align === 'top' ? 'items-start pt-10' : 'items-center'
+				)}
 			>
 				{children}
 			</div>

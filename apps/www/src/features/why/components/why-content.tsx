@@ -33,7 +33,7 @@ export function WhyContent({ locale, copy }: { locale: Locale; copy: WhyCopy }) 
 	return (
 		<ShowcaseSection id={SECTION_IDS.why} index={1} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
 			<ShowcaseGrid>
-				<ShowcaseCell title={pillars.local.title} body={pillars.local.body}>
+				<ShowcaseCell align='center' title={pillars.local.title} body={pillars.local.body}>
 					<DataSettingsReplica copy={replicas.data} tabs={replicas.settingsTabs} />
 				</ShowcaseCell>
 				<ShowcaseCell title={pillars.fast.title} body={pillars.fast.body}>
