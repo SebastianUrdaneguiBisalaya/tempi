@@ -1,8 +1,9 @@
 'use client';
 
-import { DEFAULT_SETTINGS, type EventOccurrence } from '@tempi/core';
+import { DEFAULT_SETTINGS, type EventOccurrence, resolveLanguage } from '@tempi/core';
 import type { CalendarEvent, TimeRange } from '@usecalendar/core';
 import { Calendar } from '@usecalendar/react';
+import { useTranslation } from 'react-i18next';
 import { EventContextMenu } from '@/features/events/components/event-context-menu';
 import { useEventPanel } from '@/features/events/components/event-panel-provider';
 import { EventPreview } from '@/features/events/components/event-preview';
@@ -11,11 +12,13 @@ import { useTimeZone } from '@/features/profile/hooks/use-time-zone';
 import { useSetAllDayCollapsed, useSettings } from '@/features/settings/hooks/use-settings';
 import { useGridShortcutScope } from '@/features/shortcuts/hooks/use-shortcut';
 import { CALENDAR_HOTKEYS } from '@/features/shortcuts/shortcuts';
+import { timeZoneHeader } from '@/lib/countries';
 import { useCalendarLocale } from '../hooks/use-calendar-locale';
 import { useCalendars } from '../hooks/use-calendars';
 import { useEvents } from '../hooks/use-events';
 import { useCalendarNavigation } from './calendar-navigation-provider';
 import { MonthMorePopover } from './month-more-popover';
+import { TimeZonePreview } from './time-zone-preview';
 
 /**
  * The calendar body: `@usecalendar`'s month, week and day views over the shared navigation state. It only draws and
@@ -32,6 +35,8 @@ export function CalendarMain() {
 	const { data: calendars } = useCalendars();
 	const { data: occurrences } = useEvents(calendar.range);
 	const locale = useCalendarLocale();
+	const { i18n } = useTranslation();
+	const language = resolveLanguage([i18n.language]);
 	useGridShortcutScope();
 
 	const calendarById = new Map((calendars ?? []).map(item => [item.id, item]));
@@ -81,7 +86,9 @@ export function CalendarMain() {
 			onSlotClick={createEvent}
 			renderMorePopover={MonthMorePopover}
 			// A zone the profile later switched to already has the main column.
-			secondaryTimeZones={secondaryTimeZones.filter(zone => zone !== timeZone).map(zone => ({ timeZone: zone }))}
+			secondaryTimeZones={secondaryTimeZones.filter(zone => zone !== timeZone).map(zone => ({ ...timeZoneHeader(zone, language), timeZone: zone }))}
+			timeZoneLabel={timeZoneHeader(timeZone, language)}
+			renderTimeZoneWrapper={props => <TimeZonePreview {...props} />}
 			// The calendar's own `eventPopover` stays off: the app's popover previews an event on hover, and a click still opens the panel.
 			renderEventWrapper={({ children, event }) =>
 				event.data === undefined ? (

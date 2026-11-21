@@ -45,7 +45,7 @@
         "@tempi/i18n": "workspace:*",
         "@tempi/ipc": "workspace:*",
         "@usecalendar/core": "0.4.0",
-        "@usecalendar/react": "0.4.0",
+        "@usecalendar/react": "0.6.0",
         "@usehotkeys/core": "0.1.0",
         "@usehotkeys/react": "0.1.0",
         "@usesounds/core": "0.1.0",
@@ -712,7 +712,7 @@
 
     "@usecalendar/core": ["@usecalendar/core@0.4.0", "", {}, "sha512-oNYcpuL6wUOE7NxiZimVoLJ7+AM4TIQlbo2fqxjLb5tsqS0S0SOvF5rD4akwbpZ25EtUL4RKhqEzdcPr7qmMGA=="],
 
-    "@usecalendar/react": ["@usecalendar/react@0.4.0", "", { "dependencies": { "@usecalendar/core": "0.4.0", "clsx": "^2.1.1", "tailwind-merge": "^3.7.0" }, "peerDependencies": { "react": ">=19.0.0", "react-dom": ">=19.0.0" } }, "sha512-GzBXQI5votZnqvs9iEECvfFbYIKiPP4Jos7PcOv2nvJ3OsT4Z56iEY4GiyLmZ3L8YeYeNMxil00Syu9zHX2klA=="],
+    "@usecalendar/react": ["@usecalendar/react@0.6.0", "", { "dependencies": { "@usecalendar/core": "0.4.0", "clsx": "^2.1.1", "tailwind-merge": "^3.7.0" }, "peerDependencies": { "react": ">=19.0.0", "react-dom": ">=19.0.0" } }, "sha512-h8br/Ed3OWWuwQR1Npf3YZ/QekuWFzs+xCjKKQiaibeX5IJQmYJsvufFs/+UqmegdhxYRwxuXVz7Ddk7GyJ+Tw=="],
 
     "@usehotkeys/core": ["@usehotkeys/core@0.1.0", "", {}, "sha512-JY2uU39HKpgBCFCmFm3QYlHtWcqOPcotCByutZgJARy/CX7Y0L3dd5XBkJwWgBzisOT401HHLXd53xMaJisRjA=="],
 
