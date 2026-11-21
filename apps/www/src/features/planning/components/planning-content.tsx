@@ -37,10 +37,10 @@ export function PlanningContent({ locale, copy, sample, settingsTabs }: Planning
 	return (
 		<ShowcaseSection id={SECTION_IDS.planning} index={3} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
 			<ShowcaseGrid>
-				<ShowcaseCell title={points.workingHours.title} body={points.workingHours.body}>
+				<ShowcaseCell align='center' title={points.workingHours.title} body={points.workingHours.body}>
 					<WorkingHoursReplica locale={locale} copy={replicas.workingHours} tabs={settingsTabs} />
 				</ShowcaseCell>
-				<ShowcaseCell title={points.timeZones.title} body={points.timeZones.body}>
+				<ShowcaseCell align='center' title={points.timeZones.title} body={points.timeZones.body}>
 					<SecondaryZonesReplica locale={locale} copy={replicas.secondaryTimeZones} tabs={settingsTabs} />
 				</ShowcaseCell>
 				<ShowcaseCell title={points.availability.title} body={points.availability.body}>

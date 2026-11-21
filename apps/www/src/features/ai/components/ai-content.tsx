@@ -33,16 +33,16 @@ export function AiContent({ copy }: { copy: AiCopy }) {
 	return (
 		<ShowcaseSection id={SECTION_IDS.ai} index={4} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
 			<ShowcaseGrid>
-				<ShowcaseCell title={points.keys.title} body={points.keys.body}>
+				<ShowcaseCell align='center' title={points.keys.title} body={points.keys.body}>
 					<ProviderKeysReplica copy={replicas.keys} />
 				</ShowcaseCell>
-				<ShowcaseCell title={points.voice.title} body={points.voice.body}>
+				<ShowcaseCell align='center' title={points.voice.title} body={points.voice.body}>
 					<VoiceReplica status={copy.mockup.voiceStatus} />
 				</ShowcaseCell>
 				<ShowcaseCell title={points.confirm.title} body={points.confirm.body}>
 					<ChatReplica copy={copy.mockup.chat} provider={DEMO_PROVIDER} />
 				</ShowcaseCell>
-				<ShowcaseCell title={points.private.title} body={points.private.body}>
+				<ShowcaseCell align='center' title={points.private.title} body={points.private.body}>
 					<PrivacyFlowReplica copy={replicas.privacy} />
 				</ShowcaseCell>
 			</ShowcaseGrid>

@@ -79,13 +79,13 @@ export function KeyboardContent({ locale, copy, mockup }: KeyboardContentProps) 
 				<ShowcaseCell title={cells.commandMenu.title} body={cells.commandMenu.body}>
 					<CommandMenuCell copy={copy} />
 				</ShowcaseCell>
-				<ShowcaseCell title={cells.navigation.title} body={cells.navigation.body}>
+				<ShowcaseCell align='center' title={cells.navigation.title} body={cells.navigation.body}>
 					<NavigationReplica locale={locale} today={mockup.today} actions={copy.actions} />
 				</ShowcaseCell>
-				<ShowcaseCell title={cells.newEvent.title} body={cells.newEvent.body}>
+				<ShowcaseCell align='center' title={cells.newEvent.title} body={cells.newEvent.body}>
 					<NewEventReplica copy={replicas.newEvent} calendarName={mockup.calendars.work} />
 				</ShowcaseCell>
-				<ShowcaseCell title={cells.undo.title} body={cells.undo.body}>
+				<ShowcaseCell align='center' title={cells.undo.title} body={cells.undo.body}>
 					<UndoReplica
 						copy={replicas.undo}
 						events={[

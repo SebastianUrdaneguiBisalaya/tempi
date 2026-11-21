@@ -53,12 +53,7 @@ export function WordmarkBand({ label }: { label: string }) {
 
 	return (
 		// A short vertical fade: the noise fills the band's whole height and only its very edges blend into the page.
-		<div
-			ref={containerRef}
-			role='img'
-			aria-label={label}
-			className='relative h-[clamp(14rem,38vw,36rem)] w-full overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]'
-		>
+		<div ref={containerRef} role='img' aria-label={label} className='relative h-svh w-full overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]'>
 			{/* A faint lift of the background under the spotlight; the canvas brightens the glyphs themselves. */}
 			<div
 				ref={glowRef}

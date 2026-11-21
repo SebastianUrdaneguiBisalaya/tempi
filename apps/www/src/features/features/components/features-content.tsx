@@ -66,40 +66,40 @@ export function FeaturesContent({ locale, copy, shared }: FeaturesContentProps) 
 	return (
 		<ShowcaseSection id={SECTION_IDS.features} index={2} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
 			<ShowcaseGrid>
-				<ShowcaseCell {...cell('views')}>
+				<ShowcaseCell align='center' {...cell('views')}>
 					<ViewsReplica labels={mockup.views} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('calendars')}>
+				<ShowcaseCell align='center' {...cell('calendars')}>
 					<CalendarsReplica copy={replicas.calendars} mockup={mockup} />
 				</ShowcaseCell>
 				<ShowcaseCell {...cell('googleSync')}>
 					<GoogleSyncReplica card={shared.google.card} copy={shared.google.sync} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('recurrence')}>
+				<ShowcaseCell align='center' {...cell('recurrence')}>
 					<RecurrenceReplica locale={locale} copy={replicas.recurrence} title={mockup.events.standup} />
 				</ShowcaseCell>
 				<ShowcaseCell {...cell('timeZones')}>
 					<TimeZonesReplica locale={locale} copy={replicas.timeZones} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('meetings')}>
+				<ShowcaseCell align='center' {...cell('meetings')}>
 					<EventPreviewReplica locale={locale} copy={replicas.meetings} title={mockup.events.teamSync} calendarName={mockup.calendars.work} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('quickAdd')}>
+				<ShowcaseCell align='center' {...cell('quickAdd')}>
 					<QuickAddReplica locale={locale} copy={replicas.quickAdd} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('importExport')}>
+				<ShowcaseCell align='center' {...cell('importExport')}>
 					<ImportExportReplica copy={replicas.importExport} calendars={mockup.calendars} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('tray')}>
+				<ShowcaseCell align='center' {...cell('tray')}>
 					<TrayReplica locale={locale} today={mockup.today} events={mockup.events} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('keyboard')}>
+				<ShowcaseCell align='center' {...cell('keyboard')}>
 					<ShortcutsReplica title={replicas.shortcutsTitle} groups={shared.shortcuts.groups} actions={shared.shortcuts.actions} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('languages')}>
+				<ShowcaseCell align='center' {...cell('languages')}>
 					<AppearanceReplica locale={locale} copy={replicas.appearance} tabs={shared.settingsTabs} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('updates')}>
+				<ShowcaseCell align='center' {...cell('updates')}>
 					<UpdatesReplica copy={replicas.updates} tabs={shared.settingsTabs} />
 				</ShowcaseCell>
 			</ShowcaseGrid>
