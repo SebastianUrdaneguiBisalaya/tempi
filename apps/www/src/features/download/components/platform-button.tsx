@@ -38,7 +38,7 @@ export function PlatformButton({ platform, chooseLabel }: { platform: Platform; 
 				{name}
 				<ChevronDownIcon data-icon='inline-end' className='opacity-60' />
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align='center' className='w-44'>
+			<DropdownMenuContent align='center' className='w-44' data-lenis-prevent>
 				{variants.map(variant => (
 					<DropdownMenuItem key={variant.key} render={<a href={variant.url} />}>
 						{variant.label}

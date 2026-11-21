@@ -33,7 +33,7 @@ export function LanguageSwitcher({ locale, label }: LanguageSwitcherProps) {
 				{locale.toUpperCase()}
 				<ChevronDownIcon data-icon='inline-end' />
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align='end' className='w-36'>
+			<DropdownMenuContent align='end' className='w-36' data-lenis-prevent>
 				<DropdownMenuRadioGroup value={locale} onValueChange={changeLocale}>
 					{locales.map(option => (
 						<DropdownMenuRadioItem key={option} value={option} lang={option}>

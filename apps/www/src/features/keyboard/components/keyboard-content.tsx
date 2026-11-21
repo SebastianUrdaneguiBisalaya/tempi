@@ -89,8 +89,8 @@ export function KeyboardContent({ locale, copy, mockup }: KeyboardContentProps) 
 					<UndoReplica
 						copy={replicas.undo}
 						events={[
-							{ title: mockup.events.standup, calendar: 'work', start: 9, end: 9.5 },
-							{ title: mockup.events.focus, calendar: 'project', start: 10, end: 12 },
+							{ title: mockup.events.standup, calendar: 'work', start: 9, end: 10 },
+							{ title: mockup.events.focus, calendar: 'project', start: 10.5, end: 12 },
 							{ title: mockup.events.lunch, calendar: 'personal', start: 12.5, end: 13.5 },
 						]}
 					/>

@@ -4,6 +4,7 @@ import { Geist_Mono, Instrument_Sans, Manrope } from 'next/font/google';
 import { SiteHeader } from '@/features/header/components/site-header';
 import { type Locale, locales } from '@/lib/i18n';
 import { SITE_URL } from '@/lib/site';
+import { SmoothScroll } from '@/lib/smooth-scroll';
 import { getDictionary, getLocale } from './dictionaries';
 import '../globals.css';
 
@@ -51,6 +52,7 @@ export default async function RootLayout({ children }: LayoutProps<'/[lang]'>) {
 	return (
 		<html lang={await getLocale()} className={cn('h-full antialiased', manrope.variable, instrumentSans.variable, geistMono.variable)}>
 			<body className='flex min-h-full flex-col'>
+				<SmoothScroll />
 				<SiteHeader />
 				{children}
 			</body>

@@ -58,7 +58,7 @@ export function WordmarkBand({ label }: { label: string }) {
 			<div
 				ref={glowRef}
 				aria-hidden
-				className='pointer-events-none absolute inset-0 opacity-0 [background:radial-gradient(circle_var(--spot-radius,0px)_at_var(--spot-x,0px)_var(--spot-y,0px),rgb(255_255_255/0.06),transparent)]'
+				className='pointer-events-none absolute inset-0 opacity-0 [background:radial-gradient(circle_var(--spot-radius,0px)_at_var(--spot-x,0px)_var(--spot-y,0px),rgb(255_255_255/0.12),transparent)]'
 			/>
 			<canvas ref={canvasRef} aria-hidden className='absolute inset-0 size-full font-mono' />
 			{/* Only read for its computed font family; the accessible name is on the container. */}

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { getDictionary, getLocale } from '@/app/[lang]/dictionaries';
 import { SiteFooter } from '@/features/footer/components/site-footer';
 import { locales } from '@/lib/i18n';
-import { AUTHOR_URL, CONTACT_EMAIL, type LEGAL_PAGES } from '@/lib/site';
+import { AUTHOR_URL, CONTACT_EMAILS, type LEGAL_PAGES } from '@/lib/site';
 
 type LegalPageName = (typeof LEGAL_PAGES)[number];
 
@@ -102,9 +102,11 @@ export async function LegalPage({ page }: { page: LegalPageName }) {
 					<a href={AUTHOR_URL} target='_blank' rel='noreferrer' className='w-fit rounded-sm text-foreground underline-offset-4 hover:underline'>
 						Sebastian Urdanegui
 					</a>
-					<a href={`mailto:${CONTACT_EMAIL}`} className='w-fit rounded-sm text-foreground underline underline-offset-4'>
-						{CONTACT_EMAIL}
-					</a>
+					{CONTACT_EMAILS.map(email => (
+						<a key={email} href={`mailto:${email}`} className='w-fit rounded-sm text-foreground underline underline-offset-4'>
+							{email}
+						</a>
+					))}
 				</address>
 			</article>
 

@@ -37,7 +37,7 @@ export function AsciiNoise({ opacity, spotlight = false, className }: AsciiNoise
 				// A faint lift of the background under the spotlight; the canvas brightens the glyphs themselves.
 				<div
 					ref={glowRef}
-					className='absolute inset-0 opacity-0 [background:radial-gradient(circle_var(--spot-radius,0px)_at_var(--spot-x,0px)_var(--spot-y,0px),rgb(255_255_255/0.06),transparent)]'
+					className='absolute inset-0 opacity-0 [background:radial-gradient(circle_var(--spot-radius,0px)_at_var(--spot-x,0px)_var(--spot-y,0px),rgb(255_255_255/0.12),transparent)]'
 				/>
 			)}
 			<canvas ref={canvasRef} className='absolute inset-0 size-full font-mono' />
