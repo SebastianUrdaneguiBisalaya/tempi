@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "lenis/dist/lenis.css";
 
 /* The landing page is dark only: shadcn's `dark:` variants always apply. */
 @custom-variant dark (&:where(:root, :root *));
@@ -94,16 +95,10 @@
 	}
 	html {
 		@apply font-sans;
-		scroll-behavior: smooth;
 	}
 	/* Anchored sections stop below the floating header instead of under it. */
 	[id] {
 		scroll-margin-top: 5rem;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		html {
-			scroll-behavior: auto;
-		}
 	}
 	/* Tailwind v4 dropped the pointer cursor on buttons; bring it back for every clickable control except disabled ones. */
 	button:not(:disabled),
