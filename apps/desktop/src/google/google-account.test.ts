@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
+import type { OAuthFetch } from '@tempi/google-calendar';
 import { createGoogleAccountService, type GoogleAccountDeps } from './google-account';
 import type { LoopbackOptions, RedirectOutcome } from './loopback';
-import { CALENDAR_SCOPES, type Fetch } from './oauth';
+import { CALENDAR_SCOPES } from './oauth';
 import type { StoredAccount, TokenStore } from './token-store';
 
 const client = { id: 'client-id', secret: 'client-secret' };
@@ -30,7 +31,7 @@ const store: TokenStore = {
 	},
 };
 
-const fetch: Fetch = (url, init) => {
+const fetch: OAuthFetch = (url, init) => {
 	requests.push(`${url} ${init.body.toString()}`);
 	if (url.endsWith('/revoke')) {
 		if (revokeStatus === 'offline') return Promise.reject(new Error('offline'));
@@ -92,6 +93,39 @@ describe('connect', () => {
 		expect(await service().account()).toEqual({ email: 'ada@example.com' });
 	});
 
+	test('asks Google for exactly the scopes the legal pages describe, with PKCE and never the secret', async () => {
+		await service().connect();
+		const url = new URL(opened[0] ?? '');
+		expect(Object.fromEntries(url.searchParams)).toMatchObject({
+			client_id: client.id,
+			code_challenge_method: 'S256',
+			include_granted_scopes: 'true',
+			prompt: 'select_account consent',
+			redirect_uri: 'http://127.0.0.1:5000',
+			response_type: 'code',
+			scope: 'openid email https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events',
+		});
+		expect(url.searchParams.has('access_type')).toBe(false);
+		expect(url.toString()).not.toContain(client.secret);
+	});
+
+	test('a grant without a refresh token or an email fails, storing nothing', async () => {
+		const body = { access_token: 'access', expires_in: 3600, scope: FULL_SCOPE };
+		const answering =
+			(answer: object): OAuthFetch =>
+			() =>
+				Promise.resolve({ json: () => Promise.resolve(answer), ok: true, status: 200 });
+		expect(await service({ fetch: answering({ ...body, id_token: jwt({ aud: client.id, email: 'ada@example.com', sub: '42' }) }) }).connect()).toMatchObject({
+			error: { issues: [{ key: 'google.authFailed' }] },
+			ok: false,
+		});
+		expect(await service({ fetch: answering({ ...body, id_token: jwt({ aud: client.id, sub: '42' }), refresh_token: 'refresh' }) }).connect()).toMatchObject({
+			error: { issues: [{ key: 'google.authFailed' }] },
+			ok: false,
+		});
+		expect(stored).toBeNull();
+	});
+
 	test('only one account: a second connect fails without opening the browser', async () => {
 		const google = service();
 		await google.connect();
@@ -109,7 +143,7 @@ describe('connect', () => {
 		browser = () => ({ kind: 'timeout' });
 		expect(await service().connect()).toMatchObject({ error: { issues: [{ key: 'google.timeout' }] }, ok: false });
 		browser = state => redirect({ code: 'auth-code', state });
-		const refusing: Fetch = () => Promise.resolve({ json: () => Promise.resolve({ error: 'invalid_grant' }), ok: false, status: 400 });
+		const refusing: OAuthFetch = () => Promise.resolve({ json: () => Promise.resolve({ error: 'invalid_grant' }), ok: false, status: 400 });
 		expect(await service({ fetch: refusing }).connect()).toMatchObject({ error: { issues: [{ key: 'google.authFailed' }] }, ok: false });
 		expect(stored).toBeNull();
 	});

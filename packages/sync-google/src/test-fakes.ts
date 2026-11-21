@@ -1,4 +1,4 @@
-import { GoogleApiError, type GoogleCalendarApi, type GoogleCalendarListEntry, type GoogleEvent, type GoogleEventBody, GoogleOfflineError, SyncTokenExpiredError } from './google-api';
+import { GoogleApiError, type GoogleCalendarApi, type GoogleCalendarListEntry, type GoogleEvent, type GoogleEventBody, GoogleOfflineError, SyncTokenExpiredError } from '@tempi/google-calendar';
 
 type Stored = GoogleEvent & { version: number };
 
@@ -80,6 +80,14 @@ export class FakeGoogle implements GoogleCalendarApi {
 			.filter(event => event.version > since && (syncToken !== null || event.status !== 'cancelled' || event.recurringEventId !== undefined))
 			.map(({ version: _version, ...event }) => event);
 		return Promise.resolve({ items, nextSyncToken: String(this.version) });
+	}
+
+	getEvent(calendarId: string, eventId: string): Promise<GoogleEvent | null> {
+		this.online();
+		const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
+		if (current === null) return Promise.resolve(null);
+		const { version: _version, ...event } = current;
+		return Promise.resolve(event);
 	}
 
 	insertEvent(calendarId: string, body: GoogleEventBody): Promise<GoogleEvent> {

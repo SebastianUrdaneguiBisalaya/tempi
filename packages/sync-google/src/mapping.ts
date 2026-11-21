@@ -1,5 +1,5 @@
 import { type CalendarEvent, isValidTimeZone, MAX_REMINDER_MINUTES, toUtcInstant } from '@tempi/core';
-import type { GoogleEvent, GoogleEventBody, GoogleEventTime } from './google-api';
+import type { GoogleEvent, GoogleEventBody, GoogleEventTime } from '@tempi/google-calendar';
 
 /** Private property that keeps Tempi's video link, which Google has no plain field for. */
 export const VIDEO_URL_PROPERTY = 'tempiVideoUrl';

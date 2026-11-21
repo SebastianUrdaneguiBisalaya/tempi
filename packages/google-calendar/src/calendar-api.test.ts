@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { createGoogleCalendarApi, GoogleApiError, GoogleAuthError, type GoogleFetch, GoogleOfflineError, SyncTokenExpiredError } from './google-api';
+import { createGoogleCalendarApi, GoogleApiError, GoogleAuthError, type GoogleFetch, GoogleOfflineError, SyncTokenExpiredError } from './calendar-api';
 
 /** Answers requests in order with the given responses, recording the URLs and headers. */
 const fakeFetch = (...responses: { body?: unknown; status: number }[]) => {
@@ -60,6 +60,14 @@ describe('Google Calendar API client', () => {
 		await expect(fakeFetch({ body: { error: { errors: [{ reason: 'insufficientPermissions' }] } }, status: 403 }).api.listCalendars()).rejects.toBeInstanceOf(GoogleAuthError);
 		await expect(fakeFetch({ body: { error: 'rateLimitExceeded' }, status: 403 }).api.listCalendars()).rejects.toBeInstanceOf(GoogleApiError);
 		await expect(fakeFetch().api.listCalendars()).rejects.toBeInstanceOf(GoogleOfflineError);
+	});
+
+	test('gets one event, or null when Google has none', async () => {
+		const { api, requests } = fakeFetch({ body: { etag: '"1"', id: 'a b' }, status: 200 });
+		expect(await api.getEvent('ada@example.com', 'a b')).toEqual({ etag: '"1"', id: 'a b' });
+		expect(requests[0]).toMatchObject({ method: 'GET', url: 'https://www.googleapis.com/calendar/v3/calendars/ada%40example.com/events/a%20b' });
+		expect(await fakeFetch({ status: 404 }).api.getEvent('c', 'a')).toBeNull();
+		await expect(fakeFetch({ body: { id: 'a' }, status: 200 }).api.getEvent('c', 'a')).rejects.toBeInstanceOf(GoogleApiError);
 	});
 
 	test('deleting an event that is already gone succeeds', async () => {

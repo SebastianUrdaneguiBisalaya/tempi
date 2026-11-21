@@ -1,18 +1,22 @@
 import { fail, type GoogleAccount, type GoogleConnectResult, ok, type Result } from '@tempi/core';
-import type { LoopbackOptions, LoopbackRedirect } from './loopback';
 import {
 	authorizationUrl,
+	type CodeExchange,
+	createPkce,
 	exchangeCode,
-	type Fetch,
-	type GrantedTokens,
 	GrantRevokedError,
-	hasCalendarScopes,
+	getAccessToken,
+	hasScopes,
+	MissingScopesError,
+	NotSignedInError,
 	type OAuthClient,
+	type OAuthFetch,
 	OAuthNetworkError,
 	randomToken,
-	refreshAccessToken,
 	revokeToken,
-} from './oauth';
+} from '@tempi/google-calendar';
+import type { LoopbackOptions, LoopbackRedirect } from './loopback';
+import { CALENDAR_SCOPES, SCOPES } from './oauth';
 import type { TokenStore } from './token-store';
 
 /** How long the browser sign-in may take before connecting gives up. */
@@ -22,7 +26,7 @@ export type GoogleAccountDeps = {
 	/** Null when this build has no OAuth client: every call that needs Google fails with `google.notConfigured`. */
 	client: OAuthClient | null;
 	store: TokenStore;
-	fetch: Fetch;
+	fetch: OAuthFetch;
 	listen: (options: LoopbackOptions) => Promise<LoopbackRedirect>;
 	/** Opens the sign-in page in the system browser, never inside the app. */
 	openBrowser: (url: string) => Promise<void>;
@@ -44,9 +48,6 @@ export type GoogleAccountService = {
 	accessToken: () => Promise<Result<string>>;
 };
 
-/** Refresh this long before the access token expires, so it never lapses mid-request. */
-const EXPIRY_MARGIN_MS = 60_000;
-
 const reconnectRequired = (detail: string) => fail<string>('conflict', 'google.reconnectRequired', { detail });
 
 const authFailed = (detail: string) => fail<GoogleConnectResult>('internal', 'google.authFailed', { detail });
@@ -58,16 +59,27 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 	// An account connected without calendar access may connect again, replacing its grant.
 	const isFullyConnected = async () => {
 		const stored = await deps.store.read();
-		return stored !== null && hasCalendarScopes(stored.scope);
+		return stored !== null && hasScopes(stored.scope, CALENDAR_SCOPES);
 	};
 
 	const signIn = async (client: OAuthClient, controller: AbortController): Promise<Result<GoogleConnectResult>> => {
 		const { signal } = controller;
 		const state = randomToken();
-		const verifier = randomToken();
+		const { challenge, verifier } = await createPkce();
 		const { outcome, redirectUri } = await deps.listen({ landingUrl: deps.landingUrl, signal, state, timeoutMs: SIGN_IN_TIMEOUT_MS });
 		try {
-			await deps.openBrowser(authorizationUrl(client, { redirectUri, state, verifier }));
+			await deps.openBrowser(
+				authorizationUrl({
+					clientId: client.id,
+					codeChallenge: challenge,
+					includeGrantedScopes: true,
+					// Always ask, so Google always returns a refresh token, and let the user pick which account.
+					prompt: ['select_account', 'consent'],
+					redirectUri,
+					scopes: SCOPES,
+					state,
+				})
+			);
 		} catch (error) {
 			controller.abort();
 			throw error;
@@ -81,15 +93,20 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 		const code = ended.params.get('code');
 		if (error !== null || code === null) return authFailed(`Google redirected back with error "${error ?? 'no code'}"`);
 
-		let tokens: GrantedTokens;
+		let exchanged: CodeExchange;
 		try {
-			tokens = await exchangeCode(deps.fetch, client, { code, now: deps.now(), redirectUri, verifier });
+			exchanged = await exchangeCode({ client, code, fetch: deps.fetch, now: deps.now(), redirectUri, verifier });
 		} catch (error) {
 			return authFailed(error instanceof Error ? error.message : String(error));
 		}
+		const { account, refreshToken } = exchanged;
+		// Tempi syncs in the background and shows who is connected, so it needs both.
+		if (refreshToken === null) return authFailed('Google sent no refresh token');
+		if (account === null || account.email === null) return authFailed('Google sent no email for the account');
+		const tokens = { accessToken: exchanged.accessToken, email: account.email, expiresAt: exchanged.expiresAt, refreshToken, scope: exchanged.scope, subject: account.subject };
 		// Another connect may have finished first while this one exchanged its code.
 		if (signal.aborted || (await isFullyConnected())) {
-			await revokeToken(deps.fetch, tokens.refreshToken).catch((error: unknown) => console.error('Could not revoke an unused Google grant', error));
+			await revokeToken({ fetch: deps.fetch, token: tokens.refreshToken }).catch((error: unknown) => console.error('Could not revoke an unused Google grant', error));
 			return signal.aborted ? ok({ status: 'canceled' }) : fail('conflict', 'google.alreadyConnected');
 		}
 		await deps.store.write(tokens);
@@ -98,19 +115,13 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 
 	return {
 		accessToken: async () => {
-			const stored = await deps.store.read();
-			if (stored === null) return reconnectRequired('No Google account is connected');
-			if (!hasCalendarScopes(stored.scope)) return reconnectRequired(`The grant lacks calendar access: ${stored.scope}`);
-			const now = deps.now();
-			if (Date.parse(stored.expiresAt) - EXPIRY_MARGIN_MS > now.getTime()) return ok(stored.accessToken);
 			if (deps.client === null) return fail('internal', 'google.notConfigured');
 			try {
-				const refreshed = await refreshAccessToken(deps.fetch, deps.client, { now, refreshToken: stored.refreshToken });
-				await deps.store.write({ ...stored, accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt, scope: refreshed.scope ?? stored.scope });
-				return ok(refreshed.accessToken);
+				return ok(await getAccessToken({ client: deps.client, fetch: deps.fetch, load: deps.store.read, now: deps.now, requiredScopes: CALENDAR_SCOPES, save: deps.store.write }));
 			} catch (error) {
 				const detail = error instanceof Error ? error.message : String(error);
-				if (error instanceof GrantRevokedError) return reconnectRequired(detail);
+				// No account, one connected before calendar access, or a revoked grant: all mean connecting again.
+				if (error instanceof NotSignedInError || error instanceof MissingScopesError || error instanceof GrantRevokedError) return reconnectRequired(detail);
 				return fail('internal', error instanceof OAuthNetworkError ? 'google.offline' : 'google.syncFailed', { detail });
 			}
 		},
@@ -139,7 +150,7 @@ export const createGoogleAccountService = (deps: GoogleAccountDeps): GoogleAccou
 				await deps.store.clear();
 				return ok(null);
 			}
-			await revokeToken(deps.fetch, stored.refreshToken).catch((error: unknown) => console.error('Could not revoke the Google grant; deleting the tokens anyway', error));
+			await revokeToken({ fetch: deps.fetch, token: stored.refreshToken }).catch((error: unknown) => console.error('Could not revoke the Google grant; deleting the tokens anyway', error));
 			await deps.store.clear();
 			return ok(null);
 		},

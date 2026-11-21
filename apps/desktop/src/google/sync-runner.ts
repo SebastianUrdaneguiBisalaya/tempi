@@ -1,5 +1,6 @@
 import type { GoogleSyncStatus } from '@tempi/core';
-import { GoogleAuthError, GoogleOfflineError, type SyncSummary } from '@tempi/sync-google';
+import { GoogleAuthError, GoogleOfflineError } from '@tempi/google-calendar';
+import type { SyncSummary } from '@tempi/sync-google';
 
 export const SYNC_INTERVAL_MS = 5 * 60 * 1000;
 /** Local edits wait this long, so a burst of them (a drag, several quick edits) syncs once. */

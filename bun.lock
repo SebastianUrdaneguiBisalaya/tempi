@@ -19,6 +19,7 @@
         "@tempi/ai": "workspace:*",
         "@tempi/core": "workspace:*",
         "@tempi/db": "workspace:*",
+        "@tempi/google-calendar": "workspace:*",
         "@tempi/i18n": "workspace:*",
         "@tempi/ical": "workspace:*",
         "@tempi/ipc": "workspace:*",
@@ -159,6 +160,16 @@
         "typescript": "catalog:",
       },
     },
+    "packages/google-calendar": {
+      "name": "@tempi/google-calendar",
+      "version": "0.1.0",
+      "dependencies": {
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "typescript": "catalog:",
+      },
+    },
     "packages/i18n": {
       "name": "@tempi/i18n",
       "version": "0.1.0",
@@ -196,7 +207,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@tempi/core": "workspace:*",
-        "zod": "catalog:",
+        "@tempi/google-calendar": "workspace:*",
       },
       "devDependencies": {
         "@tempi/db": "workspace:*",
@@ -598,6 +609,8 @@
     "@tempi/db": ["@tempi/db@workspace:packages/db"],
 
     "@tempi/desktop": ["@tempi/desktop@workspace:apps/desktop"],
+
+    "@tempi/google-calendar": ["@tempi/google-calendar@workspace:packages/google-calendar"],
 
     "@tempi/i18n": ["@tempi/i18n@workspace:packages/i18n"],
 

@@ -11,7 +11,7 @@ import {
 	isWritableRole,
 	toUtcInstant,
 } from '@tempi/core';
-import { GoogleApiError, type GoogleCalendarApi, type GoogleCalendarListEntry, type GoogleEvent, SyncTokenExpiredError } from './google-api';
+import { GoogleApiError, type GoogleCalendarApi, type GoogleCalendarListEntry, type GoogleEvent, SyncTokenExpiredError } from '@tempi/google-calendar';
 import { fromGoogle, googleEventIdFor, instanceId, instantOf, type PulledFields, toGoogle } from './mapping';
 
 export type SyncDeps = Pick<CoreDeps, 'calendars' | 'clock' | 'events' | 'googleSync' | 'ids'>;

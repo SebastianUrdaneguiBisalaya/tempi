@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const BASE_URL = 'https://www.googleapis.com/calendar/v3';
 
-/** How long one request may take, body included, before Google counts as unreachable and the sync ends as offline. */
+/** How long one request may take, body included, before Google counts as unreachable (`GoogleOfflineError`). */
 export const GOOGLE_REQUEST_TIMEOUT_MS = 30_000;
 
 /** The subset of `fetch` the client uses, so tests can stand in for Google. */
@@ -11,7 +11,7 @@ export type GoogleFetch = (
 	init: { body?: string; headers: Record<string, string>; method: 'DELETE' | 'GET' | 'PATCH' | 'POST'; signal: AbortSignal }
 ) => Promise<{ json: () => Promise<unknown>; ok: boolean; status: number }>;
 
-/** Google couldn't be reached at all: sync waits for the connection to come back. */
+/** Google couldn't be reached at all (no connection, or the deadline passed). */
 export class GoogleOfflineError extends Error {
 	override name = 'GoogleOfflineError';
 }
@@ -74,24 +74,27 @@ const googleEventSchema = z.object({
 
 export type GoogleEvent = z.output<typeof googleEventSchema>;
 
-/** What Tempi writes on a Google event. Fields it doesn't model (attendees, conferences) are left untouched. */
+/**
+ * The event fields a caller can write. Every field is optional: on a patch, fields left out (attendees, conferences
+ * and anything not listed here) keep their value at Google.
+ */
 export type GoogleEventBody = {
-	description: string | null;
-	end: GoogleEventTime;
-	extendedProperties: { private: Record<string, string> };
+	description?: string | null;
+	end?: GoogleEventTime;
+	extendedProperties?: { private?: Record<string, string> };
 	id?: string;
-	location: string | null;
+	location?: string | null;
 	recurrence?: string[];
-	reminders: { overrides: { method: 'popup'; minutes: number }[]; useDefault: false };
-	start: GoogleEventTime;
-	status: 'confirmed' | 'tentative';
-	summary: string;
+	reminders?: { overrides?: { method: 'email' | 'popup'; minutes: number }[]; useDefault: boolean };
+	start?: GoogleEventTime;
+	status?: 'cancelled' | 'confirmed' | 'tentative';
+	summary?: string | null;
 };
 
 const pageSchema = <S extends z.ZodType>(item: S) =>
 	z.object({ items: z.array(z.unknown()).optional(), nextPageToken: z.string().optional(), nextSyncToken: z.string().optional() }).transform(page => ({
 		...page,
-		// Items Tempi can't read (an unknown shape) are dropped one by one instead of failing the whole page.
+		// Items that don't match the schema (an unknown shape) are dropped one by one instead of failing the whole page.
 		items: (page.items ?? []).flatMap(value => {
 			const parsed = item.safeParse(value);
 			return parsed.success ? [parsed.data as z.output<S>] : [];
@@ -105,6 +108,8 @@ export type GoogleCalendarApi = {
 	listCalendars: () => Promise<GoogleCalendarListEntry[]>;
 	/** Every change since `syncToken` (deleted events included), or every event when it is null; all pages. */
 	listEvents: (calendarId: string, syncToken: string | null) => Promise<{ items: GoogleEvent[]; nextSyncToken: string }>;
+	/** One event or occurrence by id, cancelled ones included; null when Google has none. */
+	getEvent: (calendarId: string, eventId: string) => Promise<GoogleEvent | null>;
 	insertEvent: (calendarId: string, body: GoogleEventBody) => Promise<GoogleEvent>;
 	patchEvent: (calendarId: string, eventId: string, body: GoogleEventBody) => Promise<GoogleEvent>;
 	/** Deletes an event, or cancels an occurrence when `eventId` is an instance id. One already gone counts as deleted. */
@@ -154,6 +159,14 @@ export const createGoogleCalendarApi = (options: { accessToken: () => Promise<st
 				await request('DELETE', `${BASE_URL}/${path('calendars', calendarId, 'events', eventId)}`);
 			} catch (error) {
 				if (error instanceof GoogleApiError && (error.status === 404 || error.status === 410)) return;
+				throw error;
+			}
+		},
+		getEvent: async (calendarId, eventId) => {
+			try {
+				return parseEvent((await request('GET', `${BASE_URL}/${path('calendars', calendarId, 'events', eventId)}`)).json);
+			} catch (error) {
+				if (error instanceof GoogleApiError && (error.status === 404 || error.status === 410)) return null;
 				throw error;
 			}
 		},
