@@ -652,6 +652,84 @@ export const en = {
 			heatmap: 'When you are busy',
 			heatmapCell: '{{weekday}} {{hour}}: {{value}}',
 			hour: 'Hour',
+			info: {
+				averageDuration: {
+					how: 'The length of every timed event in the period, added up and divided by how many there are. Overlapping events each count in full.',
+					read: 'Lower means shorter meetings on average; compare it with the previous period to see the trend.',
+					what: 'How long a typical event lasts.',
+				},
+				busiestDay: {
+					how: 'Busy time is added up per day; the day with the most wins, the earliest one on a tie.',
+					read: 'The date is the day; the time under it is how much of that day was booked.',
+					what: 'The day of the period with the most busy time.',
+				},
+				byCalendar: {
+					how: 'Busy time split by calendar. When events overlap, each minute goes to the event that started first, so the bars add up to the time booked.',
+					read: 'Each bar is a calendar in its color; the longest bar is full and the others are shown against it.',
+					what: 'Which calendars took your time.',
+				},
+				events: {
+					how: 'Every timed occurrence that falls in the period, each repetition of a recurring event included. All-day events are left out.',
+					read: 'The change line compares it with the period of the same length just before.',
+					what: 'How many events you had.',
+				},
+				focus: {
+					how: 'Free stretches of 2 hours or more inside your working hours, on your working days, added up.',
+					read: 'More is better for deep work: it is the time you could have spent without interruptions.',
+					what: 'Uninterrupted time left in your working hours.',
+				},
+				heading: {
+					how: 'How it is calculated',
+					read: 'How to read it',
+					what: 'What it shows',
+				},
+				heatmap: {
+					how: 'Busy minutes added up per weekday and hour of the day across the whole period, in your time zone.',
+					read: 'One row per weekday and one cell per hour; the darker the cell, the more often that hour was busy.',
+					what: 'The hours of the week you tend to be busy.',
+				},
+				label: 'About {{title}}',
+				nextWeek: {
+					how: 'Busy time of each of the next seven days, starting today, whatever period is selected.',
+					read: 'Each bar is a day; taller means a fuller day.',
+					what: 'How full the coming week is.',
+				},
+				occupancy: {
+					how: 'Busy time that falls inside your working hours, divided by the total working time of the period.',
+					read: '100% means every working hour was booked; a low value leaves room for other work.',
+					what: 'How much of your working time was booked.',
+				},
+				recurrence: {
+					how: 'Timed events counted by whether they belong to a repeating series or happen once.',
+					read: 'The bar splits the events by share; the legend gives each count.',
+					what: 'How much of your calendar repeats.',
+				},
+				status: {
+					how: 'Timed events counted by their status.',
+					read: 'The bar splits the events by share; a large tentative part means many plans are not settled yet.',
+					what: 'How many events are confirmed or still tentative.',
+				},
+				top: {
+					how: 'Events are grouped by series, or by title when they are not part of one, and ranked by their total length. Overlaps count in full here.',
+					read: 'The bar shows the time against the top item, and the count says how many times it happened.',
+					what: 'The five things that took the most time.',
+				},
+				total: {
+					how: 'The length of all timed events in the period, with overlapping time counted once. All-day events are left out.',
+					read: 'The change line compares it with the period of the same length just before.',
+					what: 'How much time your events took.',
+				},
+				venue: {
+					how: 'Timed events counted as video call when they have a video link, in person when they only have a place, and no place otherwise.',
+					read: 'The bar splits the events by share; the legend gives each count.',
+					what: 'Where your events happen.',
+				},
+				weekly: {
+					how: 'Busy time per week, using your first day of the week, split by calendar like "Time per calendar".',
+					read: 'Each bar is a week, stacked by calendar color; the axis is in hours.',
+					what: 'How your booked time changes from week to week.',
+				},
+			},
 			averageDuration: 'Average length',
 			loading: 'Calculating…',
 			nextWeek: 'Next 7 days',
