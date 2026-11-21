@@ -57,7 +57,7 @@ export const TOUR_STEPS = {
 	// Without a Google account there is no Google section; the step then points to Settings › Integrations, centered.
 	google: { area: 'sidebar', shortcuts: [], target: TOUR_TARGETS.google },
 	panel: { area: 'panel', shortcuts: ['togglePanel'], target: TOUR_TARGETS.panel },
-	assistant: { area: 'sidebar', shortcuts: ['toggleAssistant'], target: TOUR_TARGETS.assistant },
+	assistant: { area: 'sidebar', shortcuts: ['openAssistantChat', 'openAssistantVoice'], target: TOUR_TARGETS.assistant },
 	commandMenu: { area: 'main', shortcuts: ['openCommandMenu'] },
 	shortcuts: { area: 'panel', shortcuts: ['showShortcuts'], target: TOUR_TARGETS.shortcutsHint },
 	settings: { area: 'main', shortcuts: ['openSettings'], target: TOUR_TARGETS.settings },

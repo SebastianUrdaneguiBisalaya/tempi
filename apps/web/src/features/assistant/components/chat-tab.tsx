@@ -16,7 +16,7 @@ import { Trace, TraceCollapsible, TraceCollapsibleContent, TraceCollapsibleTrigg
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { useAiSettings } from '@/features/settings/hooks/use-ai';
 import type { AssistantTurn, ToolTrace } from '../assistant-store';
-import { useAssistant, useAssistantRequests } from './assistant-provider';
+import { ASSISTANT_FOCUS, useAssistant, useAssistantRequests } from './assistant-provider';
 import { DictationButton, DictationError, DictationWaveform } from './dictation-controls';
 import { ProposalCard } from './proposal-card';
 import { ProviderSelect } from './provider-select';
@@ -179,6 +179,7 @@ function PromptInput({ enabled, provider, settings }: { enabled: TextProvider[];
 				{t('assistant.prompt.label')}
 			</label>
 			<Textarea
+				{...ASSISTANT_FOCUS}
 				className='max-h-40 min-h-12'
 				id={`${id}-prompt`}
 				maxLength={MAX_ASSISTANT_MESSAGE_LENGTH}

@@ -70,13 +70,21 @@ export const createDictationStore = () =>
 			set({ meter: SILENT });
 		};
 
+		// A stop that came while the microphone was still opening (a quick push-to-talk), applied once it opens.
+		let stopWhenOpen = false;
+
 		const stop = () => {
-			if (session === null || session.recorder.state === 'inactive') return;
+			if (session === null) {
+				if (get().status === 'recording') stopWhenOpen = true;
+				return;
+			}
+			if (session.recorder.state === 'inactive') return;
 			session.recorder.stop();
 		};
 
 		const start = async () => {
 			if (get().status !== 'idle') return;
+			stopWhenOpen = false;
 			set({ error: null, status: 'recording' });
 			let stream: MediaStream;
 			try {
@@ -126,6 +134,7 @@ export const createDictationStore = () =>
 
 			session = { context, discard: false, frame: requestAnimationFrame(tick), limit: setTimeout(stop, MAX_DICTATION_SECONDS * 1000), recorder, stream };
 			recorder.start();
+			if (stopWhenOpen) stop();
 		};
 
 		return {
