@@ -96,10 +96,10 @@ export function FeaturesContent({ locale, copy, shared }: FeaturesContentProps) 
 				<ShowcaseCell align='center' {...cell('keyboard')}>
 					<ShortcutsReplica title={replicas.shortcutsTitle} groups={shared.shortcuts.groups} actions={shared.shortcuts.actions} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('languages')}>
+				<ShowcaseCell align='center' {...cell('languages')}>
 					<AppearanceReplica locale={locale} copy={replicas.appearance} tabs={shared.settingsTabs} />
 				</ShowcaseCell>
-				<ShowcaseCell {...cell('updates')}>
+				<ShowcaseCell align='center' {...cell('updates')}>
 					<UpdatesReplica copy={replicas.updates} tabs={shared.settingsTabs} />
 				</ShowcaseCell>
 			</ShowcaseGrid>
