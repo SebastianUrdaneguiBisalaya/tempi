@@ -39,7 +39,7 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 		gsap.from('[data-header-item]', { y: -12, autoAlpha: 0, duration: 0.6, stagger: 0.06, ease: 'power2.out' });
 	});
 
-	// Near the top the pill spans the layout width; once the page scrolls it shrinks into a compact bar and grows back on return.
+	// Near the top the pill is a little wider than the compact bar, not the full layout width; once the page scrolls it shrinks into a compact bar and grows back on return.
 	const compact = scrolled && !menuOpen;
 
 	return (
@@ -53,7 +53,7 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 			<div
 				className={cn(
 					'mx-auto flex items-center justify-between gap-4 rounded-full border pr-2 pl-4 backdrop-blur-xl backdrop-saturate-150 transition-[max-width,height,background-color,border-color,box-shadow] duration-500 ease-out',
-					compact ? 'h-12 max-w-3xl border-border bg-background/70 shadow-lg shadow-black/30' : 'h-14 max-w-6xl border-foreground/10 bg-background/25'
+					compact ? 'h-12 max-w-3xl border-border bg-background/70 shadow-lg shadow-black/30' : 'h-14 max-w-4xl border-foreground/10 bg-background/25'
 				)}
 			>
 				<a href={`/${locale}`} aria-label={copy.home} className='flex items-center gap-1 rounded-full' data-header-item>
