@@ -2,7 +2,8 @@ export const SITE_URL = 'https://tempi.sebastianurdanegui.com';
 
 export const AUTHOR_URL = 'https://sebastianurdanegui.com';
 
-export const CONTACT_EMAIL = 'sebasurdanegui@gmail.com';
+// Both are registered in Google Cloud, so the legal pages list both.
+export const CONTACT_EMAILS = ['sebasurdanegui@gmail.com', 'sebasub147@gmail.com'] as const;
 
 // The legal pages, under each locale; Google's OAuth consent screen links to them.
 export const LEGAL_PAGES = ['terms', 'privacy'] as const;

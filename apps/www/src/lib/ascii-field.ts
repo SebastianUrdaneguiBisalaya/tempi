@@ -73,13 +73,13 @@ function cellsUnder(grid: Grid, spotlight: Spotlight) {
 
 /**
  * Clears one cell and draws its glyph, brightened by `light` (0 to 1): the mark goes to full white and the noise
- * lifts to a soft grey. The context's font, color and alignment are set by the caller.
+ * lifts to a clear light grey. The context's font, color and alignment are set by the caller.
  */
 function drawCell(context: CanvasRenderingContext2D, grid: Grid, index: number, cell: Cell, light: number) {
 	const { x, y } = cellCenter(grid, index);
 	context.clearRect(x - grid.cellWidth / 2, y - grid.cellHeight / 2, grid.cellWidth, grid.cellHeight);
 	if (!cell || cell.alpha <= 0) return;
-	const target = (grid.coverage[index] ?? 0) > 0.12 ? 1 : 0.5;
+	const target = (grid.coverage[index] ?? 0) > 0.12 ? 1 : 0.75;
 	context.globalAlpha = cell.alpha + Math.max(0, target - cell.alpha) * light;
 	context.fillText(cell.glyph, x, y);
 }
