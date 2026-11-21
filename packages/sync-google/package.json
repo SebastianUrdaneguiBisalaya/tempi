@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@tempi/core": "workspace:*",
-    "zod": "catalog:"
+    "@tempi/google-calendar": "workspace:*"
   },
   "devDependencies": {
     "@tempi/db": "workspace:*",

@@ -20,9 +20,10 @@ import {
 	uuidv7Ids,
 } from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
+import { createGoogleCalendarApi, GoogleAuthError, GoogleOfflineError } from '@tempi/google-calendar';
 import { resources } from '@tempi/i18n';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
-import { createGoogleCalendarApi, GoogleAuthError, GoogleOfflineError, type SyncDeps, syncGoogle } from '@tempi/sync-google';
+import { type SyncDeps, syncGoogle } from '@tempi/sync-google';
 import {
 	app,
 	BrowserWindow,

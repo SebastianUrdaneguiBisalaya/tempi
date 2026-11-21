@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import type { GoogleSyncStatus } from '@tempi/core';
-import { GoogleAuthError, GoogleOfflineError, type SyncSummary } from '@tempi/sync-google';
+import { GoogleAuthError, GoogleOfflineError } from '@tempi/google-calendar';
+import type { SyncSummary } from '@tempi/sync-google';
 import { createSyncRunner, EDIT_DEBOUNCE_MS, SYNC_INTERVAL_MS } from './sync-runner';
 
 const SUMMARY: SyncSummary = { pulled: 1, pushed: 0, skipped: 0 };
