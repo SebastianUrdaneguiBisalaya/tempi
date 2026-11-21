@@ -51,3 +51,14 @@ export const timeZoneLabel = (timeZone: string, language: Language): string => {
 	const city = (timeZone.split('/').pop() ?? timeZone).replaceAll('_', ' ');
 	return `${timeZoneNamePart(timeZone, language, 'longGeneric')} · ${city} (${timeZoneNamePart(timeZone, language, 'shortOffset')})`;
 };
+
+/** Offset like "GMT-5" for the zone, at this moment. */
+export const timeZoneOffset = (timeZone: string, language: Language): string => timeZoneNamePart(timeZone, language, 'shortOffset');
+
+/** The two lines of a time zone's column header: its country (or city when it has none) and its offset. */
+export const timeZoneHeader = (timeZone: string, language: Language): { description: string; label: string } => {
+	const code = countryForTimeZone(timeZone);
+	const country = code === null ? null : (new Intl.DisplayNames([language], { type: 'region' }).of(code) ?? null);
+	const city = (timeZone.split('/').pop() ?? timeZone).replaceAll('_', ' ');
+	return { description: timeZoneOffset(timeZone, language), label: country ?? city };
+};
