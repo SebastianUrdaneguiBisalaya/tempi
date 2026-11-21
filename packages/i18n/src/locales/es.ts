@@ -654,6 +654,84 @@ export const es = {
 			heatmap: 'Cuándo estás ocupado',
 			heatmapCell: '{{weekday}} {{hour}}: {{value}}',
 			hour: 'Hora',
+			info: {
+				averageDuration: {
+					how: 'La duración de todos los eventos con hora del periodo, sumada y dividida entre cuántos hay. Los eventos que se solapan cuentan completos.',
+					read: 'Menos significa reuniones más cortas en promedio; compárala con el periodo anterior para ver la tendencia.',
+					what: 'Cuánto dura un evento típico.',
+				},
+				busiestDay: {
+					how: 'Se suma el tiempo ocupado de cada día; gana el que tiene más y, si empatan, el primero.',
+					read: 'La fecha es el día; el tiempo debajo es cuánto de ese día estuvo ocupado.',
+					what: 'El día del periodo con más tiempo ocupado.',
+				},
+				byCalendar: {
+					how: 'El tiempo ocupado repartido por calendario. Cuando los eventos se solapan, cada minuto va al evento que empezó primero, así que las barras suman el tiempo ocupado.',
+					read: 'Cada barra es un calendario con su color; la más larga va llena y las demás se comparan con ella.',
+					what: 'Qué calendarios se llevaron tu tiempo.',
+				},
+				events: {
+					how: 'Cada evento con hora que cae en el periodo, incluida cada repetición de los eventos recurrentes. Los eventos de todo el día no cuentan.',
+					read: 'La línea de cambio lo compara con el periodo de la misma duración justo anterior.',
+					what: 'Cuántos eventos tuviste.',
+				},
+				focus: {
+					how: 'Los bloques libres de 2 horas o más dentro de tu horario laboral, en tus días laborables, sumados.',
+					read: 'Más es mejor para el trabajo profundo: es el tiempo que pudiste pasar sin interrupciones.',
+					what: 'El tiempo sin interrupciones que quedó en tu horario laboral.',
+				},
+				heading: {
+					how: 'Cómo se calcula',
+					read: 'Cómo se lee',
+					what: 'Qué muestra',
+				},
+				heatmap: {
+					how: 'Los minutos ocupados sumados por día de la semana y hora del día en todo el periodo, en tu zona horaria.',
+					read: 'Una fila por día de la semana y una celda por hora; cuanto más oscura la celda, más ocupada estuvo esa hora.',
+					what: 'Las horas de la semana en las que sueles estar ocupado.',
+				},
+				label: 'Acerca de {{title}}',
+				nextWeek: {
+					how: 'El tiempo ocupado de cada uno de los próximos siete días desde hoy, sea cual sea el periodo elegido.',
+					read: 'Cada barra es un día; más alta significa un día más lleno.',
+					what: 'Qué tan llena viene la próxima semana.',
+				},
+				occupancy: {
+					how: 'El tiempo ocupado que cae dentro de tu horario laboral, dividido entre el tiempo laboral total del periodo.',
+					read: '100 % significa que todas tus horas laborales estuvieron ocupadas; un valor bajo deja espacio para otro trabajo.',
+					what: 'Cuánto de tu tiempo laboral estuvo ocupado.',
+				},
+				recurrence: {
+					how: 'Los eventos con hora contados según si forman parte de una serie que se repite o pasan una sola vez.',
+					read: 'La barra reparte los eventos por proporción; la leyenda da cada cantidad.',
+					what: 'Cuánto de tu calendario se repite.',
+				},
+				status: {
+					how: 'Los eventos con hora contados según su estado.',
+					read: 'La barra reparte los eventos por proporción; una parte provisional grande significa muchos planes sin cerrar.',
+					what: 'Cuántos eventos están confirmados o siguen provisionales.',
+				},
+				top: {
+					how: 'Los eventos se agrupan por serie, o por título cuando no forman parte de una, y se ordenan por su duración total. Aquí los solapamientos cuentan completos.',
+					read: 'La barra muestra el tiempo frente al primero de la lista, y el número dice cuántas veces ocurrió.',
+					what: 'Las cinco cosas que más tiempo te tomaron.',
+				},
+				total: {
+					how: 'La duración de todos los eventos con hora del periodo, contando una sola vez el tiempo que se solapa. Los eventos de todo el día no cuentan.',
+					read: 'La línea de cambio lo compara con el periodo de la misma duración justo anterior.',
+					what: 'Cuánto tiempo ocuparon tus eventos.',
+				},
+				venue: {
+					how: 'Los eventos con hora se cuentan como videollamada si tienen enlace de video, presencial si solo tienen lugar, y sin lugar en otro caso.',
+					read: 'La barra reparte los eventos por proporción; la leyenda da cada cantidad.',
+					what: 'Dónde ocurren tus eventos.',
+				},
+				weekly: {
+					how: 'El tiempo ocupado por semana, según tu primer día de la semana, repartido por calendario como en "Tiempo por calendario".',
+					read: 'Cada barra es una semana, apilada por color de calendario; el eje está en horas.',
+					what: 'Cómo cambia tu tiempo ocupado de una semana a otra.',
+				},
+			},
 			averageDuration: 'Duración media',
 			loading: 'Calculando…',
 			nextWeek: 'Próximos 7 días',

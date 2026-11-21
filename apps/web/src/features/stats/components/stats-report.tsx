@@ -5,13 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { useCalendars } from '@/features/calendar/hooks/use-calendars';
 import { formatDuration, formatPercent, formatShortDate } from '@/lib/date-format';
 import { toUtcDate } from '@/lib/plain-date';
+import { StatInfo, type StatInfoId } from './stat-info';
 import { Heatmap, RankedBars, ScreenReaderTable, SplitBar, StackedBars, StatsSection } from './stats-charts';
 
 /** One headline number, with how it changed against the previous period when that applies. */
-function StatTile({ change, hint, label, value }: { change?: string; hint?: string; label: string; value: string }) {
+function StatTile({ change, hint, info, label, value }: { change?: string; hint?: string; info: StatInfoId; label: string; value: string }) {
 	return (
 		<div className='flex flex-col gap-0.5 rounded-lg border p-3'>
-			<span className='text-muted-foreground text-xs'>{label}</span>
+			<div className='flex items-center justify-between gap-1'>
+				<span className='min-w-0 truncate text-muted-foreground text-xs'>{label}</span>
+				<StatInfo id={info} title={label} />
+			</div>
 			<span className='font-semibold text-xl tabular-nums'>{value}</span>
 			{change !== undefined && <span className='text-muted-foreground text-xs'>{change}</span>}
 			{hint !== undefined && <span className='text-muted-foreground text-xs'>{hint}</span>}
@@ -50,19 +54,29 @@ export function StatsReport({ stats, weekStart }: { stats: TimeStats; weekStart:
 	return (
 		<div className='flex flex-col gap-6'>
 			<div className='grid grid-cols-2 gap-2'>
-				<StatTile change={change(stats.totals.minutes, stats.previous.minutes, duration)} label={t('stats.total')} value={duration(stats.totals.minutes)} />
-				<StatTile change={change(stats.totals.events, stats.previous.events, value => number.format(value))} label={t('stats.events')} value={number.format(stats.totals.events)} />
-				<StatTile change={change(stats.totals.averageMinutes, stats.previous.averageMinutes, duration)} label={t('stats.averageDuration')} value={duration(stats.totals.averageMinutes)} />
-				{stats.busiestDay !== null && <StatTile hint={duration(stats.busiestDay.minutes)} label={t('stats.busiestDay')} value={day(stats.busiestDay.date)} />}
+				<StatTile change={change(stats.totals.minutes, stats.previous.minutes, duration)} info='total' label={t('stats.total')} value={duration(stats.totals.minutes)} />
+				<StatTile
+					change={change(stats.totals.events, stats.previous.events, value => number.format(value))}
+					info='events'
+					label={t('stats.events')}
+					value={number.format(stats.totals.events)}
+				/>
+				<StatTile
+					change={change(stats.totals.averageMinutes, stats.previous.averageMinutes, duration)}
+					info='averageDuration'
+					label={t('stats.averageDuration')}
+					value={duration(stats.totals.averageMinutes)}
+				/>
+				{stats.busiestDay !== null && <StatTile hint={duration(stats.busiestDay.minutes)} info='busiestDay' label={t('stats.busiestDay')} value={day(stats.busiestDay.date)} />}
 				{stats.working !== null && (
 					<>
-						<StatTile label={t('stats.occupancy')} value={formatPercent(stats.working.minutes === 0 ? 0 : stats.working.busyMinutes / stats.working.minutes, language)} />
-						<StatTile hint={t('stats.focusHint')} label={t('stats.focus')} value={duration(stats.working.focusMinutes)} />
+						<StatTile info='occupancy' label={t('stats.occupancy')} value={formatPercent(stats.working.minutes === 0 ? 0 : stats.working.busyMinutes / stats.working.minutes, language)} />
+						<StatTile hint={t('stats.focusHint')} info='focus' label={t('stats.focus')} value={duration(stats.working.focusMinutes)} />
 					</>
 				)}
 			</div>
 
-			<StatsSection title={t('stats.byCalendar')}>
+			<StatsSection info='byCalendar' title={t('stats.byCalendar')}>
 				<RankedBars
 					rows={stats.byCalendar.map((item, index) => ({
 						color: series[index]?.color ?? '',
@@ -83,6 +97,7 @@ export function StatsReport({ stats, weekStart }: { stats: TimeStats; weekStart:
 							rows={stats.weeks.map(week => [day(week.start), ...series.map(item => duration(week.byCalendar.find(entry => entry.calendarId === item.key)?.minutes ?? 0))])}
 						/>
 					}
+					info='weekly'
 					title={t('stats.weekly')}
 				>
 					<StackedBars language={language} rows={weekRows} series={series} />
@@ -99,6 +114,7 @@ export function StatsReport({ stats, weekStart }: { stats: TimeStats; weekStart:
 						)}
 					/>
 				}
+				info='heatmap'
 				title={t('stats.heatmap')}
 			>
 				<Heatmap
@@ -110,13 +126,25 @@ export function StatsReport({ stats, weekStart }: { stats: TimeStats; weekStart:
 
 			<StatsSection title={t('stats.venue.title')}>
 				<div className='flex flex-col gap-4'>
-					<SplitBar parts={(['virtual', 'inPerson', 'none'] as const).map(key => ({ key, label: t(`stats.venue.${key}`), value: stats.venue[key] }))} title={t('stats.venue.title')} />
-					<SplitBar parts={(['recurring', 'oneOff'] as const).map(key => ({ key, label: t(`stats.recurrence.${key}`), value: stats.recurrence[key] }))} title={t('stats.recurrence.title')} />
-					<SplitBar parts={(['confirmed', 'tentative'] as const).map(key => ({ key, label: t(`stats.status.${key}`), value: stats.status[key] }))} title={t('stats.status.title')} />
+					<SplitBar
+						parts={(['virtual', 'inPerson', 'none'] as const).map(key => ({ key, label: t(`stats.venue.${key}`), value: stats.venue[key] }))}
+						info='venue'
+						title={t('stats.venue.title')}
+					/>
+					<SplitBar
+						parts={(['recurring', 'oneOff'] as const).map(key => ({ key, label: t(`stats.recurrence.${key}`), value: stats.recurrence[key] }))}
+						info='recurrence'
+						title={t('stats.recurrence.title')}
+					/>
+					<SplitBar
+						parts={(['confirmed', 'tentative'] as const).map(key => ({ key, label: t(`stats.status.${key}`), value: stats.status[key] }))}
+						info='status'
+						title={t('stats.status.title')}
+					/>
 				</div>
 			</StatsSection>
 
-			<StatsSection title={t('stats.top')}>
+			<StatsSection info='top' title={t('stats.top')}>
 				<RankedBars
 					rows={stats.top.map(item => ({
 						color: 'var(--chart-3)',
@@ -131,6 +159,7 @@ export function StatsReport({ stats, weekStart }: { stats: TimeStats; weekStart:
 
 			<StatsSection
 				table={<ScreenReaderTable caption={t('stats.nextWeek')} columns={[t('stats.weekday'), t('stats.value')]} rows={stats.nextWeek.map(item => [day(item.date), duration(item.minutes)])} />}
+				info='nextWeek'
 				title={t('stats.nextWeek')}
 			>
 				<StackedBars

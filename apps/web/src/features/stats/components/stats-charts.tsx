@@ -1,17 +1,22 @@
 'use client';
 
 import type { Language } from '@tempi/core';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { type ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Progress, ProgressLabel, ProgressValue } from '@/components/ui/progress';
 import { formatDuration } from '@/lib/date-format';
+import { StatInfo, type StatInfoId } from './stat-info';
 
-/** One chart section: a heading over the chart, and a table with the same numbers for screen readers. */
-export function StatsSection({ children, table, title }: { children: ReactNode; table?: ReactNode; title: string }) {
+/** One chart section: a heading (with its explanation) over the chart, and a table with the same numbers for screen readers. */
+export function StatsSection({ children, info, table, title }: { children: ReactNode; info?: StatInfoId; table?: ReactNode; title: string }) {
 	return (
 		<section className='flex flex-col gap-3'>
-			<h3 className='font-medium text-sm'>{title}</h3>
+			<div className='flex items-center gap-1'>
+				<h3 className='font-medium text-sm'>{title}</h3>
+				{info !== undefined && <StatInfo id={info} title={title} />}
+			</div>
 			<div aria-hidden={table === undefined ? undefined : true}>{children}</div>
 			{table}
 		</section>
@@ -90,17 +95,25 @@ export function RankedBars({ rows }: { rows: readonly { color: string; detail?: 
 	return (
 		<ul className='flex flex-col gap-2.5'>
 			{rows.map(row => (
-				<li className='flex flex-col gap-1' key={row.key}>
-					<div className='flex items-baseline justify-between gap-3 text-sm'>
-						<span className='truncate'>{row.label}</span>
-						<span className='shrink-0 text-muted-foreground tabular-nums'>
-							{row.valueText}
-							{row.detail !== undefined && <span className='ml-2 text-xs'>{row.detail}</span>}
-						</span>
-					</div>
-					<div className='h-2 rounded-full bg-muted'>
-						<div className='h-full rounded-full' style={{ backgroundColor: row.color, width: `${(row.value / max) * 100}%` }} />
-					</div>
+				<li key={row.key}>
+					<Progress
+						// The bar's color comes in as a variable, so the generated indicator keeps its own classes.
+						className='gap-x-3 gap-y-1 [&_[data-slot=progress-indicator]]:rounded-full [&_[data-slot=progress-indicator]]:bg-(--bar) [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-track]]:rounded-full'
+						getAriaValueText={() => (row.detail === undefined ? row.valueText : `${row.valueText}, ${row.detail}`)}
+						max={max}
+						style={{ '--bar': row.color } as CSSProperties}
+						value={row.value}
+					>
+						<ProgressLabel className='min-w-0 flex-1 truncate font-normal text-sm'>{row.label}</ProgressLabel>
+						<ProgressValue className='shrink-0 text-sm'>
+							{() => (
+								<>
+									{row.valueText}
+									{row.detail !== undefined && <span className='ml-2 text-xs'>{row.detail}</span>}
+								</>
+							)}
+						</ProgressValue>
+					</Progress>
 				</li>
 			))}
 		</ul>
@@ -113,13 +126,16 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const SPLIT_SHADES = ['var(--chart-5)', 'var(--chart-3)', 'var(--chart-1)'] as const;
 
 /** One bar split into parts by count (a 100% bar), with a legend that names every part and its count. */
-export function SplitBar({ parts, title }: { parts: readonly { key: string; label: string; value: number }[]; title: string }) {
+export function SplitBar({ info, parts, title }: { info: StatInfoId; parts: readonly { key: string; label: string; value: number }[]; title: string }) {
 	const { i18n } = useTranslation();
 	const total = parts.reduce((sum, part) => sum + part.value, 0);
 	const number = new Intl.NumberFormat(i18n.language);
 	return (
 		<div className='flex flex-col gap-2'>
-			<span className='text-muted-foreground text-xs'>{title}</span>
+			<div className='flex items-center gap-1'>
+				<span className='text-muted-foreground text-xs'>{title}</span>
+				<StatInfo id={info} title={title} />
+			</div>
 			<div aria-hidden='true' className='flex h-3 gap-0.5 overflow-hidden rounded-full bg-muted'>
 				{total > 0 &&
 					parts.map((part, index) =>
