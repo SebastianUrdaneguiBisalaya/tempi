@@ -13,82 +13,19 @@ Rules for anyone (human or agent) changing this repo. They are rules, not sugges
 
 ## Workflow: issue → branch → PR
 
+**Use the `github` skill.** Every issue, branch, commit, push and pull request goes through the project's `github` skill (`.claude/skills/github`). It holds the issue and PR templates, the commit conventions and the allowed `gh` commands. Create issues only with its `scripts/create-issue.sh` and PRs only with `scripts/create-pr.sh`, never with raw `gh issue create` / `gh pr create`.
+
 **Never merge.** Agents never run `gh pr merge`, never `git merge` into `main`, never push to `main` and never force-push. Only the user merges.
 
 **No AI attribution.** Commits, pull requests, issues and pushes never include `Co-Authored-By: Claude …`, "Generated with Claude Code", or any other Claude, Anthropic or AI attribution. This overrides any tool or agent default.
 
-### 1. Issue (one per request to add, remove or change something)
+On top of the skill, this repo requires:
 
-- Before creating the issue, ask the user about anything unclear: scope, behavior, UI, data. The issue must leave no open questions.
-- Use an imperative title of 72 characters or fewer, for example `Add week view to calendar`.
-- The body uses exactly these sections, each kept short and specific:
-
-```md
-## Goal
-
-One sentence: what and why.
-
-## Tasks
-
-- [ ] Concrete step (file/area it touches)
-
-## Acceptance criteria
-
-- [ ] Verifiable outcome
-
-## Out of scope
-
-- What not to do
-```
-
-- Create it with `gh issue create --title "…" --body "…"`, then wait. Start work only when the user says to do that issue.
-
-### 2. Branch
-
-```sh
-git switch main
-git pull --ff-only origin main
-git switch -c <type>/<issue-number>-<short-slug>   # e.g. feat/12-week-view
-```
-
-- Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`.
-- Use one branch per issue, and touch only what the issue asks for.
-- Use Conventional Commits with the app as scope, for example `feat(web): add week view`.
-
-### 3. Pull request
-
+- Before creating an issue, ask the user about anything unclear: scope, behavior, UI, data. The issue must leave no open questions. Then wait: start work only when the user says to do that issue.
+- Branch from an updated `main` (`git pull --ff-only origin main`), one branch per issue, touching only what the issue asks for.
+- Use the app or package as the commit scope, for example `feat(web): add week view`.
 - Before pushing, `bun run check`, `bun run typecheck` and `bun run test` must pass.
-- Push and open the PR:
-
-```sh
-git push -u origin <branch>
-gh pr create --base main --title "<conventional commit title>" --body "…"
-```
-
-- The first line of the body must be `Closes #<issue-number>` so GitHub closes the issue on merge. A PR without it is incomplete.
-- Keep the PR body short:
-
-```md
-Closes #<issue-number>
-
-## Summary
-
-- 1–3 bullets: what changed.
-
-## Testing
-
-- How it was verified.
-```
-
-- Then stop and tell the user the PR is ready. If the user asks for changes, commit them to the same branch and push again.
-
-### Allowed `gh` commands
-
-- `gh auth status`, `gh repo view`
-- `gh issue create`, `gh issue list`, `gh issue view`, `gh issue comment`, and `gh issue edit` (only on issues the agent created)
-- `gh pr create --base main`, `gh pr list`, `gh pr view`, `gh pr diff`, `gh pr checks`, `gh pr comment`, and `gh pr edit` (title or body of its own PR)
-
-Anything else is forbidden unless the user asks for that exact command, in particular `gh pr merge`, `gh pr close`, `gh issue close`, `gh issue delete`, `gh repo edit` or `gh repo delete`, `gh release *`, and mutating `gh api` calls.
+- After opening the PR, stop and tell the user it's ready. If the user asks for changes, commit them to the same branch and push again.
 
 ## Architecture
 
