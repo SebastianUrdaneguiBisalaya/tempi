@@ -23,8 +23,8 @@ while IFS= read -r part; do
     read -r -a w <<<"$part"
     group="${w[1]:-}"; action="${w[2]:-}"
     case "$group $action" in
-      "issue create"|"issue view"|"issue list"|"issue edit") ;;
-      "pr create"|"pr view"|"pr list"|"pr status"|"pr checks") ;;
+      "issue create"|"issue view"|"issue list"|"issue edit"|"issue comment") ;;
+      "pr create"|"pr view"|"pr list"|"pr status"|"pr checks"|"pr diff"|"pr comment"|"pr edit") ;;
       "repo view") ;;
       "pr merge") block "agents must never merge; only the user merges" ;;
       *) block "gh command not in the allowed list: gh ${group} ${action}" ;;

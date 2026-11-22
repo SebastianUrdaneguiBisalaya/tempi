@@ -1,8 +1,8 @@
 # Allowed `gh` commands
 
 ## Allowed
-- `gh issue create | view | list | edit`
-- `gh pr create | view | list | status | checks`
+- `gh issue create | view | list | edit | comment`
+- `gh pr create | view | list | status | checks | diff | comment | edit`
 - `gh repo view`
 
 ## Forbidden
