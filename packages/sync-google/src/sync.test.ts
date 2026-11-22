@@ -22,7 +22,7 @@ let google: FakeGoogle;
 const sync = () => {
 	const queue = createTransactionQueue(db);
 	return syncGoogle({
-		api: google,
+		api: google.client,
 		transact: async work => {
 			const result = await queue(async () => ok(await work(deps)));
 			if (!result.ok) throw new Error(result.error.issues[0]?.detail);
@@ -106,7 +106,7 @@ describe('pull', () => {
 		]);
 
 		google.put(PRIMARY, timed('a', 'Daily standup', '2026-11-20T09:00:00-05:00', '2026-11-20T09:30:00-05:00'));
-		google.deleteEvent(PRIMARY, 'b');
+		google.client.events.delete(PRIMARY, 'b');
 		expect(await sync()).toEqual({ pulled: 2, pushed: 0, skipped: 0 });
 		expect(await titles(PRIMARY)).toEqual(['Daily standup']);
 		expect(await sync()).toEqual({ pulled: 0, pushed: 0, skipped: 0 });
@@ -235,7 +235,7 @@ describe('conflicts', () => {
 		await sync();
 		const [standup] = await localEvents(PRIMARY);
 		if (standup === undefined) throw new Error('not pulled');
-		google.deleteEvent(PRIMARY, 'a');
+		google.client.events.delete(PRIMARY, 'a');
 		at('2026-11-18T00:00:00.000Z');
 		await updateEvent(deps, standup.id, { title: 'Still on' });
 		await sync();

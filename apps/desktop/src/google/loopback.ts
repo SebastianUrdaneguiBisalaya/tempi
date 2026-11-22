@@ -4,8 +4,11 @@ import { createServer } from 'node:http';
 export type RedirectOutcome = { kind: 'redirect'; params: URLSearchParams } | { kind: 'timeout' } | { kind: 'aborted' };
 
 export type LoopbackOptions = {
-	/** Only a redirect carrying this `state` is accepted; anything else gets a 400 and the wait goes on. */
-	state: string;
+	/**
+	 * Only a redirect carrying this `state` is accepted; anything else gets a 400 and the wait goes on. Read on every
+	 * request, because the state is created after listening, once the redirect URI (with this port) is known.
+	 */
+	state: () => string | null;
 	/** Where the browser goes once redirected, by whether a code came back. */
 	landingUrl: (succeeded: boolean) => string;
 	signal: AbortSignal;
@@ -28,7 +31,8 @@ export const listenForRedirect = async (options: LoopbackOptions): Promise<Loopb
 	const server = createServer((request, response) => {
 		const params = new URL(request.url ?? '/', 'http://127.0.0.1').searchParams;
 		const isRedirect = request.method === 'GET' && (params.has('code') || params.has('error'));
-		if (!isRedirect || params.get('state') !== options.state) {
+		const expected = options.state();
+		if (!isRedirect || expected === null || params.get('state') !== expected) {
 			response.writeHead(isRedirect ? 400 : 404).end();
 			return;
 		}

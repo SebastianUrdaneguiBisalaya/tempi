@@ -20,10 +20,10 @@ import {
 	uuidv7Ids,
 } from '@tempi/core';
 import { type BackupFile, createRepositories, createTransactionQueue, prepareRestore, swapInRestore, type TransactionQueue, writeBackup } from '@tempi/db';
-import { createGoogleCalendarApi, GoogleAuthError, GoogleOfflineError } from '@tempi/google-calendar';
 import { resources } from '@tempi/i18n';
 import { type OccurrenceRef, PUSH_CHANNELS } from '@tempi/ipc';
 import { type SyncDeps, syncGoogle } from '@tempi/sync-google';
+import { createGoogleCalendarClient } from '@usemeshly/google-calendar';
 import {
 	app,
 	BrowserWindow,
@@ -487,7 +487,6 @@ function googleAccount(): GoogleAccountService {
 		// Chromium's network stack, so system proxies and certificates apply.
 		fetch: (url, init) => net.fetch(url, init),
 		listen: listenForRedirect,
-		now: () => new Date(),
 		openBrowser: url => shell.openExternal(url),
 		landingUrl: succeeded => signInLandingUrl(language, succeeded),
 		store: createTokenStore(path.join(app.getPath('userData'), 'google-account.bin'), safeStorageCipher),
@@ -568,17 +567,7 @@ function openAssistantStream(sender: IpcSender, requestId: string): AssistantSin
 
 // Two-way Google Calendar sync while an account is connected. Google is called between transactions, never inside one.
 function createGoogleSync(deps: CoreDeps, transaction: TransactionQueue, account: GoogleAccountService): SyncRunner {
-	const api = createGoogleCalendarApi({
-		accessToken: async () => {
-			const token = await account.accessToken();
-			if (token.ok) return token.value;
-			const [issue] = token.error.issues;
-			if (issue?.key === 'google.offline') throw new GoogleOfflineError(issue.detail);
-			if (issue?.key === 'google.reconnectRequired') throw new GoogleAuthError(issue.detail);
-			throw new Error(issue?.detail ?? 'No Google access token');
-		},
-		fetch: (url, init) => net.fetch(url, init),
-	});
+	const api = createGoogleCalendarClient({ fetch: (url, init) => net.fetch(url, init), getAccessToken: account.getAccessToken });
 	const transact = async <T>(work: (syncDeps: SyncDeps) => Promise<T>): Promise<T> => {
 		const result = await transaction(async () => ok(await work(deps)));
 		if (!result.ok) throw new Error(result.error.issues.map(issue => issue.detail).join('; '));

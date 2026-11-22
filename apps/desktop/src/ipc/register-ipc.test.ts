@@ -98,11 +98,11 @@ const google: GoogleAccountService = {
 		googleEmail = 'ada@example.com';
 		return Promise.resolve(ok({ account: { email: googleEmail }, status: 'connected' as const }));
 	},
-	accessToken: () => Promise.resolve(ok('token')),
 	disconnect: () => {
 		googleEmail = null;
 		return Promise.resolve(ok(null));
 	},
+	getAccessToken: () => Promise.resolve('token'),
 };
 
 /** What the fake sync runner was asked to do. */

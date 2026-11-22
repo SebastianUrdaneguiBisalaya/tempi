@@ -19,12 +19,13 @@
         "@tempi/ai": "workspace:*",
         "@tempi/core": "workspace:*",
         "@tempi/db": "workspace:*",
-        "@tempi/google-calendar": "workspace:*",
         "@tempi/i18n": "workspace:*",
         "@tempi/ical": "workspace:*",
         "@tempi/ipc": "workspace:*",
         "@tempi/sync-google": "workspace:*",
         "@types/node": "catalog:",
+        "@usemeshly/auth": "catalog:",
+        "@usemeshly/google-calendar": "catalog:",
         "electron": "45.2.1",
         "electron-builder": "26.18.0",
         "electron-updater": "6.8.11",
@@ -160,16 +161,6 @@
         "typescript": "catalog:",
       },
     },
-    "packages/google-calendar": {
-      "name": "@tempi/google-calendar",
-      "version": "0.1.0",
-      "dependencies": {
-        "zod": "catalog:",
-      },
-      "devDependencies": {
-        "typescript": "catalog:",
-      },
-    },
     "packages/i18n": {
       "name": "@tempi/i18n",
       "version": "0.1.0",
@@ -207,7 +198,8 @@
       "version": "0.1.0",
       "dependencies": {
         "@tempi/core": "workspace:*",
-        "@tempi/google-calendar": "workspace:*",
+        "@usemeshly/auth": "catalog:",
+        "@usemeshly/google-calendar": "catalog:",
       },
       "devDependencies": {
         "@tempi/db": "workspace:*",
@@ -232,6 +224,8 @@
     "@types/node": "26.6.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@usemeshly/auth": "0.1.0",
+    "@usemeshly/google-calendar": "0.1.0",
     "ai": "7.0.173",
     "chrono-node": "2.10.3",
     "gsap": "3.15.1",
@@ -610,8 +604,6 @@
 
     "@tempi/desktop": ["@tempi/desktop@workspace:apps/desktop"],
 
-    "@tempi/google-calendar": ["@tempi/google-calendar@workspace:packages/google-calendar"],
-
     "@tempi/i18n": ["@tempi/i18n@workspace:packages/i18n"],
 
     "@tempi/ical": ["@tempi/ical@workspace:packages/ical"],
@@ -731,6 +723,10 @@
     "@usehotkeys/core": ["@usehotkeys/core@0.1.0", "", {}, "sha512-JY2uU39HKpgBCFCmFm3QYlHtWcqOPcotCByutZgJARy/CX7Y0L3dd5XBkJwWgBzisOT401HHLXd53xMaJisRjA=="],
 
     "@usehotkeys/react": ["@usehotkeys/react@0.1.0", "", { "peerDependencies": { "@usehotkeys/core": "0.1.0", "react": ">=18.0.0" } }, "sha512-o8S0mNw53vAxft32i6nzcXED8axF4cjbTbLos+k/OHmLkZNKnzAF4EEo1oKs17poKLZjcZgB/kM35O3zwVqsEw=="],
+
+    "@usemeshly/auth": ["@usemeshly/auth@0.1.0", "", { "dependencies": { "oauth4webapi": "3.8.9", "zod": "4.6.7" } }, "sha512-Fob38cQloegKYxL5MlObjv6PjvhHtbOIxai2YhNvdKMuDWq1R8ZXvmg6kDN1dw5IR9yE7hJNA0BdTxgUYVOD0Q=="],
+
+    "@usemeshly/google-calendar": ["@usemeshly/google-calendar@0.1.0", "", { "dependencies": { "zod": "4.6.7" }, "peerDependencies": { "@usemeshly/auth": "^0.1.0" } }, "sha512-aNRA4qI55DudyNpqaCwHXfG3lGN6D9pA5dIlXgNLlquE2jvQbQVY52uh7vlBcmKb1iuqQ0XHRSgzRLQgtU8eUg=="],
 
     "@usesounds/core": ["@usesounds/core@0.1.0", "", {}, "sha512-3zyBRYniJLsg+4sW4Wtnj1rgzDH4v2Gyt4NrQD3GmXxpu/mBW9Z4QSyCdNMMlSaOpnUOaWx/0CDgoM6/3rP6Bg=="],
 
@@ -1425,6 +1421,8 @@
     "normalize-url": ["normalize-url@6.1.0", "", {}, "sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A=="],
 
     "npm-run-path": ["npm-run-path@6.0.0", "", { "dependencies": { "path-key": "^4.0.0", "unicorn-magic": "^0.3.0" } }, "sha512-9qny7Z9DsQU8Ou39ERsPU4OZQlSTP47ShQzuKZ6PRXpYLtIFgl/DEBYEXKlvcEa+9tHVcK8CF81Y2V72qaZhWA=="],
+
+    "oauth4webapi": ["oauth4webapi@3.8.9", "", {}, "sha512-gyn4jpaxyYFm1epl3mwqc1sFShLjT9eq/63JW+Nvk286Lz6FC72pVv/SyhJHxo+sQiHEcjIHs4TtFKX/+Md07A=="],
 
     "object-keys": ["object-keys@1.1.1", "", {}, "sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA=="],
 

@@ -11,13 +11,14 @@ import {
 	isWritableRole,
 	toUtcInstant,
 } from '@tempi/core';
-import { GoogleApiError, type GoogleCalendarApi, type GoogleCalendarListEntry, type GoogleEvent, SyncTokenExpiredError } from '@tempi/google-calendar';
+import { isMeshlyError } from '@usemeshly/auth';
+import type { GoogleCalendarClient, GoogleCalendarListEntry, GoogleEvent } from '@usemeshly/google-calendar';
 import { fromGoogle, googleEventIdFor, instanceId, instantOf, type PulledFields, toGoogle } from './mapping';
 
 export type SyncDeps = Pick<CoreDeps, 'calendars' | 'clock' | 'events' | 'googleSync' | 'ids'>;
 
 export type GoogleSyncOptions = {
-	api: GoogleCalendarApi;
+	api: GoogleCalendarClient;
 	/** Runs `work` as one local transaction. Network calls happen between transactions, never inside one. */
 	transact: <T>(work: (deps: SyncDeps) => Promise<T>) => Promise<T>;
 };
@@ -133,7 +134,8 @@ const applyPull = async (deps: SyncDeps, link: GoogleCalendarLink & { calendarId
 		const updatedAt = remoteUpdated(item, now);
 		if (local !== null && eventLink !== null && isPending(local, eventLink) && local.updatedAt >= updatedAt) return null;
 		const fields = eventFieldsSchema.safeParse(build(updatedAt));
-		if (!fields.success) {
+		// Google always sends an etag; without one, Tempi couldn't tell its own echo from a newer edit.
+		if (!fields.success || item.etag === undefined) {
 			counts.skipped += 1;
 			return null;
 		}
@@ -234,16 +236,23 @@ const applyPull = async (deps: SyncDeps, link: GoogleCalendarLink & { calendarId
 	return counts;
 };
 
+/** Every change since `syncToken` (deleted events included), or every event when it is null, with the next token. */
+const listEvents = async (api: GoogleCalendarClient, calendarId: string, syncToken: string | null): Promise<{ items: GoogleEvent[]; nextSyncToken: string }> => {
+	const page = await api.events.list(calendarId, syncToken === null ? { showDeleted: true } : { showDeleted: true, syncToken });
+	if (page.nextSyncToken === null) throw new Error(`The last page of ${calendarId} has no sync token`);
+	return { items: page.items, nextSyncToken: page.nextSyncToken };
+};
+
 /** Pulls one calendar's changes since its sync token (all of them on the first pull, or when Google expired the token). */
 const pullCalendar = async (options: GoogleSyncOptions, link: GoogleCalendarLink & { calendarId: string }): Promise<PullCounts> => {
 	let full = link.syncToken === null;
-	let page: Awaited<ReturnType<GoogleCalendarApi['listEvents']>>;
+	let page: Awaited<ReturnType<typeof listEvents>>;
 	try {
-		page = await options.api.listEvents(link.googleId, link.syncToken);
+		page = await listEvents(options.api, link.googleId, link.syncToken);
 	} catch (error) {
-		if (!(error instanceof SyncTokenExpiredError)) throw error;
+		if (!isMeshlyError(error, 'sync_token_expired')) throw error;
 		full = true;
-		page = await options.api.listEvents(link.googleId, null);
+		page = await listEvents(options.api, link.googleId, null);
 	}
 	return options.transact(async deps => {
 		// The selection may have changed while Google answered.
@@ -280,7 +289,7 @@ const planPushes = async (deps: SyncDeps, calendarIds: string[]): Promise<Push[]
 	return pushes;
 };
 
-const isGone = (error: unknown) => error instanceof GoogleApiError && (error.status === 404 || error.status === 410);
+const isGone = (error: unknown) => isMeshlyError(error) && (error.status === 404 || error.status === 410);
 
 /** Sends one local change to Google and records what Google answered. Returns whether anything was sent. */
 const push = async (options: GoogleSyncOptions, { event, exDates, link, series }: Push, targets: Map<string, GoogleCalendarLink>, readOnly: Set<string>): Promise<boolean> => {
@@ -288,13 +297,16 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 	const target = targets.get(event.calendarId);
 	// Google would refuse any write there; the next pull brings back Google's version.
 	if (link !== null && readOnly.has(link.googleCalendarId)) return false;
-	const record = (googleCalendarId: string, sent: GoogleEvent) =>
-		transact(deps => deps.googleSync.saveEventLink({ etag: sent.etag, eventId: event.id, googleCalendarId, googleEventId: sent.id, syncedUpdatedAt: event.updatedAt }));
+	const record = (googleCalendarId: string, sent: GoogleEvent) => {
+		const { etag } = sent;
+		if (etag === undefined) throw new Error(`Google answered ${sent.id} without an etag`);
+		return transact(deps => deps.googleSync.saveEventLink({ etag, eventId: event.id, googleCalendarId, googleEventId: sent.id, syncedUpdatedAt: event.updatedAt }));
+	};
 	const forget = () => transact(deps => deps.googleSync.deleteEventLink(event.id));
 
 	// Deleted here, or moved out of the Google calendar it was on: delete it there.
 	if (link !== null && (event.deletedAt !== null || target?.googleId !== link.googleCalendarId)) {
-		await api.deleteEvent(link.googleCalendarId, link.googleEventId);
+		await api.events.delete(link.googleCalendarId, link.googleEventId);
 		await forget();
 		if (event.deletedAt !== null || target === undefined) return true;
 		link = null;
@@ -306,14 +318,14 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 		const seriesLink = await transact(deps => deps.googleSync.findEventLink(event.recurringEventId ?? ''));
 		if (series === null || seriesLink === null || seriesLink.googleCalendarId !== target.googleId || event.originalStartAt === null) return false;
 		const id = link?.googleEventId ?? instanceId(seriesLink.googleEventId, event.originalStartAt, series.allDay, series.timeZone);
-		await record(target.googleId, await api.patchEvent(target.googleId, id, toGoogle(event, [])));
+		await record(target.googleId, await api.events.patch(target.googleId, id, toGoogle(event, [])));
 		return true;
 	}
 
 	const body = toGoogle(event, exDates);
 	if (link !== null) {
 		try {
-			await record(target.googleId, await api.patchEvent(target.googleId, link.googleEventId, body));
+			await record(target.googleId, await api.events.patch(target.googleId, link.googleEventId, body));
 			return true;
 		} catch (error) {
 			if (!isGone(error)) throw error;
@@ -321,11 +333,11 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 	}
 	const id = googleEventIdFor(event.id);
 	try {
-		await record(target.googleId, await api.insertEvent(target.googleId, id === undefined ? body : { ...body, id }));
+		await record(target.googleId, await api.events.insert(target.googleId, id === undefined ? body : { ...body, id }));
 	} catch (error) {
 		// The id is already taken: an earlier insert went through, or the event was deleted there and is coming back.
-		if (!(error instanceof GoogleApiError && error.status === 409) || id === undefined) throw error;
-		await record(target.googleId, await api.patchEvent(target.googleId, id, body));
+		if (!isMeshlyError(error, 'conflict') || id === undefined) throw error;
+		await record(target.googleId, await api.events.patch(target.googleId, id, body));
 	}
 	return true;
 };
@@ -333,10 +345,10 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 /**
  * One two-way sync with Google Calendar: refreshes the list of calendars, pulls each selected calendar's changes
  * (the latest `updatedAt` wins a conflict), then pushes local creates, updates and deletes in writable calendars.
- * Throws what the API throws (`GoogleOfflineError`, `GoogleAuthError`, …); what was applied before stays applied.
+ * Throws what the API throws (a `MeshlyError` such as `network_error` or `unauthorized`); what was applied before stays applied.
  */
 export const syncGoogle = async (options: GoogleSyncOptions): Promise<SyncSummary> => {
-	const entries = await options.api.listCalendars();
+	const { items: entries } = await options.api.calendarList.list({ minAccessRole: 'reader' });
 	const active = await options.transact(deps => reconcileCalendars(deps, entries));
 	const summary: SyncSummary = { pulled: 0, pushed: 0, skipped: 0 };
 
