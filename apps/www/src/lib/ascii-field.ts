@@ -1,4 +1,5 @@
 import { gsap } from '@/lib/gsap';
+import { loadFont } from '@/lib/load-font';
 
 const GLYPHS = ['[', ']', '.', ':'] as const;
 // The flicker redraws a few cells at a time, about twelve times a second.
@@ -230,13 +231,10 @@ export function mountAsciiField({ container, canvas, noiseOpacity = 1, measureMa
 			};
 		});
 
-	// Glyph widths are measured, so draw only once the mono font is in.
-	document.fonts
-		.load(`10px ${monoFont}`)
-		.then(() => {
-			if (!unmounted) start();
-		})
-		.catch((error: unknown) => console.error('Could not draw the ASCII field', error));
+	// Glyph widths are measured, so draw only once the mono font is in (or has failed, so the field still shows).
+	loadFont(document.fonts, `10px ${monoFont}`).then(() => {
+		if (!unmounted) start();
+	});
 
 	return () => {
 		unmounted = true;

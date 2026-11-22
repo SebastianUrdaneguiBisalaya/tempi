@@ -50,18 +50,23 @@ export function VoiceOrbMockup({ phase }: { phase: VoicePhase }) {
 	return (
 		<div ref={root} data-phase={phase} className='relative flex size-36 shrink-0 items-center justify-center rounded-full sm:size-40'>
 			<span className='absolute inset-0 rounded-full opacity-25 blur-2xl' data-orb='halo' style={{ background: MESH_A }} />
-			<span className='relative block size-full overflow-hidden rounded-full shadow-lg ring-1 ring-white/10' data-orb='core'>
-				<span className='absolute -inset-1/4 bg-[oklch(0.5_0_0)] blur-md' data-orb='mesh-a' style={{ backgroundImage: MESH_A }} />
-				<span className='absolute -inset-1/4 mix-blend-soft-light blur-lg' data-orb='mesh-b' style={{ backgroundImage: MESH_B }} />
-				{/* Grain: fractal noise over the gradient, so it reads as a surface rather than a flat blur. */}
-				<svg aria-hidden className='absolute inset-0 size-full opacity-40 mix-blend-overlay' preserveAspectRatio='none'>
-					<filter id={grainId}>
-						<feTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch' type='fractalNoise' />
-						<feColorMatrix type='saturate' values='0' />
-					</filter>
-					<rect filter={`url(#${grainId})`} height='100%' width='100%' />
-				</svg>
-				<span className={cn('absolute inset-0 rounded-full bg-radial from-white/25 to-transparent to-60%', phase === 'idle' ? 'opacity-60' : 'opacity-30')} />
+			<span className='relative block size-full rounded-full shadow-lg ring-1 ring-white/10' data-orb='core'>
+				{/* iOS WebKit ignores a rounded overflow clip over blurred, blended and rotated layers and shows a square.
+				    clip-path clips them on every engine (an inner layer, so the ring and shadow stay outside the clip), and
+				    isolate keeps the blend modes inside the orb. */}
+				<span className='absolute inset-0 isolate overflow-hidden rounded-full [clip-path:circle(50%)]'>
+					<span className='absolute -inset-1/4 bg-[oklch(0.5_0_0)] blur-md' data-orb='mesh-a' style={{ backgroundImage: MESH_A }} />
+					<span className='absolute -inset-1/4 mix-blend-soft-light blur-lg' data-orb='mesh-b' style={{ backgroundImage: MESH_B }} />
+					{/* Grain: fractal noise over the gradient, so it reads as a surface rather than a flat blur. */}
+					<svg aria-hidden className='absolute inset-0 size-full opacity-40 mix-blend-overlay' preserveAspectRatio='none'>
+						<filter id={grainId}>
+							<feTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch' type='fractalNoise' />
+							<feColorMatrix type='saturate' values='0' />
+						</filter>
+						<rect filter={`url(#${grainId})`} height='100%' width='100%' />
+					</svg>
+					<span className={cn('absolute inset-0 rounded-full bg-radial from-white/25 to-transparent to-60%', phase === 'idle' ? 'opacity-60' : 'opacity-30')} />
+				</span>
 			</span>
 		</div>
 	);

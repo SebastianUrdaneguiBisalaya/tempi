@@ -383,7 +383,7 @@
       },
       "holidays": {
         "title": "Public holidays",
-        "body": "The public holidays of your country arrive as all-day events in your default calendar, next to the weather of each day. Delete one and it stays deleted."
+        "body": "The public holidays of your country arrive as all-day events in your default calendar. Delete one and it stays deleted."
       }
     },
     "weather": {
@@ -397,9 +397,7 @@
       "credit": "Weather data by Open-Meteo.com"
     },
     "week": {
-      "holiday": "Independence Day",
-      "high": "High",
-      "low": "Low"
+      "holiday": "Independence Day"
     }
   },
   "ai": {

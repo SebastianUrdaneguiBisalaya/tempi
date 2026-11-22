@@ -69,7 +69,7 @@ export function FeaturesContent({ locale, copy, shared }: FeaturesContentProps) 
 				<ShowcaseCell align='center' {...cell('views')}>
 					<ViewsReplica labels={mockup.views} />
 				</ShowcaseCell>
-				<ShowcaseCell align='center' {...cell('calendars')}>
+				<ShowcaseCell {...cell('calendars')}>
 					<CalendarsReplica copy={replicas.calendars} mockup={mockup} />
 				</ShowcaseCell>
 				<ShowcaseCell {...cell('googleSync')}>
@@ -93,7 +93,7 @@ export function FeaturesContent({ locale, copy, shared }: FeaturesContentProps) 
 				<ShowcaseCell align='center' {...cell('tray')}>
 					<TrayReplica locale={locale} today={mockup.today} events={mockup.events} />
 				</ShowcaseCell>
-				<ShowcaseCell align='center' {...cell('keyboard')}>
+				<ShowcaseCell {...cell('keyboard')}>
 					<ShortcutsReplica title={replicas.shortcutsTitle} groups={shared.shortcuts.groups} actions={shared.shortcuts.actions} />
 				</ShowcaseCell>
 				<ShowcaseCell align='center' {...cell('languages')}>

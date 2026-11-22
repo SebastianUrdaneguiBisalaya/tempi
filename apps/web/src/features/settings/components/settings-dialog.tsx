@@ -57,7 +57,8 @@ export function SettingsDialog({ initialTab, onOpenChange, open }: SettingsDialo
 							))}
 						</TabsList>
 						<ScrollArea className='min-h-0 min-w-0 flex-1'>
-							<div className='p-1'>
+							{/* The hit areas of switches and radios reach past the padding; clip them so the pane never scrolls sideways. */}
+							<div className='overflow-x-clip p-1'>
 								<TabsContent value='profile'>
 									<ProfileSettings profile={profile} />
 								</TabsContent>
