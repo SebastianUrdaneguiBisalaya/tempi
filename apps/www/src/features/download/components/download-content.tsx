@@ -34,8 +34,10 @@ export function DownloadContent({ copy }: { copy: DownloadCopy }) {
 			<div data-download-bg className='absolute inset-0 -z-10'>
 				<Image src='/bg-tempi-footer.png' alt='' fill sizes='100vw' className='object-cover object-bottom' />
 			</div>
-			{/* Blend the illustration into the page above it. */}
+			{/* Blend the illustration into the page above it… */}
 			<div className='absolute inset-x-0 top-0 -z-10 h-1/2 bg-linear-to-b from-background to-transparent' />
+			{/* And into the footer below it. */}
+			<div className='absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-linear-to-t from-background to-transparent' />
 
 			<div className='mx-auto flex max-w-6xl flex-col items-center px-4 py-32 text-center sm:px-6'>
 				<DownloadIcon data-download-reveal aria-hidden className='size-6' />

@@ -17,10 +17,12 @@ type WordmarkBandProps = {
 	className?: string;
 	/** Where the mouse is followed when content sits on top of the band; defaults to the band itself. */
 	pointerArea?: RefObject<HTMLElement | null>;
+	/** An element at the band's top whose height the mark is centered in, so the field can reach below the mark. */
+	markArea?: RefObject<HTMLElement | null>;
 };
 
 /** The Tempi logo and word drawn with a grid of bracket characters over faint noise, lit around the mouse. */
-export function WordmarkBand({ label, className = 'h-svh', pointerArea }: WordmarkBandProps) {
+export function WordmarkBand({ label, className = 'h-svh', pointerArea, markArea }: WordmarkBandProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const labelRef = useRef<HTMLSpanElement>(null);
@@ -50,7 +52,7 @@ export function WordmarkBand({ label, className = 'h-svh', pointerArea }: Wordma
 					canvas,
 					glow,
 					pointerArea: pointerArea?.current ?? undefined,
-					measureMark: grid => measureMark(grid, { word: WORD, font, logo, logoBounds, markHeight: markHeight(container.clientWidth) }),
+					measureMark: grid => measureMark(grid, { word: WORD, font, logo, logoBounds, markHeight: markHeight(container.clientWidth), areaHeight: markArea?.current?.clientHeight }),
 				});
 			})
 			.catch((error: unknown) => console.error('Could not draw the wordmark', error));
@@ -59,7 +61,7 @@ export function WordmarkBand({ label, className = 'h-svh', pointerArea }: Wordma
 			cancelled = true;
 			unmount?.();
 		};
-	}, [pointerArea]);
+	}, [pointerArea, markArea]);
 
 	return (
 		// A short vertical fade: the noise fills the band's whole height and only its very edges blend into the page.

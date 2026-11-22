@@ -40,10 +40,12 @@ type MarkOptions = {
 	logoBounds: Bounds;
 	/** The tallest the logo and the word may be, in CSS pixels; kept apart from the band's height so the band can grow alone. */
 	markHeight: number;
+	/** The height, from the top, the mark is centered in; the whole grid by default, so a field can reach below the mark. */
+	areaHeight?: number;
 };
 
-/** Lays the logo and the word out in the middle of the grid and writes how much of each cell they cover. */
-export function measureMark(grid: Grid, { word, font, logo, logoBounds, markHeight }: MarkOptions) {
+/** Lays the logo and the word out in the middle of the grid (or of its top `areaHeight`) and writes how much of each cell they cover. */
+export function measureMark(grid: Grid, { word, font, logo, logoBounds, markHeight, areaHeight }: MarkOptions) {
 	const { cols, rows, cellWidth, cellHeight } = grid;
 	const gridWidth = cols * cellWidth;
 	const gridHeight = rows * cellHeight;
@@ -69,7 +71,7 @@ export function measureMark(grid: Grid, { word, font, logo, logoBounds, markHeig
 	const scale = Math.min((gridWidth * MAX_WIDTH) / (logoWidth + gap + textWidth), markHeight / textHeight);
 
 	const left = (gridWidth - (logoWidth + gap + textWidth) * scale) / 2;
-	const top = (gridHeight - textHeight * scale) / 2;
+	const top = (Math.min(areaHeight ?? gridHeight, gridHeight) - textHeight * scale) / 2;
 	context.fillStyle = '#fff';
 	context.drawImage(logo, logoBounds.x, logoBounds.y, logoBounds.width, logoBounds.height, left, top, logoWidth * scale, logoHeight * scale);
 	context.font = `500 ${reference * scale}px ${font}`;

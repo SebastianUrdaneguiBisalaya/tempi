@@ -623,7 +623,6 @@
     "legal": "Legal",
     "terms": "Terms and Conditions",
     "privacy": "Privacy Policy",
-    "navLabel": "Sections",
     "sections": {
       "why": "Why Tempi",
       "features": "Features",
@@ -633,6 +632,11 @@
       "keyboard": "Keyboard",
       "faq": "FAQ",
       "download": "Download"
+    },
+    "groups": {
+      "product": "Product",
+      "productivity": "Productivity",
+      "start": "Get started"
     }
   },
   "wordmark": {
