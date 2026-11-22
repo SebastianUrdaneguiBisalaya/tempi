@@ -20,6 +20,8 @@
     "@formatjs/intl-localematcher": "0.10.1",
     "@gsap/react": "catalog:",
     "@ridemountainpig/svgl-react": "1.0.19",
+    "@useweather/core": "catalog:",
+    "@useweather/react": "catalog:",
     "class-variance-authority": "0.7.1",
     "cn": "0.5.2",
     "gsap": "catalog:",

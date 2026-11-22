@@ -372,6 +372,36 @@
       "nextWeek": "Next 7 days"
     }
   },
+  "integrations": {
+    "eyebrow": "Integrations",
+    "title": "The weather and your holidays, right in your calendar.",
+    "subtitle": "Turn on the integrations you want in Settings. They need no account or key, and each one is off with a single switch.",
+    "points": {
+      "weather": {
+        "title": "Weather",
+        "body": "The current weather of your city above Ask Tempi, with a sky that follows the conditions and the hour. It refreshes on its own while Tempi is open."
+      },
+      "holidays": {
+        "title": "Public holidays",
+        "body": "The public holidays of your country arrive as all-day events in your default calendar, next to the weather of each day. Delete one and it stays deleted."
+      }
+    },
+    "weather": {
+      "city": "Lima",
+      "condition": "Partly cloudy",
+      "high": "H {value}",
+      "low": "L {value}",
+      "feelsLike": "Feels like {value}",
+      "humidity": "Humidity",
+      "wind": "Wind",
+      "credit": "Weather data by Open-Meteo.com"
+    },
+    "week": {
+      "holiday": "Independence Day",
+      "high": "High",
+      "low": "Low"
+    }
+  },
   "ai": {
     "eyebrow": "AI assistant",
     "title": "Ask your calendar.",

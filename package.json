@@ -26,6 +26,8 @@
       "@usemeshly/google-calendar": "0.1.0",
       "@usemeshly/nager-date": "0.1.0",
       "@usemeshly/open-meteo": "0.1.0",
+      "@useweather/core": "0.1.0",
+      "@useweather/react": "0.1.0",
       "ai": "7.0.173",
       "chrono-node": "2.10.3",
       "gsap": "3.15.1",
