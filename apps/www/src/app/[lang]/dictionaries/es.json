@@ -383,7 +383,7 @@
       },
       "holidays": {
         "title": "Feriados",
-        "body": "Los feriados de tu país llegan como eventos de todo el día a tu calendario predeterminado, junto al clima de cada día. Si eliminas uno, no vuelve."
+        "body": "Los feriados de tu país llegan como eventos de todo el día a tu calendario predeterminado. Si eliminas uno, no vuelve."
       }
     },
     "weather": {
@@ -397,9 +397,7 @@
       "credit": "Datos del clima de Open-Meteo.com"
     },
     "week": {
-      "holiday": "Día de la Independencia",
-      "high": "Máxima",
-      "low": "Mínima"
+      "holiday": "Día de la Independencia"
     }
   },
   "ai": {
