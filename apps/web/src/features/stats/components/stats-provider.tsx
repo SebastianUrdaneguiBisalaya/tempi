@@ -10,7 +10,7 @@ type StatsControls = { openStats: () => void };
 
 const StatsContext = createContext<StatsControls | null>(null);
 
-/** Owns the time stats drawer, opened from the sidebar and the command menu. Its report is read only while open. */
+/** Owns the time stats drawer, opened from the header and the command menu. Its report is read only while open. */
 export function StatsProvider({ children }: { children: ReactNode }) {
 	const { t } = useTranslation();
 	const [open, setOpen] = useState(false);

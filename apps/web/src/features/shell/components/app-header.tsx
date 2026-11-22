@@ -2,7 +2,7 @@
 
 import { resolveLanguage } from '@tempi/core';
 import { CALENDAR_VIEWS, isCalendarView } from '@usecalendar/core';
-import { ChevronLeftIcon, ChevronRightIcon, PanelLeftIcon, PanelRightIcon, SettingsIcon } from 'lucide-react';
+import { ChartColumnIcon, ChevronLeftIcon, ChevronRightIcon, PanelLeftIcon, PanelRightIcon, SettingsIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -11,6 +11,7 @@ import { useCalendarNavigation } from '@/features/calendar/components/calendar-n
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
 import { ShortcutKeys } from '@/features/shortcuts/components/shortcut-keys';
 import { SHORTCUTS } from '@/features/shortcuts/shortcuts';
+import { useStats } from '@/features/stats/components/stats-provider';
 import { TOUR_TARGETS } from '@/features/tour/tour-steps';
 import { formatMonthYear } from '@/lib/date-format';
 import { toUtcDate } from '@/lib/plain-date';
@@ -27,6 +28,7 @@ export function AppHeader({ onTogglePanel, onToggleSidebar, panelOpen, sidebarOp
 	const { i18n, t } = useTranslation();
 	const { date, goToNext, goToPrevious, goToToday, setView, view } = useCalendarNavigation();
 	const { openSettings } = useSettingsDialog();
+	const { openStats } = useStats();
 
 	return (
 		<header className='flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2'>
@@ -79,6 +81,12 @@ export function AppHeader({ onTogglePanel, onToggleSidebar, panelOpen, sidebarOp
 					<TooltipContent>
 						{t('settings.open')} <ShortcutKeys keys={[SHORTCUTS.openSettings.keys]} />
 					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger render={<Button aria-label={t('stats.title')} onClick={openStats} size='icon' variant='ghost' />}>
+						<ChartColumnIcon />
+					</TooltipTrigger>
+					<TooltipContent>{t('stats.title')}</TooltipContent>
 				</Tooltip>
 				<Tooltip>
 					<TooltipTrigger render={<Button aria-expanded={panelOpen} aria-label={t('shell.panel.toggle')} onClick={onTogglePanel} size='icon' variant='ghost' />}>
