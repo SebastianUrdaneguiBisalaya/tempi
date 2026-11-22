@@ -95,6 +95,10 @@ type Api<Raw extends boolean> = {
 		/** Calls `listener` with each new update status the main process pushes; returns the unsubscribe function. */
 		onStatus: (listener: (status: Raw extends true ? unknown : AppUpdateStatus) => void) => () => void;
 	};
+	weather: {
+		current: CallWithoutInput<'weather:current', Raw>;
+		searchLocations: Call<'weather:searchLocations', Raw>;
+	};
 };
 
 /**

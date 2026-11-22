@@ -113,6 +113,15 @@ export const CHANNELS = {
 		/** Where the update stands. */
 		status: 'updates:status',
 	},
+	weather: {
+		/**
+		 * The current weather where the user picked in Settings, or in the city of their time zone; null when the
+		 * integration is off or there is no such place. Asks Open-Meteo's free plan from the main process.
+		 */
+		current: 'weather:current',
+		/** Places matching a city search typed in Settings, from Open-Meteo's free geocoding. */
+		searchLocations: 'weather:searchLocations',
+	},
 } as const;
 
 /**

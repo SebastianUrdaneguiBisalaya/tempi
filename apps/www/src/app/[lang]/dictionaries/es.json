@@ -599,7 +599,7 @@
   },
   "legal": {
     "updatedLabel": "Última actualización",
-    "updated": "17 de noviembre de 2026",
+    "updated": "21 de noviembre de 2026",
     "onThisPage": "En esta página",
     "contactLabel": "Contacto",
     "privacy": {
@@ -628,6 +628,7 @@
             "Google Calendar, solo si conectas una cuenta de Google.",
             "El proveedor de IA que elijas, solo si agregas tu propia API key y usas una función de IA.",
             "GitHub, para buscar y descargar actualizaciones de la app.",
+            "Open-Meteo, para el clima de la barra lateral, mientras esa integración esté activa.",
             "Este sitio web, que tu navegador abre al terminar el inicio de sesión con Google, y cualquier enlace que abras tú."
           ]
         },
@@ -688,6 +689,13 @@
           ]
         },
         {
+          "title": "Clima (Open-Meteo)",
+          "body": [
+            "Tempi puede mostrar el clima actual en su barra lateral. Está activo por defecto y puedes desactivarlo en Ajustes › Integraciones, lo que detiene toda solicitud del clima. Mientras está activo, Tempi envía a Open-Meteo la latitud y la longitud de la ciudad que elegiste (o de la ciudad que da nombre a tu zona horaria, hasta que elijas una) para obtener su clima, aproximadamente cada 30 minutos, y el texto que escribes al buscar una ciudad. Como en cualquier solicitud, Open-Meteo también recibe tu dirección IP. No se envía ningún dato de tu calendario, tu perfil ni tus cuentas, y no se usa ninguna clave ni cuenta.",
+            "Tempi usa el plan gratuito de Open-Meteo, cuyos términos y política de privacidad se aplican a estas solicitudes. Datos del clima de Open-Meteo.com, bajo CC BY 4.0; los nombres de lugares provienen de GeoNames. La ciudad que elijas se guarda solo en la base de datos de Tempi en tu computadora."
+          ]
+        },
+        {
           "title": "Este sitio web",
           "body": [
             "Este sitio web está alojado en Vercel. Para entregar las páginas y mantenerlas seguras, Vercel procesa datos técnicos estándar como tu dirección IP, el tipo de navegador y las páginas solicitadas.",
@@ -697,7 +705,7 @@
         {
           "title": "Compartir y vender datos",
           "body": [
-            "No vendemos, alquilamos ni compartimos tus datos con nadie. No podríamos, porque no los tenemos. Tus datos solo llegan a un tercero (Google, el proveedor de IA que elegiste o GitHub) cuando usas una función que lo necesita, como se describe arriba."
+            "No vendemos, alquilamos ni compartimos tus datos con nadie. No podríamos, porque no los tenemos. Tus datos solo llegan a un tercero (Google, el proveedor de IA que elegiste, GitHub u Open-Meteo) cuando usas una función que lo necesita, como se describe arriba."
           ]
         },
         {
@@ -710,7 +718,7 @@
         {
           "title": "Seguridad",
           "body": [
-            "Tempi cifra los tokens y las API keys con el almacenamiento seguro de tu sistema operativo, se comunica con Google y los proveedores de IA solo mediante HTTPS y ejecuta su interfaz en un entorno aislado del resto de tu sistema. Su código fuente es público en GitHub para que cualquiera lo revise. Ningún software es perfectamente seguro, así que mantén tu computadora y tu sistema operativo protegidos y actualizados."
+            "Tempi cifra los tokens y las API keys con el almacenamiento seguro de tu sistema operativo, se comunica con Google, los proveedores de IA y Open-Meteo solo mediante HTTPS y ejecuta su interfaz en un entorno aislado del resto de tu sistema. Su código fuente es público en GitHub para que cualquiera lo revise. Ningún software es perfectamente seguro, así que mantén tu computadora y tu sistema operativo protegidos y actualizados."
           ]
         },
         {

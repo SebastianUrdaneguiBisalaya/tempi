@@ -38,6 +38,7 @@
     "@types/node": "catalog:",
     "@usemeshly/auth": "catalog:",
     "@usemeshly/google-calendar": "catalog:",
+    "@usemeshly/open-meteo": "catalog:",
     "electron": "45.2.1",
     "electron-builder": "26.18.0",
     "electron-updater": "6.8.11",

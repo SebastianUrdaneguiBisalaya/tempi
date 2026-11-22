@@ -361,6 +361,8 @@ describe('SqliteSettingsRepository', () => {
 			soundsEnabled: false,
 			theme: 'dark',
 			tourCompleted: true,
+			weatherEnabled: false,
+			weatherLocation: { latitude: -13.52, longitude: -71.97, name: 'Cusco', region: 'Cusco, Peru' },
 			workingHours: { days: [1, 3, 5], enabled: true, end: '17:30', start: '08:15' },
 		} as const;
 		await repos.settings.save(changed);

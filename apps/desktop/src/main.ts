@@ -74,6 +74,7 @@ import { createReminderNotifier, deliverNotification, type NotificationApi } fro
 import { createReminderScheduler, type ReminderScheduler } from './reminder-scheduler.js';
 import { fetchLatestRelease } from './updates/latest-release.js';
 import { createUpdateService, type Downloader, type UpdateService, type UpdateStrategy } from './updates/update-service.js';
+import { createOpenMeteoWeather } from './weather/open-meteo-weather.js';
 import { loadWindowState, trackWindowState, windowOptions } from './window-state.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -664,7 +665,15 @@ if (!gotLock) {
 		registerIpc(
 			{ ipc: ipcMain, isTrusted: isTrustedUrl, transaction },
 			deps,
-			{ ai: aiIo(deps, transaction), data: dataIo(database, deps, transaction, avatarsDir), google: { account, sync }, ical: icalIo(), permissions: permissionsIo(), updates },
+			{
+				ai: aiIo(deps, transaction),
+				data: dataIo(database, deps, transaction, avatarsDir),
+				google: { account, sync },
+				ical: icalIo(),
+				permissions: permissionsIo(),
+				updates,
+				weather: createOpenMeteoWeather((url, init) => net.fetch(url, init)),
+			},
 			{
 				eventsChanged: () => {
 					void reminders?.reschedule();

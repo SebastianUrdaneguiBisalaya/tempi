@@ -214,6 +214,21 @@ describe('migrate', () => {
 		db.close();
 	});
 
+	test('0014 keeps existing settings with the weather on and no place picked, and stores only JSON objects', () => {
+		const db = new DatabaseSync(':memory:');
+		const migrations = loadMigrations();
+		migrate(db, migrations.slice(0, 13));
+		db.exec(`INSERT INTO settings (id, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			show_week_numbers, theme, time_format, week_start, created_at, updated_at)
+			VALUES (1, 30, 'es', 0, 1, 1, 1, 'dark', '24h', 'monday', '2026-11-15T10:00:00.000Z', '2026-11-15T10:00:00.000Z')`);
+		migrate(db, migrations);
+		expect(db.prepare('SELECT language, weather_enabled, weather_location FROM settings').get()).toEqual({ language: 'es', weather_enabled: 1, weather_location: null });
+		expect(() => db.exec('UPDATE settings SET weather_enabled = 2')).toThrow();
+		expect(() => db.exec(`UPDATE settings SET weather_location = '[]'`)).toThrow();
+		expect(() => db.exec(`UPDATE settings SET weather_location = 'Lima'`)).toThrow();
+		db.close();
+	});
+
 	test('rolls back a failing migration and leaves the version unchanged', () => {
 		const db = new DatabaseSync(':memory:');
 		const migrations = [

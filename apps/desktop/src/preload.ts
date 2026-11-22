@@ -157,6 +157,10 @@ const desktop: DesktopApi = {
 		status: () => ipcRenderer.invoke(CHANNELS.updates.status),
 	},
 	version: process.versions.electron ?? '',
+	weather: {
+		current: () => ipcRenderer.invoke(CHANNELS.weather.current),
+		searchLocations: query => ipcRenderer.invoke(CHANNELS.weather.searchLocations, query),
+	},
 };
 
 contextBridge.exposeInMainWorld('desktop', desktop);
