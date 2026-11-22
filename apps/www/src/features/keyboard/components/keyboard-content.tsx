@@ -6,6 +6,7 @@ import type { MockupCopy } from '@/features/why/components/app-mockup';
 import { gsap, useMotion } from '@/lib/gsap';
 import { SHOWN_SHORTCUTS, type ShownShortcut } from '@/lib/hotkeys';
 import type { Locale } from '@/lib/i18n';
+import { SECTION_IDS } from '@/lib/site';
 import { type CommandMenuCopy, CommandMenuDemo } from './command-menu-demo';
 import { Hotkey } from './hotkey';
 import { NavigationReplica } from './navigation-replica';
@@ -74,7 +75,7 @@ function CommandMenuCell({ copy }: { copy: KeyboardCopy }) {
 export function KeyboardContent({ locale, copy, mockup }: KeyboardContentProps) {
 	const { cells, replicas } = copy;
 	return (
-		<ShowcaseSection index={6} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
+		<ShowcaseSection id={SECTION_IDS.keyboard} index={6} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
 			<ShowcaseGrid>
 				<ShowcaseCell title={cells.commandMenu.title} body={cells.commandMenu.body}>
 					<CommandMenuCell copy={copy} />
