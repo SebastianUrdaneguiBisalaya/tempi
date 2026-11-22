@@ -105,7 +105,7 @@ export function AboutSettings() {
 			<Separator />
 			<nav aria-label={t('settings.about.linksTitle')} className='flex flex-col gap-1'>
 				<h4 className='font-heading text-sm font-semibold'>{t('settings.about.linksTitle')}</h4>
-				<div className='-mx-2 flex flex-wrap gap-1'>
+				<div className='-mx-1 flex flex-wrap gap-1'>
 					<ExternalLink href={WEBSITE_URL} icon={GlobeIcon} label={t('settings.about.links.website')} />
 					<ExternalLink href={REPO_URL} icon={SquareCodeIcon} label={t('settings.about.links.source')} />
 					<ExternalLink href={`${REPO_URL}/releases`} icon={NotebookTextIcon} label={t('settings.about.links.releases')} />
