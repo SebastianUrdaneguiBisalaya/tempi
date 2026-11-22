@@ -36,7 +36,9 @@ export async function LegalPage({ page }: { page: LegalPageName }) {
 		<main className='relative isolate flex flex-1 flex-col'>
 			<div className='absolute inset-x-0 top-0 -z-10 h-112 overflow-hidden'>
 				<Image src='/bg-tempi.png' alt='' fill priority sizes='100vw' className='object-cover object-top opacity-40' />
-				<div className='absolute inset-0 bg-linear-to-b from-transparent via-background/60 to-background' />
+				{/* A plain gradient: Tailwind's via stop (color-mix and registered properties) draws nothing on older iOS Safari,
+				    which left the image's bottom edge as a hard line. */}
+				<div className='absolute inset-0 bg-[linear-gradient(to_bottom,transparent,var(--background))]' />
 			</div>
 
 			<article className='mx-auto w-full max-w-3xl px-4 pt-30 pb-24 sm:px-6'>

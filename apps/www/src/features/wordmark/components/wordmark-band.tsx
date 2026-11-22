@@ -3,6 +3,7 @@
 import { cn } from 'cn';
 import { type RefObject, useEffect, useRef } from 'react';
 import { mountAsciiField } from '@/lib/ascii-field';
+import { loadFont } from '@/lib/load-font';
 import { measureMark, opaqueBounds } from '../ascii-mark';
 
 const WORD = 'tempi';
@@ -43,7 +44,7 @@ export function WordmarkBand({ label, className = 'h-svh', pointerArea, markArea
 		let unmount: (() => void) | null = null;
 		let cancelled = false;
 
-		Promise.all([logo.decode(), document.fonts.load(`500 100px ${font}`)])
+		Promise.all([logo.decode(), loadFont(document.fonts, `500 100px ${font}`)])
 			.then(() => {
 				if (cancelled) return;
 				const logoBounds = opaqueBounds(logo);
