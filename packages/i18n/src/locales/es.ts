@@ -517,6 +517,14 @@ export const es = {
 				googleDescription: 'Inicia sesión con Google en tu navegador. Solo se puede conectar una cuenta.',
 				legal: { label: 'Legal', privacy: 'Política de Privacidad', terms: 'Términos y Condiciones' },
 				googleTitle: 'Google',
+				holidays: {
+					credit: 'Feriados de Nager.Date',
+					description: 'Agrega los feriados de tu país como eventos de todo el día en tu calendario predeterminado, desde la API gratuita de Nager.Date. No necesitas cuenta ni clave.',
+					enabled: 'Agregar feriados',
+					privacy:
+						'Mientras esté activado, el país de tu perfil se envía a Nager.Date para obtener sus feriados, una vez al año y cuando cambias de país. No se comparte nada más sobre ti. Al desactivarlo se eliminan los feriados que agregó.',
+					title: 'Feriados',
+				},
 				notConnected: 'Ninguna cuenta conectada.',
 				readOnly: 'Solo lectura',
 				reconnect: 'Volver a conectar',
@@ -966,6 +974,11 @@ export const es = {
 			reconnectRequired: 'Vuelve a conectar tu cuenta de Google para seguir sincronizando.',
 			syncFailed: 'No se pudo sincronizar con Google. Tempi lo vuelve a intentar en unos minutos.',
 			timeout: 'El inicio de sesión con Google tardó demasiado. Inténtalo de nuevo.',
+		},
+		holidays: {
+			offline: 'No se puede conectar con el servicio de feriados. Tempi lo intentará de nuevo al volver a abrirse.',
+			rateLimited: 'El servicio de feriados está ocupado. Tempi lo intentará de nuevo al volver a abrirse.',
+			unavailable: 'No se pudieron obtener los feriados. Tempi lo intentará de nuevo al volver a abrirse.',
 		},
 		ical: {
 			invalidFile: 'Este archivo no es un calendario (.ics) válido.',

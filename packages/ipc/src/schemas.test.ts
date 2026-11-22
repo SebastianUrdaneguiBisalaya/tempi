@@ -239,6 +239,27 @@ describe('google answers', () => {
 	});
 });
 
+describe('holidays', () => {
+	const sync = resultSchema(responseValueSchemas['holidays:sync']);
+
+	test('sync takes no payload', () => {
+		expect(parseWith(payloadSchemas['holidays:sync'], undefined).ok).toBe(true);
+		expect(parseWith(payloadSchemas['holidays:sync'], { country: 'PE' }).ok).toBe(false);
+	});
+
+	test('answers how many holiday events were created and removed', () => {
+		expect(sync.parse({ ok: true, value: { created: 3, removed: 0 } })).toEqual({ ok: true, value: { created: 3, removed: 0 } });
+		expect(sync.safeParse({ ok: true, value: { created: -1, removed: 0 } }).success).toBe(false);
+		expect(sync.safeParse({ ok: true, value: { created: 1.5, removed: 0 } }).success).toBe(false);
+		expect(sync.safeParse({ ok: true, value: null }).success).toBe(false);
+	});
+
+	test('a failure carries its translatable key', () => {
+		const failed = { error: { code: 'internal', issues: [{ detail: 'Nager.Date answered 429', key: 'holidays.rateLimited' }] }, ok: false };
+		expect(sync.parse(failed)).toMatchObject({ error: { issues: [{ key: 'holidays.rateLimited' }] }, ok: false });
+	});
+});
+
 describe('weather', () => {
 	const current = resultSchema(responseValueSchemas['weather:current']);
 	const lima = { latitude: -12.04, longitude: -77.03, name: 'Lima', region: 'Lima, Peru' };

@@ -125,6 +125,9 @@ const desktop: DesktopApi = {
 		sync: () => ipcRenderer.invoke(CHANNELS.google.sync),
 		syncStatus: () => ipcRenderer.invoke(CHANNELS.google.syncStatus),
 	},
+	holidays: {
+		sync: () => ipcRenderer.invoke(CHANNELS.holidays.sync),
+	},
 	onboarding: {
 		complete: input => ipcRenderer.invoke(CHANNELS.onboarding.complete, input),
 	},

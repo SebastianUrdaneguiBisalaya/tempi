@@ -68,6 +68,9 @@ type Api<Raw extends boolean> = {
 		/** Calls `listener` with each new sync status the main process pushes; returns the unsubscribe function. */
 		onSyncStatus: (listener: (status: Raw extends true ? unknown : GoogleSyncStatus) => void) => () => void;
 	};
+	holidays: {
+		sync: CallWithoutInput<'holidays:sync', Raw>;
+	};
 	onboarding: {
 		complete: Call<'onboarding:complete', Raw>;
 	};

@@ -15,6 +15,7 @@ import iconBadge from './0011_icon_badge.sql' with { type: 'text' };
 import secondaryTimeZones from './0012_secondary_time_zones.sql' with { type: 'text' };
 import workingHours from './0013_working_hours.sql' with { type: 'text' };
 import weather from './0014_weather.sql' with { type: 'text' };
+import holidays from './0015_holidays.sql' with { type: 'text' };
 
 export const MIGRATION_FILES: Record<string, string> = {
 	'0001_init.sql': init,
@@ -31,4 +32,5 @@ export const MIGRATION_FILES: Record<string, string> = {
 	'0012_secondary_time_zones.sql': secondaryTimeZones,
 	'0013_working_hours.sql': workingHours,
 	'0014_weather.sql': weather,
+	'0015_holidays.sql': holidays,
 };

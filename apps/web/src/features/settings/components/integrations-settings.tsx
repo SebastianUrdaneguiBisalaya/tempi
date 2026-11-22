@@ -12,6 +12,7 @@ import { legalPageUrl } from '@/lib/site';
 import { useConnectGoogle, useDisconnectGoogle, useGoogleAccount } from '../hooks/use-google-account';
 import { AiIntegrations } from './ai-integrations';
 import { GoogleSyncSettings } from './google-sync-settings';
+import { HolidaysIntegration } from './holidays-integration';
 import { WeatherIntegration } from './weather-integration';
 
 /** Connects one Google account through the system browser, syncs its calendars, or disconnects it after confirming. */
@@ -84,6 +85,7 @@ export function IntegrationsSettings() {
 					)}
 				</Card>
 			</section>
+			<HolidaysIntegration />
 			<WeatherIntegration />
 			<AiIntegrations />
 			<AlertDialog onOpenChange={setConfirming} open={confirming}>

@@ -46,6 +46,8 @@ export const settingsValuesSchema = z.object({
 	allDayCollapsed: z.boolean(),
 	/** Minutes, up to one day. */
 	defaultEventDuration: z.number().int('validation.integer').min(1, 'validation.min').max(1440, 'validation.max'),
+	/** Adds the public holidays of the profile's country as all-day events, from Nager.Date. Off removes the ones it added. */
+	holidaysEnabled: z.boolean(),
 	/** Shows how many of today's events are left on the app icon (Dock, taskbar or launcher). */
 	iconBadgeEnabled: z.boolean(),
 	language: z.enum(LANGUAGES),
@@ -94,6 +96,7 @@ export type Settings = z.output<typeof settingsSchema>;
 export const DEFAULT_SETTINGS = {
 	allDayCollapsed: false,
 	defaultEventDuration: 60,
+	holidaysEnabled: true,
 	iconBadgeEnabled: true,
 	language: 'en',
 	menuBarEnabled: false,

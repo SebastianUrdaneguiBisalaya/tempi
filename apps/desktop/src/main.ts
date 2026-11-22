@@ -62,6 +62,7 @@ import { oauthClientFrom } from './google/oauth.js';
 import { signInLandingUrl } from './google/sign-in-landing.js';
 import { createSyncRunner, type SyncRunner } from './google/sync-runner.js';
 import { type Cipher, createTokenStore } from './google/token-store.js';
+import { createNagerDateHolidays } from './holidays/nager-date-holidays.js';
 import { createIcalWorker } from './ical-worker-client.js';
 import { createIconBadge, type IconBadge, OVERLAY_SIZE, platformBadge } from './icon-badge.js';
 import { type AiIo, type DataIo, type IcalIo, type IpcSender, type PermissionsIo, registerIpc } from './ipc/register-ipc.js';
@@ -669,6 +670,7 @@ if (!gotLock) {
 				ai: aiIo(deps, transaction),
 				data: dataIo(database, deps, transaction, avatarsDir),
 				google: { account, sync },
+				holidays: createNagerDateHolidays((url, init) => net.fetch(url, init)),
 				ical: icalIo(),
 				permissions: permissionsIo(),
 				updates,

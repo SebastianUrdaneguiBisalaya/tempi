@@ -8,6 +8,7 @@ import {
 	type CoreDeps,
 	DEFAULT_AI_SETTINGS,
 	fail,
+	type HolidayProvider,
 	ok,
 	type Settings,
 	type UserProfile,
@@ -195,6 +196,16 @@ const weather: WeatherProvider = {
 	},
 };
 
+let holidayCalls: string[];
+let holidayFailure: boolean;
+const holidays: HolidayProvider = {
+	list: (country, year) => {
+		holidayCalls.push(`${country} ${year}`);
+		if (holidayFailure) return Promise.resolve(fail('internal', 'holidays.rateLimited', { detail: 'Nager.Date answered 429' }));
+		return Promise.resolve(ok(country === 'PE' ? [{ date: `${year}-07-28`, name: 'Independence Day' }] : [{ date: `${year}-09-18`, name: 'Independence Day' }]));
+	},
+};
+
 // A newer release on GitHub, as the macOS check would find it.
 const updates = () =>
 	createUpdateService({
@@ -223,6 +234,8 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	exportPath = '/exports';
 	written = [];
 	weatherCalls = [];
+	holidayCalls = [];
+	holidayFailure = false;
 	const avatarStore = {
 		remove: async (fileName: string) => void avatars.delete(fileName),
 		save: async (fileName: string, image: AvatarImage) => void avatars.set(fileName, image),
@@ -231,7 +244,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
-		{ ai, data: dataIo, google: { account: google, sync }, ical: icalIo, permissions, updates: updates(), weather },
+		{ ai, data: dataIo, google: { account: google, sync }, holidays, ical: icalIo, permissions, updates: updates(), weather },
 		listeners
 	);
 };
@@ -831,6 +844,74 @@ describe('weather', () => {
 
 	test('settings refuse a place off the globe', async () => {
 		expect(await invoke(CHANNELS.settings.save, { weatherLocation: { ...LIMA, latitude: 120 } })).toMatchObject({ ok: false });
+	});
+});
+
+describe('holidays', () => {
+	let changes: number;
+	beforeEach(() => {
+		changes = 0;
+		setup(undefined, { eventsChanged: () => (changes += 1) });
+	});
+
+	const onboard = () =>
+		invoke(CHANNELS.onboarding.complete, {
+			avatar: null,
+			country: 'pe',
+			firstName: 'Ana',
+			language: 'es',
+			lastName: 'Quispe',
+			notificationsEnabled: false,
+			theme: 'dark',
+			timeZone: 'America/Lima',
+		});
+
+	const holidayEvents = () => rows('SELECT title, start_at, deleted_at FROM events WHERE all_day = 1 ORDER BY start_at');
+
+	test('before onboarding there is no country, so nothing is fetched', async () => {
+		expect(await invoke(CHANNELS.holidays.sync)).toEqual({ ok: true, value: { created: 0, removed: 0 } });
+		expect(holidayCalls).toEqual([]);
+	});
+
+	test('fetches this year and the next once, then reads them from the database', async () => {
+		await onboard();
+		expect(await invoke(CHANNELS.holidays.sync)).toEqual({ ok: true, value: { created: 2, removed: 0 } });
+		expect(await invoke(CHANNELS.holidays.sync)).toEqual({ ok: true, value: { created: 0, removed: 0 } });
+		expect(holidayCalls).toEqual(['PE 2026', 'PE 2027']);
+		expect(holidayEvents()).toEqual([
+			{ deleted_at: null, start_at: '2026-07-28T05:00:00.000Z', title: 'Independence Day' },
+			{ deleted_at: null, start_at: '2027-07-28T05:00:00.000Z', title: 'Independence Day' },
+		]);
+		expect(changes).toBe(1);
+	});
+
+	test('a country change swaps the holidays, and switching off removes them', async () => {
+		await onboard();
+		await invoke(CHANNELS.holidays.sync);
+		await invoke(CHANNELS.profile.update, { country: 'CL', firstName: 'Ana', lastName: 'Quispe', timeZone: 'America/Lima' });
+		expect(await invoke(CHANNELS.holidays.sync)).toEqual({ ok: true, value: { created: 2, removed: 2 } });
+		expect(holidayCalls).toEqual(['PE 2026', 'PE 2027', 'CL 2026', 'CL 2027']);
+
+		await invoke(CHANNELS.settings.save, { holidaysEnabled: false });
+		expect(await invoke(CHANNELS.holidays.sync)).toEqual({ ok: true, value: { created: 0, removed: 2 } });
+		expect(holidayEvents().every(event => event.deleted_at !== null)).toBe(true);
+		expect(holidayCalls).toHaveLength(4);
+	});
+
+	test('a failed fetch writes nothing and is asked again on the next sync', async () => {
+		await onboard();
+		holidayFailure = true;
+		expect(await invoke(CHANNELS.holidays.sync)).toMatchObject({ error: { issues: [{ key: 'holidays.rateLimited' }] }, ok: false });
+		expect(holidayEvents()).toEqual([]);
+		holidayFailure = false;
+		expect(await invoke(CHANNELS.holidays.sync)).toEqual({ ok: true, value: { created: 2, removed: 0 } });
+	});
+
+	test('refuses an untrusted sender or a payload', async () => {
+		await onboard();
+		expect(await invoke(CHANNELS.holidays.sync, undefined, 'https://evil.example/')).toMatchObject({ ok: false });
+		expect(await invoke(CHANNELS.holidays.sync, { country: 'PE' })).toMatchObject({ error: { code: 'validation' }, ok: false });
+		expect(holidayCalls).toEqual([]);
 	});
 });
 

@@ -629,6 +629,7 @@
             "El proveedor de IA que elijas, solo si agregas tu propia API key y usas una función de IA.",
             "GitHub, para buscar y descargar actualizaciones de la app.",
             "Open-Meteo, para el clima de la barra lateral, mientras esa integración esté activa.",
+            "Nager.Date, para los feriados de tu país, mientras esa integración esté activa.",
             "Este sitio web, que tu navegador abre al terminar el inicio de sesión con Google, y cualquier enlace que abras tú."
           ]
         },
@@ -689,6 +690,13 @@
           ]
         },
         {
+          "title": "Feriados (Nager.Date)",
+          "body": [
+            "Tempi puede agregar los feriados de tu país a tu calendario predeterminado como eventos de todo el día. Está activo por defecto y puedes desactivarlo en Ajustes › Integraciones, lo que detiene toda solicitud de feriados y elimina los eventos de feriados que agregó (también de Google Calendar, si ese calendario se sincroniza). Mientras está activo, Tempi envía a Nager.Date el país de tu perfil y el año, para obtener los feriados de ese año: una vez para el año actual y el siguiente, y luego solo cuando empieza un año nuevo o cambias de país. Como en cualquier solicitud, Nager.Date también recibe tu dirección IP. No se envía ningún dato de tu calendario, tu nombre, tu zona horaria ni tus cuentas, y no se usa ninguna clave ni cuenta.",
+            "Tempi usa la API Community gratuita de Nager.Date, cuyos términos y política de privacidad se aplican a estas solicitudes. Feriados de Nager.Date. Los feriados se guardan solo en la base de datos de Tempi en tu computadora, como cualquier otro evento."
+          ]
+        },
+        {
           "title": "Clima (Open-Meteo)",
           "body": [
             "Tempi puede mostrar el clima actual en su barra lateral. Está activo por defecto y puedes desactivarlo en Ajustes › Integraciones, lo que detiene toda solicitud del clima. Mientras está activo, Tempi envía a Open-Meteo la latitud y la longitud de la ciudad que elegiste (o de la ciudad que da nombre a tu zona horaria, hasta que elijas una) para obtener su clima, aproximadamente cada 30 minutos, y el texto que escribes al buscar una ciudad. Como en cualquier solicitud, Open-Meteo también recibe tu dirección IP. No se envía ningún dato de tu calendario, tu perfil ni tus cuentas, y no se usa ninguna clave ni cuenta.",
@@ -705,7 +713,7 @@
         {
           "title": "Compartir y vender datos",
           "body": [
-            "No vendemos, alquilamos ni compartimos tus datos con nadie. No podríamos, porque no los tenemos. Tus datos solo llegan a un tercero (Google, el proveedor de IA que elegiste, GitHub u Open-Meteo) cuando usas una función que lo necesita, como se describe arriba."
+            "No vendemos, alquilamos ni compartimos tus datos con nadie. No podríamos, porque no los tenemos. Tus datos solo llegan a un tercero (Google, el proveedor de IA que elegiste, GitHub, Open-Meteo o Nager.Date) cuando usas una función que lo necesita, como se describe arriba."
           ]
         },
         {
@@ -718,7 +726,7 @@
         {
           "title": "Seguridad",
           "body": [
-            "Tempi cifra los tokens y las API keys con el almacenamiento seguro de tu sistema operativo, se comunica con Google, los proveedores de IA y Open-Meteo solo mediante HTTPS y ejecuta su interfaz en un entorno aislado del resto de tu sistema. Su código fuente es público en GitHub para que cualquiera lo revise. Ningún software es perfectamente seguro, así que mantén tu computadora y tu sistema operativo protegidos y actualizados."
+            "Tempi cifra los tokens y las API keys con el almacenamiento seguro de tu sistema operativo, se comunica con Google, los proveedores de IA, Open-Meteo y Nager.Date solo mediante HTTPS y ejecuta su interfaz en un entorno aislado del resto de tu sistema. Su código fuente es público en GitHub para que cualquiera lo revise. Ningún software es perfectamente seguro, así que mantén tu computadora y tu sistema operativo protegidos y actualizados."
           ]
         },
         {

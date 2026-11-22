@@ -26,6 +26,7 @@
         "@types/node": "catalog:",
         "@usemeshly/auth": "catalog:",
         "@usemeshly/google-calendar": "catalog:",
+        "@usemeshly/nager-date": "catalog:",
         "@usemeshly/open-meteo": "catalog:",
         "electron": "45.2.1",
         "electron-builder": "26.18.0",
@@ -229,6 +230,7 @@
     "@types/react-dom": "19.3.0",
     "@usemeshly/auth": "0.1.0",
     "@usemeshly/google-calendar": "0.1.0",
+    "@usemeshly/nager-date": "0.1.0",
     "@usemeshly/open-meteo": "0.1.0",
     "ai": "7.0.173",
     "chrono-node": "2.10.3",
@@ -731,6 +733,8 @@
     "@usemeshly/auth": ["@usemeshly/auth@0.1.0", "", { "dependencies": { "oauth4webapi": "3.8.9", "zod": "4.6.7" } }, "sha512-Fob38cQloegKYxL5MlObjv6PjvhHtbOIxai2YhNvdKMuDWq1R8ZXvmg6kDN1dw5IR9yE7hJNA0BdTxgUYVOD0Q=="],
 
     "@usemeshly/google-calendar": ["@usemeshly/google-calendar@0.1.0", "", { "dependencies": { "zod": "4.6.7" }, "peerDependencies": { "@usemeshly/auth": "^0.1.0" } }, "sha512-aNRA4qI55DudyNpqaCwHXfG3lGN6D9pA5dIlXgNLlquE2jvQbQVY52uh7vlBcmKb1iuqQ0XHRSgzRLQgtU8eUg=="],
+
+    "@usemeshly/nager-date": ["@usemeshly/nager-date@0.1.0", "", { "dependencies": { "zod": "4.6.7" }, "peerDependencies": { "@usemeshly/auth": "^0.1.0" } }, "sha512-YgIunzDD/O/0yfwEwEcU3a84TndsEf854UzxDd9SZXtUcHjEUHAPGiVCh24cYs3Ns/QylYCCfrq3bLR8+kwi8g=="],
 
     "@usemeshly/open-meteo": ["@usemeshly/open-meteo@0.1.0", "", { "dependencies": { "zod": "4.6.7" }, "peerDependencies": { "@usemeshly/auth": "^0.1.0" } }, "sha512-3lMVNWsq1z/fn3GMzhlJHDAAYemcRI13dCuqRdYiUGcbpM1pWues19l9SxOu+vQoWaCe48rLQMRndDB3bdIlYg=="],
 

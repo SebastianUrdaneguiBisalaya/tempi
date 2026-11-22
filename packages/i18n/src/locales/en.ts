@@ -515,6 +515,14 @@ export const en = {
 				googleDescription: 'Sign in with Google in your browser. Only one account can be connected.',
 				legal: { label: 'Legal', privacy: 'Privacy Policy', terms: 'Terms and Conditions' },
 				googleTitle: 'Google',
+				holidays: {
+					credit: 'Holidays by Nager.Date',
+					description: 'Add the public holidays of your country as all-day events in your default calendar, from Nager.Date’s free API. No account or key needed.',
+					enabled: 'Add public holidays',
+					privacy:
+						'While it’s on, the country in your profile is sent to Nager.Date to get its holidays, once a year and when you change country. Nothing else about you is shared. Turning it off deletes the holidays it added.',
+					title: 'Holidays',
+				},
 				notConnected: 'No account connected.',
 				readOnly: 'Read-only',
 				reconnect: 'Reconnect',
@@ -965,6 +973,11 @@ export const en = {
 			reconnectRequired: 'Reconnect your Google account to keep syncing.',
 			syncFailed: 'Couldn’t sync with Google. Tempi tries again in a few minutes.',
 			timeout: 'Google sign-in took too long. Try again.',
+		},
+		holidays: {
+			offline: 'The holidays service can’t be reached. Tempi tries again on the next launch.',
+			rateLimited: 'The holidays service is busy. Tempi tries again on the next launch.',
+			unavailable: 'Couldn’t get the public holidays. Tempi tries again on the next launch.',
 		},
 		ical: {
 			invalidFile: 'This file isn’t a valid calendar (.ics) file.',

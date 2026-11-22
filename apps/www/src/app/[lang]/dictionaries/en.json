@@ -629,6 +629,7 @@
             "The AI provider you choose, only if you add your own API key and use an AI feature.",
             "GitHub, to check for and download app updates.",
             "Open-Meteo, for the weather in the sidebar, while that integration is on.",
+            "Nager.Date, for the public holidays of your country, while that integration is on.",
             "This website, which your browser opens when a Google sign-in finishes, and any link you open yourself."
           ]
         },
@@ -689,6 +690,13 @@
           ]
         },
         {
+          "title": "Public holidays (Nager.Date)",
+          "body": [
+            "Tempi can add the public holidays of your country to your default calendar as all-day events. It is on by default and you can turn it off in Settings › Integrations, which stops every holiday request and deletes the holiday events it added (also from Google Calendar, if that calendar syncs). While it is on, Tempi sends Nager.Date the country in your profile and the year, to get that year's holidays: once for the current year and the next, then only when a new year starts or you change country. Like any request, Nager.Date also receives your IP address. No calendar, name, time zone or account data is sent, and there is no key or account.",
+            "Tempi uses Nager.Date's free Community API, whose terms and privacy policy apply to these requests. Holidays by Nager.Date. The holidays are stored only in Tempi's database on your computer, like any other event."
+          ]
+        },
+        {
           "title": "Weather (Open-Meteo)",
           "body": [
             "Tempi can show the current weather in its sidebar. It is on by default and you can turn it off in Settings › Integrations, which stops every weather request. While it is on, Tempi sends Open-Meteo the latitude and longitude of the city you chose (or of the city your time zone is named after, until you choose one) to get its weather, about every 30 minutes, and the text you type when you search for a city. Like any request, Open-Meteo also receives your IP address. No calendar, profile or account data is sent, and there is no key or account.",
@@ -705,7 +713,7 @@
         {
           "title": "Sharing and selling",
           "body": [
-            "We don't sell, rent or share your data with anyone. We can't, because we don't have it. Your data only reaches a third party (Google, the AI provider you chose, GitHub or Open-Meteo) when you use a feature that needs it, as described above."
+            "We don't sell, rent or share your data with anyone. We can't, because we don't have it. Your data only reaches a third party (Google, the AI provider you chose, GitHub, Open-Meteo or Nager.Date) when you use a feature that needs it, as described above."
           ]
         },
         {
@@ -718,7 +726,7 @@
         {
           "title": "Security",
           "body": [
-            "Tempi encrypts tokens and API keys with your operating system's secure storage, talks to Google, AI providers and Open-Meteo only over HTTPS and runs its interface in a sandbox isolated from the rest of your system. Its source code is public on GitHub for anyone to review. No software is perfectly secure, so keep your computer and operating system protected and up to date."
+            "Tempi encrypts tokens and API keys with your operating system's secure storage, talks to Google, AI providers, Open-Meteo and Nager.Date only over HTTPS and runs its interface in a sandbox isolated from the rest of your system. Its source code is public on GitHub for anyone to review. No software is perfectly secure, so keep your computer and operating system protected and up to date."
           ]
         },
         {

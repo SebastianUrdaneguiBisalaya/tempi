@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { DatabaseSync } from 'node:sqlite';
-import { type Calendar, type CalendarEvent, createCalendar, createEvent, DEFAULT_SETTINGS, deleteCalendar, listEvents, saveProfile, saveSettings, type UserProfile } from '@tempi/core';
+import { type Calendar, type CalendarEvent, createCalendar, createEvent, DEFAULT_SETTINGS, deleteCalendar, listEvents, saveProfile, saveSettings, syncHolidays, type UserProfile } from '@tempi/core';
 import { createRepositories, loadMigrations, migrate, type SqliteRepositories } from '../index';
 import { openDatabase } from '../open-database';
 
@@ -331,6 +331,46 @@ describe('SqliteGoogleSyncRepository', () => {
 	});
 });
 
+describe('SqliteHolidayRepository', () => {
+	beforeEach(async () => {
+		await repos.calendars.save(makeCalendar());
+		await repos.events.save(makeEvent({ id: 'evt-1' }));
+		await repos.events.save(makeEvent({ id: 'evt-2' }));
+	});
+
+	test('round-trips holidays and fetched years, keyed by country and date or year', async () => {
+		expect(await repos.holidays.listHolidays()).toEqual([]);
+		expect(await repos.holidays.listFetchedYears()).toEqual([]);
+		await repos.holidays.saveHoliday({ country: 'PE', createdAt: T0, date: '2026-07-28', eventId: 'evt-1' });
+		await repos.holidays.saveHoliday({ country: 'PE', createdAt: T0, date: '2026-07-28', eventId: 'evt-2' });
+		await repos.holidays.saveFetchedYear({ country: 'PE', fetchedAt: T0, year: 2026 });
+		await repos.holidays.saveFetchedYear({ country: 'PE', fetchedAt: '2026-11-16T10:00:00.000Z', year: 2026 });
+		expect(await repos.holidays.listHolidays()).toEqual([{ country: 'PE', createdAt: T0, date: '2026-07-28', eventId: 'evt-2' }]);
+		expect(await repos.holidays.listFetchedYears()).toEqual([{ country: 'PE', fetchedAt: '2026-11-16T10:00:00.000Z', year: 2026 }]);
+	});
+
+	test('a tracked holiday outlives its event’s soft delete', async () => {
+		await repos.holidays.saveHoliday({ country: 'PE', createdAt: T0, date: '2026-07-28', eventId: 'evt-1' });
+		await repos.events.save(makeEvent({ deletedAt: T0, id: 'evt-1' }));
+		expect(await repos.holidays.listHolidays()).toHaveLength(1);
+	});
+
+	test('clear forgets every holiday and year but leaves the events', async () => {
+		await repos.holidays.saveHoliday({ country: 'PE', createdAt: T0, date: '2026-07-28', eventId: 'evt-1' });
+		await repos.holidays.saveFetchedYear({ country: 'PE', fetchedAt: T0, year: 2026 });
+		await repos.holidays.clear();
+		expect(await repos.holidays.listHolidays()).toEqual([]);
+		expect(await repos.holidays.listFetchedYears()).toEqual([]);
+		expect(await repos.events.findById('evt-1')).toMatchObject({ deletedAt: null });
+	});
+
+	test('rejects a holiday for an event that doesn’t exist, or a malformed country or date', async () => {
+		await expect(repos.holidays.saveHoliday({ country: 'PE', createdAt: T0, date: '2026-07-28', eventId: 'missing' })).rejects.toThrow();
+		expect(() => db.exec(`INSERT INTO holidays (country, date, event_id, created_at) VALUES ('pe', '2026-07-28', 'evt-1', '${T0}')`)).toThrow();
+		expect(() => db.exec(`INSERT INTO holidays (country, date, event_id, created_at) VALUES ('PE', '28/07/2026', 'evt-1', '${T0}')`)).toThrow();
+	});
+});
+
 describe('SqliteProfileRepository', () => {
 	const profile: UserProfile = { avatar: null, country: 'PE', createdAt: T0, firstName: 'Ada', lastName: 'Lovelace', timeZone: 'America/Lima', updatedAt: T0 };
 
@@ -351,6 +391,7 @@ describe('SqliteSettingsRepository', () => {
 		const changed = {
 			...settings,
 			allDayCollapsed: true,
+			holidaysEnabled: false,
 			iconBadgeEnabled: false,
 			microphoneEnabled: false,
 			secondaryTimeZones: ['Asia/Kolkata', 'Europe/Madrid'],
@@ -392,6 +433,20 @@ describe('core use cases over SQLite', () => {
 		const [seeded] = await repos.calendars.list();
 		expect(seeded).toMatchObject({ isDefault: true });
 		expect(await deleteCalendar(deps(), { id: seeded?.id ?? '', moveEventsTo: null })).toMatchObject({ error: { code: 'conflict' }, ok: false });
+	});
+
+	test('holidays sync into the seeded default calendar and are removed when turned off', async () => {
+		await saveProfile(deps(), { country: 'PE', firstName: 'Ada', lastName: 'Lovelace', timeZone: 'America/Lima' });
+		const fetched = [{ country: 'PE', holidays: [{ date: '2026-07-28', name: 'Independence Day' }], year: 2026 }];
+		expect(await syncHolidays(deps(), fetched)).toEqual({ ok: true, value: { created: 1, removed: 0 } });
+		expect(await syncHolidays(deps(), fetched)).toEqual({ ok: true, value: { created: 0, removed: 0 } });
+		const range = { end: '2026-07-29T05:00:00.000Z', start: '2026-07-28T05:00:00.000Z' };
+		expect(await listEvents(deps(), range)).toMatchObject({ ok: true, value: [{ allDay: true, title: 'Independence Day' }] });
+
+		await saveSettings(deps(), { holidaysEnabled: false });
+		expect(await syncHolidays(deps(), [])).toEqual({ ok: true, value: { created: 0, removed: 1 } });
+		expect(await listEvents(deps(), range)).toEqual({ ok: true, value: [] });
+		expect(await repos.holidays.listHolidays()).toEqual([]);
 	});
 
 	test('profile and settings persist through their use cases', async () => {

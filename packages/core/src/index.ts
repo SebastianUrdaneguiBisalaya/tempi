@@ -77,6 +77,8 @@ export {
 	isWritableRole,
 	selectGoogleCalendarsInputSchema,
 } from './domain/google-sync';
+export type { FetchedHolidayYear, Holiday, HolidaySyncResult, HolidayYear, TrackedHoliday } from './domain/holiday';
+export { countryCodeSchema, fetchedHolidayYearSchema, holidaySchema, holidaySyncResultSchema, holidaysByDate, plainDateSchema, trackedHolidaySchema } from './domain/holiday';
 export type { ExportEventsInput, ImportEventsInput, ImportedEvent, ImportSummary } from './domain/ical-transfer';
 export { exportEventsInputSchema, importEventsInputSchema, importedEventSchema } from './domain/ical-transfer';
 export type { MeetingLink, MeetingProvider } from './domain/meeting-link';
@@ -150,6 +152,8 @@ export type { Clock } from './ports/clock';
 export { systemClock } from './ports/clock';
 export type { EventRepository } from './ports/event-repository';
 export type { GoogleSyncRepository } from './ports/google-sync-repository';
+export type { HolidayProvider } from './ports/holiday-provider';
+export type { HolidayRepository } from './ports/holiday-repository';
 export type { IdGenerator } from './ports/id-generator';
 export { uuidv7Ids } from './ports/id-generator';
 export type { ProfileRepository } from './ports/profile-repository';
@@ -171,6 +175,8 @@ export { getProfile } from './use-cases/get-profile';
 export { getSettings } from './use-cases/get-settings';
 export { getTimeStats } from './use-cases/get-time-stats';
 export { detachGoogleCalendar, disconnectGoogleCalendars, listGoogleCalendars, selectGoogleCalendars } from './use-cases/google-calendars';
+export type { HolidayFetch } from './use-cases/holidays';
+export { holidaysToFetch, holidayYears, removeHolidays, syncHolidays } from './use-cases/holidays';
 export { importEvents } from './use-cases/import-events';
 export { initializeSettings } from './use-cases/initialize-settings';
 export { listCalendars } from './use-cases/list-calendars';
