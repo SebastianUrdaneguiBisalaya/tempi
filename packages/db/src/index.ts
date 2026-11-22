@@ -1,8 +1,9 @@
 import type { DatabaseSync } from 'node:sqlite';
-import type { CalendarRepository, EventRepository, GoogleSyncRepository, ProfileRepository, SettingsRepository } from '@tempi/core';
+import type { CalendarRepository, EventRepository, GoogleSyncRepository, HolidayRepository, ProfileRepository, SettingsRepository } from '@tempi/core';
 import { SqliteCalendarRepository } from './repositories/sqlite-calendar-repository';
 import { SqliteEventRepository } from './repositories/sqlite-event-repository';
 import { SqliteGoogleSyncRepository } from './repositories/sqlite-google-sync-repository';
+import { SqliteHolidayRepository } from './repositories/sqlite-holiday-repository';
 import { SqliteProfileRepository } from './repositories/sqlite-profile-repository';
 import { SqliteSettingsRepository } from './repositories/sqlite-settings-repository';
 
@@ -15,6 +16,7 @@ export { backupPath, openDatabase } from './open-database';
 export { SqliteCalendarRepository } from './repositories/sqlite-calendar-repository';
 export { SqliteEventRepository } from './repositories/sqlite-event-repository';
 export { SqliteGoogleSyncRepository } from './repositories/sqlite-google-sync-repository';
+export { SqliteHolidayRepository } from './repositories/sqlite-holiday-repository';
 export { SqliteProfileRepository } from './repositories/sqlite-profile-repository';
 export { SqliteSettingsRepository } from './repositories/sqlite-settings-repository';
 export { DEFAULT_CALENDAR, seedDefaultCalendar } from './seed';
@@ -25,6 +27,7 @@ export type SqliteRepositories = {
 	calendars: CalendarRepository;
 	events: EventRepository;
 	googleSync: GoogleSyncRepository;
+	holidays: HolidayRepository;
 	profile: ProfileRepository;
 	settings: SettingsRepository;
 };
@@ -34,6 +37,7 @@ export const createRepositories = (db: DatabaseSync): SqliteRepositories => ({
 	calendars: new SqliteCalendarRepository(db),
 	events: new SqliteEventRepository(db),
 	googleSync: new SqliteGoogleSyncRepository(db),
+	holidays: new SqliteHolidayRepository(db),
 	profile: new SqliteProfileRepository(db),
 	settings: new SqliteSettingsRepository(db),
 });

@@ -35,7 +35,7 @@ describe('openDatabase', () => {
 		expect(readUserVersion(db)).toBe(loadMigrations().length);
 		// FTS5 keeps its index in shadow tables (`events_search_data`, …) next to the virtual table.
 		const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'events_search_%' ORDER BY name").all();
-		expect(tables.map(table => table.name)).toEqual(['calendars', 'events', 'events_search', 'google_calendars', 'google_events', 'profile', 'settings']);
+		expect(tables.map(table => table.name)).toEqual(['calendars', 'events', 'events_search', 'google_calendars', 'google_events', 'holiday_years', 'holidays', 'profile', 'settings']);
 		db.close();
 	});
 
@@ -226,6 +226,19 @@ describe('migrate', () => {
 		expect(() => db.exec('UPDATE settings SET weather_enabled = 2')).toThrow();
 		expect(() => db.exec(`UPDATE settings SET weather_location = '[]'`)).toThrow();
 		expect(() => db.exec(`UPDATE settings SET weather_location = 'Lima'`)).toThrow();
+		db.close();
+	});
+
+	test('0015 keeps existing settings with holidays on', () => {
+		const db = new DatabaseSync(':memory:');
+		const migrations = loadMigrations();
+		migrate(db, migrations.slice(0, 14));
+		db.exec(`INSERT INTO settings (id, default_event_duration, language, menu_bar_enabled, onboarding_completed, show_weekends,
+			show_week_numbers, theme, time_format, week_start, created_at, updated_at)
+			VALUES (1, 30, 'es', 0, 1, 1, 1, 'dark', '24h', 'monday', '2026-11-15T10:00:00.000Z', '2026-11-15T10:00:00.000Z')`);
+		migrate(db, migrations);
+		expect(db.prepare('SELECT language, holidays_enabled FROM settings').get()).toEqual({ language: 'es', holidays_enabled: 1 });
+		expect(() => db.exec('UPDATE settings SET holidays_enabled = 2')).toThrow();
 		db.close();
 	});
 

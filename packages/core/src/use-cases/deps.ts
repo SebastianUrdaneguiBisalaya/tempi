@@ -3,6 +3,7 @@ import type { CalendarRepository } from '../ports/calendar-repository';
 import type { Clock } from '../ports/clock';
 import type { EventRepository } from '../ports/event-repository';
 import type { GoogleSyncRepository } from '../ports/google-sync-repository';
+import type { HolidayRepository } from '../ports/holiday-repository';
 import type { IdGenerator } from '../ports/id-generator';
 import type { ProfileRepository } from '../ports/profile-repository';
 import type { SettingsRepository } from '../ports/settings-repository';
@@ -14,6 +15,7 @@ export type CoreDeps = {
 	clock: Clock;
 	events: EventRepository;
 	googleSync: GoogleSyncRepository;
+	holidays: HolidayRepository;
 	ids: IdGenerator;
 	profile: ProfileRepository;
 	settings: SettingsRepository;

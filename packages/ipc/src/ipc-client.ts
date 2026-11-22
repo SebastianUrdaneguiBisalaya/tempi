@@ -94,6 +94,9 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 		sync: () => call(CHANNELS.google.sync, () => api.google.sync()),
 		syncStatus: () => call(CHANNELS.google.syncStatus, () => api.google.syncStatus()),
 	},
+	holidays: {
+		sync: () => call(CHANNELS.holidays.sync, () => api.holidays.sync()),
+	},
 	onboarding: {
 		complete: input => call(CHANNELS.onboarding.complete, () => api.onboarding.complete(input)),
 	},

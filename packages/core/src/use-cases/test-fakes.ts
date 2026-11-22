@@ -4,6 +4,7 @@ import type { Calendar } from '../domain/calendar';
 import { overlapsRange } from '../domain/date-range';
 import type { CalendarEvent } from '../domain/event';
 import type { GoogleCalendarLink, GoogleEventLink } from '../domain/google-sync';
+import type { FetchedHolidayYear, TrackedHoliday } from '../domain/holiday';
 import type { DomainErrorCode } from '../domain/result';
 import type { Settings } from '../domain/settings';
 import type { UserProfile } from '../domain/user-profile';
@@ -12,6 +13,7 @@ import type { CalendarRepository } from '../ports/calendar-repository';
 import type { Clock } from '../ports/clock';
 import type { EventRepository } from '../ports/event-repository';
 import type { GoogleSyncRepository } from '../ports/google-sync-repository';
+import type { HolidayRepository } from '../ports/holiday-repository';
 import type { IdGenerator } from '../ports/id-generator';
 import type { ProfileRepository } from '../ports/profile-repository';
 import type { SettingsRepository } from '../ports/settings-repository';
@@ -154,6 +156,30 @@ export class InMemoryGoogleSyncRepository implements GoogleSyncRepository {
 	}
 }
 
+export class InMemoryHolidayRepository implements HolidayRepository {
+	readonly holidays = new Map<string, TrackedHoliday>();
+	readonly years = new Map<string, FetchedHolidayYear>();
+	listHolidays() {
+		return Promise.resolve([...this.holidays.values()]);
+	}
+	listFetchedYears() {
+		return Promise.resolve([...this.years.values()]);
+	}
+	saveHoliday(holiday: TrackedHoliday) {
+		this.holidays.set(`${holiday.country} ${holiday.date}`, holiday);
+		return Promise.resolve();
+	}
+	saveFetchedYear(year: FetchedHolidayYear) {
+		this.years.set(`${year.country} ${year.year}`, year);
+		return Promise.resolve();
+	}
+	clear() {
+		this.holidays.clear();
+		this.years.clear();
+		return Promise.resolve();
+	}
+}
+
 export class InMemoryAvatarStore implements AvatarStore {
 	readonly files = new Map<string, AvatarImage>();
 	save(fileName: string, image: AvatarImage) {
@@ -187,6 +213,7 @@ export const makeDeps = () => {
 		clock: new FakeClock(new Date(T0)),
 		events,
 		googleSync: new InMemoryGoogleSyncRepository(events),
+		holidays: new InMemoryHolidayRepository(),
 		ids: sequentialIds(),
 		profile: new InMemorySingleton<UserProfile>() satisfies ProfileRepository,
 		settings: new InMemorySingleton<Settings>() satisfies SettingsRepository,

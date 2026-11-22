@@ -31,6 +31,8 @@ export const queryKeys = {
 		stats: (query: TimeStatsQueryInput) => ['events', 'stats', query],
 	},
 	google: { account: ['google', 'account'], calendars: ['google', 'calendars'], syncStatus: ['google', 'syncStatus'] },
+	// Keyed by what decides the holidays, so a new country or the switch syncs them at once.
+	holidays: { sync: (target: { country: string; enabled: boolean }) => ['holidays', 'sync', target] },
 	permissions: { status: ['permissions', 'status'] },
 	profile: { all: ['profile'] },
 	settings: { all: ['settings'] },

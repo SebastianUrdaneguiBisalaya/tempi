@@ -80,6 +80,13 @@ export const CHANNELS = {
 		/** Where sync stands. */
 		syncStatus: 'google:syncStatus',
 	},
+	holidays: {
+		/**
+		 * Brings the profile country's public holidays in line with the integration: fetches the years not stored yet from
+		 * Nager.Date (from the main process), removes them when it is off or the country changed. Answers what changed.
+		 */
+		sync: 'holidays:sync',
+	},
 	onboarding: {
 		complete: 'onboarding:complete',
 	},
