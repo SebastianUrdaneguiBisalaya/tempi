@@ -62,6 +62,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 			status: answer,
 		},
 		version: 'test',
+		weather: { current: answer, searchLocations: answer },
 	};
 	/** Simulates the main process asking to show an occurrence. */
 	const pushShowEvent = (payload: unknown) => {

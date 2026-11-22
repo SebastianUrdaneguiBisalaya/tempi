@@ -125,4 +125,8 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 			}),
 		status: () => call(CHANNELS.updates.status, () => api.updates.status()),
 	},
+	weather: {
+		current: () => call(CHANNELS.weather.current, () => api.weather.current()),
+		searchLocations: query => call(CHANNELS.weather.searchLocations, () => api.weather.searchLocations(query)),
+	},
 });

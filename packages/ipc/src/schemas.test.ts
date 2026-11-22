@@ -239,6 +239,43 @@ describe('google answers', () => {
 	});
 });
 
+describe('weather', () => {
+	const current = resultSchema(responseValueSchemas['weather:current']);
+	const lima = { latitude: -12.04, longitude: -77.03, name: 'Lima', region: 'Lima, Peru' };
+	const conditions = {
+		apparentTemperature: 20,
+		cloudCover: null,
+		high: 22,
+		humidity: 70,
+		isDay: true,
+		low: 16,
+		precipitation: 0,
+		sunrise: '2026-11-21T10:30:00Z',
+		sunset: null,
+		temperature: 19.4,
+		weatherCode: 3,
+		windDirection: 270,
+		windSpeed: 12,
+	};
+
+	test('searches need a city of at least two characters', () => {
+		expect(parseWith(payloadSchemas['weather:searchLocations'], ' Cusco ')).toEqual({ ok: true, value: 'Cusco' });
+		expect(parseWith(payloadSchemas['weather:searchLocations'], 'C').ok).toBe(false);
+		expect(parseWith(payloadSchemas['weather:searchLocations'], { name: 'Cusco' }).ok).toBe(false);
+	});
+
+	test('answers carry the weather with unknown values as null, or null when there is none to show', () => {
+		expect(current.parse({ ok: true, value: { conditions, location: lima } })).toMatchObject({ value: { conditions: { sunrise: '2026-11-21T10:30:00.000Z' } } });
+		expect(current.safeParse({ ok: true, value: null }).success).toBe(true);
+	});
+
+	test('reject coordinates off the globe and a sunrise without an offset', () => {
+		expect(current.safeParse({ ok: true, value: { conditions, location: { ...lima, latitude: 91 } } }).success).toBe(false);
+		expect(current.safeParse({ ok: true, value: { conditions: { ...conditions, sunrise: '2026-11-21T10:30' }, location: lima } }).success).toBe(false);
+		expect(resultSchema(responseValueSchemas['weather:searchLocations']).safeParse({ ok: true, value: [{ ...lima, longitude: 200 }] }).success).toBe(false);
+	});
+});
+
 describe('update answers', () => {
 	const status = resultSchema(responseValueSchemas['updates:status']);
 	const available = {

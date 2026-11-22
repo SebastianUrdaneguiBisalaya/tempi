@@ -24,6 +24,8 @@ const settingsRowSchema = z
 		time_format: z.string(),
 		tour_completed: booleanColumn,
 		updated_at: z.string(),
+		weather_enabled: booleanColumn,
+		weather_location: jsonColumn.nullable(),
 		week_start: z.string(),
 		working_hours_days: jsonColumn,
 		working_hours_enabled: booleanColumn,
@@ -51,6 +53,8 @@ const settingsRowSchema = z
 			timeFormat: row.time_format,
 			tourCompleted: row.tour_completed,
 			updatedAt: row.updated_at,
+			weatherEnabled: row.weather_enabled,
+			weatherLocation: row.weather_location,
 			weekStart: row.week_start,
 			workingHours: {
 				days: row.working_hours_days,
@@ -70,16 +74,16 @@ export class SqliteSettingsRepository implements SettingsRepository {
 	constructor(db: DatabaseSync) {
 		this.getStatement = db.prepare(
 			`SELECT all_day_collapsed, default_event_duration, icon_badge_enabled, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled, secondary_time_zones,
-				show_weekends, show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, week_start,
+				show_weekends, show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, weather_enabled, weather_location, week_start,
 				working_hours_enabled, working_hours_days, working_hours_start, working_hours_end, created_at, updated_at
 			FROM settings WHERE id = 1`
 		);
 		this.saveStatement = db.prepare(
 			`INSERT INTO settings (id, all_day_collapsed, default_event_duration, icon_badge_enabled, language, menu_bar_enabled, microphone_enabled, notifications_enabled, onboarding_completed, open_at_login_enabled,
-				secondary_time_zones, show_weekends, show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, week_start,
+				secondary_time_zones, show_weekends, show_week_numbers, sound, sounds_enabled, theme, time_format, tour_completed, weather_enabled, weather_location, week_start,
 				working_hours_enabled, working_hours_days, working_hours_start, working_hours_end, created_at, updated_at)
 			VALUES (1, :all_day_collapsed, :default_event_duration, :icon_badge_enabled, :language, :menu_bar_enabled, :microphone_enabled, :notifications_enabled, :onboarding_completed, :open_at_login_enabled,
-				:secondary_time_zones, :show_weekends, :show_week_numbers, :sound, :sounds_enabled, :theme, :time_format, :tour_completed, :week_start,
+				:secondary_time_zones, :show_weekends, :show_week_numbers, :sound, :sounds_enabled, :theme, :time_format, :tour_completed, :weather_enabled, :weather_location, :week_start,
 				:working_hours_enabled, :working_hours_days, :working_hours_start, :working_hours_end, :created_at, :updated_at)
 			ON CONFLICT (id) DO UPDATE SET
 				all_day_collapsed = excluded.all_day_collapsed, default_event_duration = excluded.default_event_duration,
@@ -89,7 +93,8 @@ export class SqliteSettingsRepository implements SettingsRepository {
 				open_at_login_enabled = excluded.open_at_login_enabled, secondary_time_zones = excluded.secondary_time_zones,
 				show_weekends = excluded.show_weekends, show_week_numbers = excluded.show_week_numbers,
 				sound = excluded.sound, sounds_enabled = excluded.sounds_enabled,
-				theme = excluded.theme, time_format = excluded.time_format, tour_completed = excluded.tour_completed, week_start = excluded.week_start,
+				theme = excluded.theme, time_format = excluded.time_format, tour_completed = excluded.tour_completed,
+				weather_enabled = excluded.weather_enabled, weather_location = excluded.weather_location, week_start = excluded.week_start,
 				working_hours_enabled = excluded.working_hours_enabled, working_hours_days = excluded.working_hours_days,
 				working_hours_start = excluded.working_hours_start, working_hours_end = excluded.working_hours_end,
 				created_at = excluded.created_at, updated_at = excluded.updated_at`
@@ -125,6 +130,8 @@ export class SqliteSettingsRepository implements SettingsRepository {
 				time_format: settings.timeFormat,
 				tour_completed: toBooleanColumn(settings.tourCompleted),
 				updated_at: toInstantColumn(settings.updatedAt),
+				weather_enabled: toBooleanColumn(settings.weatherEnabled),
+				weather_location: settings.weatherLocation === null ? null : JSON.stringify(settings.weatherLocation),
 				week_start: settings.weekStart,
 				working_hours_days: JSON.stringify(settings.workingHours.days),
 				working_hours_enabled: toBooleanColumn(settings.workingHours.enabled),

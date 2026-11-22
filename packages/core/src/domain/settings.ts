@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { singletonTimestampsSchema } from './timestamps';
 import { timeZoneSchema } from './values';
+import { weatherLocationSchema } from './weather';
 
 export const THEMES = ['system', 'light', 'dark'] as const;
 export const LANGUAGES = ['en', 'es'] as const;
@@ -72,6 +73,10 @@ export const settingsValuesSchema = z.object({
 	timeFormat: z.enum(TIME_FORMATS),
 	/** The guided tour of the main screen was finished or dismissed. Replaying it doesn't change this. */
 	tourCompleted: z.boolean(),
+	/** Shows the current weather above the assistant entry, from Open-Meteo's free plan. Off, nothing is requested. */
+	weatherEnabled: z.boolean(),
+	/** The place picked in Settings; null shows the city of the profile's time zone. */
+	weatherLocation: weatherLocationSchema.nullable(),
 	weekStart: z.enum(WEEK_STARTS),
 	workingHours: workingHoursSchema,
 });
@@ -104,6 +109,8 @@ export const DEFAULT_SETTINGS = {
 	theme: 'system',
 	timeFormat: '24h',
 	tourCompleted: false,
+	weatherEnabled: true,
+	weatherLocation: null,
 	weekStart: 'monday',
 	workingHours: { days: [1, 2, 3, 4, 5], enabled: false, end: '18:00', start: '09:00' },
 } as const satisfies SettingsValues;

@@ -26,6 +26,7 @@
         "@types/node": "catalog:",
         "@usemeshly/auth": "catalog:",
         "@usemeshly/google-calendar": "catalog:",
+        "@usemeshly/open-meteo": "catalog:",
         "electron": "45.2.1",
         "electron-builder": "26.18.0",
         "electron-updater": "6.8.11",
@@ -52,6 +53,8 @@
         "@usehotkeys/react": "0.1.0",
         "@usesounds/core": "0.1.0",
         "@usesounds/react": "0.1.0",
+        "@useweather/core": "0.1.0",
+        "@useweather/react": "0.1.0",
         "chrono-node": "catalog:",
         "class-variance-authority": "0.7.1",
         "cmdk": "^1.1.1",
@@ -226,6 +229,7 @@
     "@types/react-dom": "19.3.0",
     "@usemeshly/auth": "0.1.0",
     "@usemeshly/google-calendar": "0.1.0",
+    "@usemeshly/open-meteo": "0.1.0",
     "ai": "7.0.173",
     "chrono-node": "2.10.3",
     "gsap": "3.15.1",
@@ -728,9 +732,15 @@
 
     "@usemeshly/google-calendar": ["@usemeshly/google-calendar@0.1.0", "", { "dependencies": { "zod": "4.6.7" }, "peerDependencies": { "@usemeshly/auth": "^0.1.0" } }, "sha512-aNRA4qI55DudyNpqaCwHXfG3lGN6D9pA5dIlXgNLlquE2jvQbQVY52uh7vlBcmKb1iuqQ0XHRSgzRLQgtU8eUg=="],
 
+    "@usemeshly/open-meteo": ["@usemeshly/open-meteo@0.1.0", "", { "dependencies": { "zod": "4.6.7" }, "peerDependencies": { "@usemeshly/auth": "^0.1.0" } }, "sha512-3lMVNWsq1z/fn3GMzhlJHDAAYemcRI13dCuqRdYiUGcbpM1pWues19l9SxOu+vQoWaCe48rLQMRndDB3bdIlYg=="],
+
     "@usesounds/core": ["@usesounds/core@0.1.0", "", {}, "sha512-3zyBRYniJLsg+4sW4Wtnj1rgzDH4v2Gyt4NrQD3GmXxpu/mBW9Z4QSyCdNMMlSaOpnUOaWx/0CDgoM6/3rP6Bg=="],
 
     "@usesounds/react": ["@usesounds/react@0.1.0", "", { "peerDependencies": { "@usesounds/core": "^0.1.0", "react": ">=18" } }, "sha512-oMWR7Y9UJ/ql3gvIXuuViFe1X0KnmkETbIREaoNvY89NVljfMcsW9IM0LJXxQ229QWmAfQ9S6XWxFYL7XTsNaQ=="],
+
+    "@useweather/core": ["@useweather/core@0.1.0", "", {}, "sha512-6tdzjEdRZqH00R5rEduTWwA4+gQfa/+OymOCV722I4QMrbLIyrCzs6N63sXEf+dx9Wl12RIUkWnKiYnITPaF7Q=="],
+
+    "@useweather/react": ["@useweather/react@0.1.0", "", { "dependencies": { "@useweather/core": "^0.1.0" }, "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-hHulcWkRritHXAY1CvYExuzRXArC0dyQQMcol3q5M/4Tai+lMuIsOPW+PUii9kF+6gpqbOcMwb4aj9zrGHqENw=="],
 
     "@vercel/oidc": ["@vercel/oidc@3.2.0", "", {}, "sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug=="],
 

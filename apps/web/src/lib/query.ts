@@ -1,4 +1,4 @@
-import type { DateRange, DomainError, FreeSlotsQueryInput, Result, TimeStatsQueryInput } from '@tempi/core';
+import type { DateRange, DomainError, FreeSlotsQueryInput, Result, TimeStatsQueryInput, WeatherLocation } from '@tempi/core';
 
 /**
  * Turns a use-case `Result` into a query/mutation outcome: the value, or the `DomainError` thrown as is.
@@ -35,4 +35,10 @@ export const queryKeys = {
 	profile: { all: ['profile'] },
 	settings: { all: ['settings'] },
 	updates: { status: ['updates', 'status'] },
+	weather: {
+		all: ['weather'],
+		// Keyed by what decides the place, so picking another city (or changing time zone) asks for it at once.
+		current: (place: { location: WeatherLocation | null; timeZone: string }) => ['weather', 'current', place],
+		search: (query: string) => ['weather', 'search', query],
+	},
 } as const;

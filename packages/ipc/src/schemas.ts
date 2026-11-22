@@ -44,6 +44,9 @@ import {
 	transcriptionSchema,
 	userProfileSchema,
 	utcInstantSchema,
+	weatherLocationQuerySchema,
+	weatherLocationSchema,
+	weatherSchema,
 } from '@tempi/core';
 import { z } from 'zod';
 import type { Channel } from './channels';
@@ -134,6 +137,8 @@ export const payloadSchemas = {
 	'updates:check': noPayload,
 	'updates:install': noPayload,
 	'updates:status': noPayload,
+	'weather:current': noPayload,
+	'weather:searchLocations': weatherLocationQuerySchema,
 } as const satisfies Record<Channel, z.ZodType>;
 
 /** The value inside a successful result on each channel. The renderer parses responses with these. */
@@ -188,6 +193,8 @@ export const responseValueSchemas = {
 	'updates:check': appUpdateStatusSchema,
 	'updates:install': z.null(),
 	'updates:status': appUpdateStatusSchema,
+	'weather:current': weatherSchema.nullable(),
+	'weather:searchLocations': z.array(weatherLocationSchema),
 } as const satisfies Record<Channel, z.ZodType>;
 
 /** What a caller passes on a channel. */

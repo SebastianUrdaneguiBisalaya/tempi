@@ -1,6 +1,21 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import type { DatabaseSync } from 'node:sqlite';
-import { type AiSettings, type AvatarImage, type Calendar, type CalendarRepository, type CoreDeps, DEFAULT_AI_SETTINGS, fail, ok, type Settings, type UserProfile, uuidv7Ids } from '@tempi/core';
+import {
+	type AiSettings,
+	type AvatarImage,
+	type Calendar,
+	type CalendarRepository,
+	type CoreDeps,
+	DEFAULT_AI_SETTINGS,
+	fail,
+	ok,
+	type Settings,
+	type UserProfile,
+	uuidv7Ids,
+	type WeatherConditions,
+	type WeatherLocation,
+	type WeatherProvider,
+} from '@tempi/core';
 import { createRepositories, createTransactionQueue, openDatabase } from '@tempi/db';
 import { parseIcs, serializeIcs } from '@tempi/ical';
 import { CHANNELS, type Channel } from '@tempi/ipc';
@@ -152,6 +167,34 @@ const permissions: PermissionsIo = {
 	},
 };
 
+const LIMA: WeatherLocation = { latitude: -12.04, longitude: -77.03, name: 'Lima', region: 'Lima, Peru' };
+const CONDITIONS: WeatherConditions = {
+	apparentTemperature: 20,
+	cloudCover: 40,
+	high: 22,
+	humidity: 70,
+	isDay: true,
+	low: 16,
+	precipitation: 0,
+	sunrise: null,
+	sunset: null,
+	temperature: 19,
+	weatherCode: 1,
+	windDirection: 180,
+	windSpeed: 10,
+};
+let weatherCalls: string[];
+const weather: WeatherProvider = {
+	current: location => {
+		weatherCalls.push(`current ${location.name}`);
+		return Promise.resolve(ok(CONDITIONS));
+	},
+	searchLocations: (query, language) => {
+		weatherCalls.push(`search ${query} ${language}`);
+		return Promise.resolve(ok(query.startsWith('Li') ? [LIMA] : []));
+	},
+};
+
 // A newer release on GitHub, as the macOS check would find it.
 const updates = () =>
 	createUpdateService({
@@ -179,6 +222,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	syncCalls = [];
 	exportPath = '/exports';
 	written = [];
+	weatherCalls = [];
 	const avatarStore = {
 		remove: async (fileName: string) => void avatars.delete(fileName),
 		save: async (fileName: string, image: AvatarImage) => void avatars.set(fileName, image),
@@ -187,7 +231,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	registerIpc(
 		{ ipc: { handle: (channel, listener) => handlers.set(channel, listener) }, isTrusted: url => url.startsWith(`${TRUSTED}/`), transaction: createTransactionQueue(db) },
 		{ ...deps, ...override(deps) },
-		{ ai, data: dataIo, google: { account: google, sync }, ical: icalIo, permissions, updates: updates() },
+		{ ai, data: dataIo, google: { account: google, sync }, ical: icalIo, permissions, updates: updates(), weather },
 		listeners
 	);
 };
@@ -742,6 +786,51 @@ describe('updates', () => {
 
 	test('refuses untrusted senders', async () => {
 		expect(await invoke(CHANNELS.updates.check, undefined, 'https://evil.example/')).toMatchObject({ ok: false });
+	});
+});
+
+describe('weather', () => {
+	beforeEach(() => setup());
+
+	const onboard = () =>
+		invoke(CHANNELS.onboarding.complete, {
+			avatar: null,
+			country: 'pe',
+			firstName: 'Ana',
+			language: 'es',
+			lastName: 'Quispe',
+			notificationsEnabled: false,
+			theme: 'dark',
+			timeZone: 'America/Lima',
+		});
+
+	test('shows the city of the profile time zone until a place is picked, then that place', async () => {
+		expect(await invoke(CHANNELS.weather.current)).toEqual({ ok: true, value: null });
+		await onboard();
+		expect(await invoke(CHANNELS.weather.current)).toEqual({ ok: true, value: { conditions: CONDITIONS, location: LIMA } });
+		const cusco = { ...LIMA, name: 'Cusco', region: 'Cusco, Peru' };
+		await invoke(CHANNELS.settings.save, { weatherLocation: cusco });
+		expect(await invoke(CHANNELS.weather.current)).toEqual({ ok: true, value: { conditions: CONDITIONS, location: cusco } });
+		expect(weatherCalls).toEqual(['search Lima es', 'current Lima', 'current Cusco']);
+	});
+
+	test('switched off in Settings, nothing is requested', async () => {
+		await onboard();
+		await invoke(CHANNELS.settings.save, { weatherEnabled: false });
+		expect(await invoke(CHANNELS.weather.current)).toEqual({ ok: true, value: null });
+		expect(weatherCalls).toEqual([]);
+	});
+
+	test('searches in the app language and refuses a search too short or from an untrusted sender', async () => {
+		await onboard();
+		expect(await invoke(CHANNELS.weather.searchLocations, 'Lima')).toEqual({ ok: true, value: [LIMA] });
+		expect(await invoke(CHANNELS.weather.searchLocations, 'L')).toMatchObject({ ok: false });
+		expect(await invoke(CHANNELS.weather.current, undefined, 'https://evil.example/')).toMatchObject({ ok: false });
+		expect(weatherCalls).toEqual(['search Lima es']);
+	});
+
+	test('settings refuse a place off the globe', async () => {
+		expect(await invoke(CHANNELS.settings.save, { weatherLocation: { ...LIMA, latitude: 120 } })).toMatchObject({ ok: false });
 	});
 });
 

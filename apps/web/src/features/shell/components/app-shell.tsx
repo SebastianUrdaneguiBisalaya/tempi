@@ -30,6 +30,7 @@ import { StatsEntry } from '@/features/stats/components/stats-entry';
 import { StatsProvider } from '@/features/stats/components/stats-provider';
 import { TourProvider, useTour, useTourLayout } from '@/features/tour/components/tour-provider';
 import { TOUR_TARGETS } from '@/features/tour/tour-steps';
+import { WeatherEntry } from '@/features/weather/components/weather-card';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { AppHeader } from './app-header';
 
@@ -145,6 +146,7 @@ function ShellLayout() {
 					</SidebarContent>
 					<SidebarFooter data-tour={TOUR_TARGETS.assistant}>
 						<StatsEntry />
+						<WeatherEntry />
 						<AssistantEntry anchored={sidebarExpanded} />
 					</SidebarFooter>
 				</Sidebar>
@@ -169,6 +171,7 @@ function ShellLayout() {
 						</SidebarContent>
 						<SidebarFooter data-tour={TOUR_TARGETS.assistant}>
 							<StatsEntry onOpen={() => setSidebarDrawerOpen(false)} />
+							<WeatherEntry />
 							<AssistantEntry anchored={false} onOpenDrawer={() => setSidebarDrawerOpen(false)} />
 						</SidebarFooter>
 					</DrawerContent>

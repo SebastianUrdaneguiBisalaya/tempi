@@ -1,4 +1,4 @@
-import type { CoreDeps, Settings, Theme } from '@tempi/core';
+import type { CoreDeps, Settings, Theme, WeatherProvider } from '@tempi/core';
 import type { OccurrenceRef } from '@tempi/ipc';
 import type { UpdateService } from '../updates/update-service';
 import { type AiIo, registerAiHandlers } from './ai';
@@ -15,6 +15,7 @@ import { type PermissionsIo, registerPermissionHandlers } from './permissions';
 import { registerProfileHandlers } from './profile';
 import { registerSettingsHandlers } from './settings';
 import { registerUpdateHandlers } from './updates';
+import { registerWeatherHandlers } from './weather';
 
 export type { AiIo } from './ai';
 export type { DataIo } from './data';
@@ -39,8 +40,8 @@ export type IpcListeners = {
 	showEvent?: (ref: OccurrenceRef) => void;
 };
 
-/** The app's work outside the database behind some channels, injected so tests can stand in for dialogs, files, AI providers, Google, OS permissions and updates. */
-export type AppIo = { ai: AiIo; data: DataIo; google: GoogleIo; ical: IcalIo; permissions: PermissionsIo; updates: UpdateService };
+/** The app's work outside the database behind some channels, injected so tests can stand in for dialogs, files, AI providers, Google, OS permissions, updates and the weather. */
+export type AppIo = { ai: AiIo; data: DataIo; google: GoogleIo; ical: IcalIo; permissions: PermissionsIo; updates: UpdateService; weather: WeatherProvider };
 
 /** Registers every channel of the `@tempi/ipc` contract, each running its core use case against `deps`. */
 
@@ -58,4 +59,5 @@ export const registerIpc = (context: HandlerContext, deps: CoreDeps, io: AppIo, 
 	registerProfileHandlers(context, deps, listeners.profileSaved);
 	registerSettingsHandlers(context, deps, listeners.settingsSaved, listeners.themePreviewed);
 	registerUpdateHandlers(context, io.updates);
+	registerWeatherHandlers(context, deps, io.weather);
 };

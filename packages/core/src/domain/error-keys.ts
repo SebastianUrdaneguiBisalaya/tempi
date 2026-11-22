@@ -64,6 +64,9 @@ export const ERROR_KEYS = {
 	'validation.too_small': 'Value is too small',
 	'validation.unrecognized_keys': 'Unknown fields',
 	'validation.url': 'Value must be an http(s) URL',
+	'weather.offline': 'The weather provider (Open-Meteo) could not be reached; the card retries later',
+	'weather.rateLimited': 'The weather provider (Open-Meteo) is rate limiting this IP; the free plan allows about 600 calls a minute and 10,000 a day',
+	'weather.unavailable': 'The weather provider (Open-Meteo) answered with an error or something unexpected; see detail',
 } as const;
 
 export type ErrorKey = keyof typeof ERROR_KEYS;

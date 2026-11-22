@@ -134,6 +134,16 @@ export type { ProfileInput, ProfileUpdateInput, UserProfile } from './domain/use
 export { profileInputSchema, profileUpdateInputSchema, userProfileSchema } from './domain/user-profile';
 export { uuidv7 } from './domain/uuidv7';
 export { idSchema, isValidTimeZone, toUtcInstant, utcInstantSchema } from './domain/values';
+export type { Weather, WeatherConditions, WeatherLocation, WeatherScene, WeatherSceneCondition, WeatherTimeOfDay } from './domain/weather';
+export {
+	timeZoneCity,
+	WEATHER_SCENE_CONDITIONS,
+	weatherConditionsSchema,
+	weatherLocationQuerySchema,
+	weatherLocationSchema,
+	weatherScene,
+	weatherSchema,
+} from './domain/weather';
 export type { AvatarStore } from './ports/avatar-store';
 export type { CalendarRepository } from './ports/calendar-repository';
 export type { Clock } from './ports/clock';
@@ -144,6 +154,7 @@ export type { IdGenerator } from './ports/id-generator';
 export { uuidv7Ids } from './ports/id-generator';
 export type { ProfileRepository } from './ports/profile-repository';
 export type { SettingsRepository } from './ports/settings-repository';
+export type { WeatherProvider } from './ports/weather-provider';
 export type { OnboardingResult } from './use-cases/complete-onboarding';
 export { completeOnboarding } from './use-cases/complete-onboarding';
 export { countRemainingToday } from './use-cases/count-remaining-today';
@@ -175,4 +186,6 @@ export { updateCalendar } from './use-cases/update-calendar';
 export { updateEvent } from './use-cases/update-event';
 export type { ProfileUpdate } from './use-cases/update-profile';
 export { updateProfile } from './use-cases/update-profile';
+export type { WeatherTarget } from './use-cases/weather';
+export { getWeather, searchWeatherLocations, weatherTarget } from './use-cases/weather';
 export { writableCalendar } from './use-cases/writable-calendar';
