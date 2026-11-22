@@ -1,6 +1,6 @@
 import type { GoogleSyncStatus } from '@tempi/core';
-import { GoogleAuthError, GoogleOfflineError } from '@tempi/google-calendar';
 import type { SyncSummary } from '@tempi/sync-google';
+import { isMeshlyError } from '@usemeshly/auth';
 
 export const SYNC_INTERVAL_MS = 5 * 60 * 1000;
 /** Local edits wait this long, so a burst of them (a drag, several quick edits) syncs once. */
@@ -29,10 +29,16 @@ export type SyncRunner = {
 
 const INITIAL: GoogleSyncStatus = { error: null, lastSyncedAt: null, state: 'idle' };
 
+/** Google couldn't be reached at all (no connection, or a deadline passed). */
+const OFFLINE_CODES = ['network_error', 'timeout'] as const;
+
+/** No usable grant: none stored, from before calendar access, revoked, or refused even after a refresh. */
+const RECONNECT_CODES = ['not_signed_in', 'missing_scopes', 'invalid_grant', 'unauthorized', 'insufficient_scope'] as const;
+
 /** Turns a failed sync into a status: offline and a lost grant are expected; anything else is logged. */
 export const failedStatus = (error: unknown, lastSyncedAt: string | null): GoogleSyncStatus => {
-	if (error instanceof GoogleOfflineError) return { error: 'google.offline', lastSyncedAt, state: 'offline' };
-	if (error instanceof GoogleAuthError) return { error: 'google.reconnectRequired', lastSyncedAt, state: 'reconnect' };
+	if (isMeshlyError(error, ...OFFLINE_CODES)) return { error: 'google.offline', lastSyncedAt, state: 'offline' };
+	if (isMeshlyError(error, ...RECONNECT_CODES)) return { error: 'google.reconnectRequired', lastSyncedAt, state: 'reconnect' };
 	console.error('Google Calendar sync failed', error);
 	return { error: 'google.syncFailed', lastSyncedAt, state: 'error' };
 };

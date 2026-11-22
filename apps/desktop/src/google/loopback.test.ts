@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { listenForRedirect } from './loopback';
 
-const listen = (signal = new AbortController().signal, timeoutMs = 5000) =>
-	listenForRedirect({ landingUrl: succeeded => `https://tempi.test/${succeeded ? 'signed-in' : 'sign-in-failed'}`, signal, state: 'state-1', timeoutMs });
+const listen = (signal = new AbortController().signal, timeoutMs = 5000, state: () => string | null = () => 'state-1') =>
+	listenForRedirect({ landingUrl: succeeded => `https://tempi.test/${succeeded ? 'signed-in' : 'sign-in-failed'}`, signal, state, timeoutMs });
 
 describe('loopback redirect', () => {
 	test('listens on 127.0.0.1 and takes the redirect with the expected state', async () => {
@@ -23,6 +23,16 @@ describe('loopback redirect', () => {
 		expect(denied.headers.get('location')).toBe('https://tempi.test/sign-in-failed');
 		const ended = await outcome;
 		expect(ended.kind === 'redirect' && ended.params.get('error')).toBe('access_denied');
+	});
+
+	test('rejects every redirect until the state exists', async () => {
+		let state: string | null = null;
+		const { outcome, redirectUri } = await listen(undefined, 5000, () => state);
+		expect((await fetch(`${redirectUri}/?state=state-1&code=early`)).status).toBe(400);
+		state = 'state-1';
+		await fetch(`${redirectUri}/?state=state-1&code=abc`, { redirect: 'manual' });
+		const ended = await outcome;
+		expect(ended.kind === 'redirect' && ended.params.get('code')).toBe('abc');
 	});
 
 	test('stops listening once the wait ends', async () => {

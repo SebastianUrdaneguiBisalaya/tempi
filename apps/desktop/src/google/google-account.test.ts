@@ -1,12 +1,16 @@
-import { beforeEach, describe, expect, test } from 'bun:test';
-import type { OAuthFetch } from '@tempi/google-calendar';
+import { afterEach, beforeEach, describe, expect, setSystemTime, test } from 'bun:test';
+import type { FetchLike } from '@usemeshly/auth';
 import { createGoogleAccountService, type GoogleAccountDeps } from './google-account';
 import type { LoopbackOptions, RedirectOutcome } from './loopback';
 import { CALENDAR_SCOPES } from './oauth';
 import type { StoredAccount, TokenStore } from './token-store';
 
-const client = { id: 'client-id', secret: 'client-secret' };
-const jwt = (claims: object) => `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.s`;
+const client = { clientId: 'client-id', clientSecret: 'client-secret' };
+const NOW = new Date('2026-11-16T10:00:00.000Z');
+
+const base64Url = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url');
+/** An ID token as Google's token endpoint sends it; the library checks its claims, not its signature. */
+const idToken = (claims: object) => `${base64Url({ alg: 'RS256', typ: 'JWT' })}.${base64Url(claims)}.signature`;
 
 let stored: StoredAccount | null;
 let encryptionAvailable: boolean;
@@ -31,26 +35,43 @@ const store: TokenStore = {
 	},
 };
 
-const fetch: OAuthFetch = (url, init) => {
-	requests.push(`${url} ${init.body.toString()}`);
-	if (url.endsWith('/revoke')) {
-		if (revokeStatus === 'offline') return Promise.reject(new Error('offline'));
-		return Promise.resolve({ json: () => Promise.resolve({}), ok: revokeStatus === 200, status: revokeStatus });
-	}
-	if (init.body.get('grant_type') === 'refresh_token') {
-		if (refreshAnswer === 'offline') return Promise.reject(new Error('net::ERR_INTERNET_DISCONNECTED'));
-		const answer = refreshAnswer === 200 ? { access_token: 'access-2', expires_in: 3600 } : { error: 'invalid_grant' };
-		return Promise.resolve({ json: () => Promise.resolve(answer), ok: refreshAnswer === 200, status: refreshAnswer });
-	}
-	const body = { access_token: 'access', expires_in: 3600, id_token: jwt({ aud: client.id, email: 'ada@example.com', sub: '42' }), refresh_token: 'refresh', scope: FULL_SCOPE };
-	return Promise.resolve({ json: () => Promise.resolve(body), ok: true, status: 200 });
+const FULL_SCOPE = ['openid', 'email', ...CALENDAR_SCOPES].join(' ');
+
+const json = (body: object, status = 200) => Promise.resolve(new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' }, status }));
+
+/** The claims Google signs for the sign-in the browser just opened, with its nonce. */
+const claimsFor = (extra: object = {}) => {
+	const nonce = new URL(opened.at(-1) ?? 'https://x.test').searchParams.get('nonce');
+	const iat = Math.floor(Date.now() / 1000);
+	return { aud: client.clientId, email: 'ada@example.com', exp: iat + 3600, iat, iss: 'https://accounts.google.com', nonce, sub: '42', ...extra };
 };
+
+const codeGrant = (extra: object = {}) => ({ access_token: 'access', expires_in: 3600, id_token: idToken(claimsFor()), refresh_token: 'refresh', scope: FULL_SCOPE, token_type: 'Bearer', ...extra });
+
+const fetch: FetchLike = (url, init) => {
+	const body = new URLSearchParams(String(init.body));
+	requests.push(`${url} token=${body.get('token') ?? ''}`);
+	if (url.endsWith('/revoke')) {
+		if (revokeStatus === 'offline') return Promise.reject(new TypeError('offline'));
+		return json({}, revokeStatus);
+	}
+	if (body.get('grant_type') === 'refresh_token') {
+		if (refreshAnswer === 'offline') return Promise.reject(new TypeError('net::ERR_INTERNET_DISCONNECTED'));
+		return refreshAnswer === 200 ? json({ access_token: 'access-2', expires_in: 3600, token_type: 'Bearer' }) : json({ error: 'invalid_grant' }, refreshAnswer);
+	}
+	return json(codeGrant());
+};
+
+/** Ends the browser step of the sign-in being waited on; the browser comes back only once its page opened. */
+let comeBack: () => void = () => undefined;
 
 const listen = (options: LoopbackOptions) => {
 	const outcome = new Promise<RedirectOutcome>(resolve => {
-		const ended = browser(options.state);
-		if (ended !== null) resolve(ended);
-		else options.signal.addEventListener('abort', () => resolve({ kind: 'aborted' }));
+		options.signal.addEventListener('abort', () => resolve({ kind: 'aborted' }));
+		comeBack = () => {
+			const ended = browser(options.state() ?? '');
+			if (ended !== null) resolve(ended);
+		};
 	});
 	return Promise.resolve({ outcome, redirectUri: 'http://127.0.0.1:5000' });
 };
@@ -59,22 +80,27 @@ const service = (overrides: Partial<GoogleAccountDeps> = {}) =>
 	createGoogleAccountService({
 		client,
 		fetch,
+		landingUrl: () => 'https://example.com/',
 		listen,
-		now: () => new Date('2026-11-16T10:00:00.000Z'),
 		openBrowser: url => {
 			opened.push(url);
+			queueMicrotask(comeBack);
 			return Promise.resolve();
 		},
-		landingUrl: () => 'https://example.com/',
 		store,
 		...overrides,
 	});
 
-const FULL_SCOPE = ['openid', 'email', ...CALENDAR_SCOPES].join(' ');
-
 const redirect = (params: Record<string, string>): RedirectOutcome => ({ kind: 'redirect', params: new URLSearchParams(params) });
 
+const errorCode = (promise: Promise<unknown>) =>
+	promise.then(
+		() => null,
+		(error: unknown) => (error instanceof Error && 'code' in error ? error.code : 'not a MeshlyError')
+	);
+
 beforeEach(() => {
+	setSystemTime(NOW);
 	stored = null;
 	encryptionAvailable = true;
 	requests = [];
@@ -84,12 +110,14 @@ beforeEach(() => {
 	browser = state => redirect({ code: 'auth-code', state });
 });
 
+afterEach(() => setSystemTime());
+
 describe('connect', () => {
 	test('signs in through the browser and stores the tokens', async () => {
 		expect(await service().connect()).toEqual({ ok: true, value: { account: { email: 'ada@example.com' }, status: 'connected' } });
 		expect(opened).toHaveLength(1);
 		expect(opened[0]).toStartWith('https://accounts.google.com/');
-		expect(stored).toMatchObject({ accessToken: 'access', email: 'ada@example.com', expiresAt: '2026-11-16T11:00:00.000Z', refreshToken: 'refresh', subject: '42' });
+		expect(stored).toEqual({ accessToken: 'access', email: 'ada@example.com', expiresAt: '2026-11-16T11:00:00.000Z', refreshToken: 'refresh', scope: FULL_SCOPE, subject: '42' });
 		expect(await service().account()).toEqual({ email: 'ada@example.com' });
 	});
 
@@ -97,7 +125,8 @@ describe('connect', () => {
 		await service().connect();
 		const url = new URL(opened[0] ?? '');
 		expect(Object.fromEntries(url.searchParams)).toMatchObject({
-			client_id: client.id,
+			access_type: 'offline',
+			client_id: client.clientId,
 			code_challenge_method: 'S256',
 			include_granted_scopes: 'true',
 			prompt: 'select_account consent',
@@ -105,24 +134,33 @@ describe('connect', () => {
 			response_type: 'code',
 			scope: 'openid email https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events',
 		});
-		expect(url.searchParams.has('access_type')).toBe(false);
-		expect(url.toString()).not.toContain(client.secret);
+		expect(url.searchParams.get('code_challenge')).toBeTruthy();
+		expect(url.toString()).not.toContain(client.clientSecret);
 	});
 
 	test('a grant without a refresh token or an email fails, storing nothing', async () => {
-		const body = { access_token: 'access', expires_in: 3600, scope: FULL_SCOPE };
 		const answering =
-			(answer: object): OAuthFetch =>
+			(extra: () => object): FetchLike =>
 			() =>
-				Promise.resolve({ json: () => Promise.resolve(answer), ok: true, status: 200 });
-		expect(await service({ fetch: answering({ ...body, id_token: jwt({ aud: client.id, email: 'ada@example.com', sub: '42' }) }) }).connect()).toMatchObject({
+				json(codeGrant(extra()));
+		expect(await service({ fetch: answering(() => ({ refresh_token: undefined })) }).connect()).toMatchObject({ error: { issues: [{ key: 'google.authFailed' }] }, ok: false });
+		expect(await service({ fetch: answering(() => ({ id_token: idToken(claimsFor({ email: undefined })) })) }).connect()).toMatchObject({
 			error: { issues: [{ key: 'google.authFailed' }] },
 			ok: false,
 		});
-		expect(await service({ fetch: answering({ ...body, id_token: jwt({ aud: client.id, sub: '42' }), refresh_token: 'refresh' }) }).connect()).toMatchObject({
-			error: { issues: [{ key: 'google.authFailed' }] },
-			ok: false,
-		});
+		expect(stored).toBeNull();
+	});
+
+	test('an ID token for another sign-in (wrong nonce) fails, storing nothing', async () => {
+		const replayed: FetchLike = () => json(codeGrant({ id_token: idToken(claimsFor({ nonce: 'someone-else' })) }));
+		expect(await service({ fetch: replayed }).connect()).toMatchObject({ error: { issues: [{ key: 'google.authFailed' }] }, ok: false });
+		expect(stored).toBeNull();
+	});
+
+	test('a redirect with another state fails before the code is exchanged', async () => {
+		browser = () => redirect({ code: 'auth-code', state: 'forged' });
+		expect(await service().connect()).toMatchObject({ error: { issues: [{ key: 'google.authFailed' }] }, ok: false });
+		expect(requests).toEqual([]);
 		expect(stored).toBeNull();
 	});
 
@@ -143,7 +181,7 @@ describe('connect', () => {
 		browser = () => ({ kind: 'timeout' });
 		expect(await service().connect()).toMatchObject({ error: { issues: [{ key: 'google.timeout' }] }, ok: false });
 		browser = state => redirect({ code: 'auth-code', state });
-		const refusing: OAuthFetch = () => Promise.resolve({ json: () => Promise.resolve({ error: 'invalid_grant' }), ok: false, status: 400 });
+		const refusing: FetchLike = () => json({ error: 'invalid_grant' }, 400);
 		expect(await service({ fetch: refusing }).connect()).toMatchObject({ error: { issues: [{ key: 'google.authFailed' }] }, ok: false });
 		expect(stored).toBeNull();
 	});
@@ -152,7 +190,7 @@ describe('connect', () => {
 		browser = () => null;
 		const google = service();
 		const first = google.connect();
-		await Promise.resolve();
+		await new Promise(resolve => setTimeout(resolve, 0));
 		browser = state => redirect({ code: 'auth-code', state });
 		const second = google.connect();
 		expect(await first).toEqual({ ok: true, value: { status: 'canceled' } });
@@ -189,30 +227,30 @@ describe('access token', () => {
 	beforeEach(() => service().connect());
 
 	test('is reused until it is about to expire, then refreshed and kept', async () => {
-		expect(await service().accessToken()).toEqual({ ok: true, value: 'access' });
-		const later = service({ now: () => new Date('2026-11-16T10:59:30.000Z') });
-		expect(await later.accessToken()).toEqual({ ok: true, value: 'access-2' });
-		expect(stored).toMatchObject({ accessToken: 'access-2', expiresAt: '2026-11-16T11:59:30.000Z', refreshToken: 'refresh' });
+		expect(await service().getAccessToken()).toBe('access');
+		setSystemTime(new Date('2026-11-16T10:59:30.000Z'));
+		expect(await service().getAccessToken()).toBe('access-2');
+		expect(stored).toEqual({ accessToken: 'access-2', email: 'ada@example.com', expiresAt: '2026-11-16T11:59:30.000Z', refreshToken: 'refresh', scope: FULL_SCOPE, subject: '42' });
 	});
 
-	test('a revoked grant asks to connect again; no connection is offline', async () => {
-		const later = service({ now: () => new Date('2026-11-16T12:00:00.000Z') });
+	test('no connection is offline; a revoked grant asks to connect again', async () => {
+		setSystemTime(new Date('2026-11-16T12:00:00.000Z'));
 		refreshAnswer = 'offline';
-		expect(await later.accessToken()).toMatchObject({ error: { issues: [{ key: 'google.offline' }] }, ok: false });
+		expect(await errorCode(service().getAccessToken())).toBe('network_error');
 		refreshAnswer = 400;
-		expect(await later.accessToken()).toMatchObject({ error: { issues: [{ key: 'google.reconnectRequired' }] }, ok: false });
+		expect(await errorCode(service().getAccessToken())).toBe('invalid_grant');
 	});
 
 	test('an account connected before calendar access must connect again, which replaces its grant', async () => {
 		if (stored === null) throw new Error('not connected');
 		stored = { ...stored, scope: 'openid email' };
-		expect(await service().accessToken()).toMatchObject({ error: { issues: [{ key: 'google.reconnectRequired' }] }, ok: false });
+		expect(await errorCode(service().getAccessToken())).toBe('missing_scopes');
 		expect(await service().connect()).toMatchObject({ ok: true, value: { status: 'connected' } });
 		expect(stored?.scope).toBe(FULL_SCOPE);
 	});
 
 	test('no account means connecting first', async () => {
 		stored = null;
-		expect(await service().accessToken()).toMatchObject({ error: { issues: [{ key: 'google.reconnectRequired' }] }, ok: false });
+		expect(await errorCode(service().getAccessToken())).toBe('not_signed_in');
 	});
 });

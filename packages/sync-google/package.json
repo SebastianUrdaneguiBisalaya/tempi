@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@tempi/core": "workspace:*",
-    "@tempi/google-calendar": "workspace:*"
+    "@usemeshly/auth": "catalog:",
+    "@usemeshly/google-calendar": "catalog:"
   },
   "devDependencies": {
     "@tempi/db": "workspace:*",

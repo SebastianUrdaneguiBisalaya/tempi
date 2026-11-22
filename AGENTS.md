@@ -43,7 +43,7 @@ On top of the skill, this repo requires:
 - Adapters implement ports: SQLite in desktop today, a sync or HTTP adapter later. To swap storage, write a new adapter; never change the domain.
 - Prepare for sync now: UUIDv7 text IDs, `created_at`/`updated_at` timestamps, `deleted_at` soft deletes, and no autoincrement IDs.
 - Dependency direction: `apps/*` → `packages/ipc` / `packages/db` / `packages/i18n` / `packages/ai` → `packages/core`. Core depends only on zod and `rrule-temporal`. Packages never import from apps. Only `apps/desktop` (main process) imports `@tempi/ai`; web never does, and AI schemas and types for web live in core.
-- `@tempi/google-calendar` is a standalone SDK: its only runtime dependency is zod, and it imports nothing from `@tempi/*`, Node, Electron or React. It takes everything Tempi-specific as parameters (OAuth client, redirect URI, scopes, `fetch`, token `load`/`save`) and never stores tokens. Tempi's scopes and OAuth client stay in `apps/desktop/src/google`; only `@tempi/sync-google` and `apps/desktop` (main process) import the SDK.
+- Google Calendar goes through `@usemeshly/google-calendar` (API v3 client) and `@usemeshly/auth/oauth` (OAuth 2.0 with PKCE and the token manager). Both are server-side only: only `@tempi/sync-google` and `apps/desktop` (main process) import them, never web. They never store tokens: desktop passes them `load`/`save` over its encrypted `token-store.ts`. Tempi's scopes and OAuth client stay in `apps/desktop/src/google`, and their `MeshlyError` codes become sync statuses or `DomainError` keys there.
 
 ## Structure
 
@@ -81,13 +81,7 @@ packages/
     src/
       locales/               en.ts (source of keys), es.ts (must match en exactly)
       index.ts               resources, namespaces (common, errors), issueTranslation
-  google-calendar/           @tempi/google-calendar: Google Calendar API v3 client and OAuth 2.0 (PKCE); knows nothing about Tempi
-    src/
-      calendar-api.ts        calendar list, events list/get/insert/patch/delete, sync tokens; zod-validated responses, typed errors
-      oauth.ts               PKCE (Web Crypto), authorization URL, code exchange, refresh, revoke, getAccessToken (caller's load/save)
-      scopes.ts              hasScopes / missingScopes against the scopes the caller requires
-      index.ts
-  sync-google/               @tempi/sync-google: Tempi ↔ Google mapping and the two-way sync use case, over @tempi/google-calendar
+  sync-google/               @tempi/sync-google: Tempi ↔ Google mapping and the two-way sync use case, over @usemeshly/google-calendar
 
 apps/desktop/src/
   main.ts                    bootstrap only: app lifecycle, wiring

@@ -1,13 +1,16 @@
-import { GoogleApiError, type GoogleCalendarApi, type GoogleCalendarListEntry, type GoogleEvent, type GoogleEventBody, GoogleOfflineError, SyncTokenExpiredError } from '@tempi/google-calendar';
+import { MeshlyError } from '@usemeshly/auth';
+import type { GoogleCalendarClient, GoogleCalendarListEntry, GoogleEvent, GoogleEventInput } from '@usemeshly/google-calendar';
 
 type Stored = GoogleEvent & { version: number };
+
+const apiError = (code: string, status: number, message: string) => new MeshlyError({ code, message, provider: 'google', status });
 
 /**
  * An in-memory Google Calendar for tests, with the behavior sync relies on: versioned changes behind sync tokens
  * (deleted events included), instance ids for occurrences of a series, client-chosen ids with 409 on reuse, and
- * a switch to go offline.
+ * a switch to go offline. Sync talks to it through `client`, shaped like `@usemeshly/google-calendar`'s.
  */
-export class FakeGoogle implements GoogleCalendarApi {
+export class FakeGoogle {
 	calendars: GoogleCalendarListEntry[] = [];
 	readonly events = new Map<string, Map<string, Stored>>();
 	offline = false;
@@ -38,7 +41,7 @@ export class FakeGoogle implements GoogleCalendarApi {
 
 	private calendar(calendarId: string) {
 		const events = this.events.get(calendarId);
-		if (events === undefined) throw new GoogleApiError(404, `No calendar ${calendarId}`);
+		if (events === undefined) throw apiError('not_found', 404, `No calendar ${calendarId}`);
 		return events;
 	}
 
@@ -51,7 +54,7 @@ export class FakeGoogle implements GoogleCalendarApi {
 	}
 
 	private online(): void {
-		if (this.offline) throw new GoogleOfflineError('offline');
+		if (this.offline) throw new MeshlyError({ code: 'network_error', message: 'offline', provider: 'google' });
 	}
 
 	/** Instance ids are `<series id>_<original start>`; an occurrence edited for the first time becomes an exception. */
@@ -67,50 +70,53 @@ export class FakeGoogle implements GoogleCalendarApi {
 		return { ...series, etag: '"0"', id, originalStartTime, recurrence: undefined, recurringEventId: series.id, version: 0 };
 	}
 
-	listCalendars(): Promise<GoogleCalendarListEntry[]> {
-		this.online();
-		return Promise.resolve(this.calendars);
-	}
-
-	listEvents(calendarId: string, syncToken: string | null): Promise<{ items: GoogleEvent[]; nextSyncToken: string }> {
-		this.online();
-		const since = syncToken === null ? 0 : Number(syncToken);
-		if (syncToken !== null && since < this.expiredBefore) return Promise.reject(new SyncTokenExpiredError('410'));
-		const items = [...this.calendar(calendarId).values()]
-			.filter(event => event.version > since && (syncToken !== null || event.status !== 'cancelled' || event.recurringEventId !== undefined))
-			.map(({ version: _version, ...event }) => event);
-		return Promise.resolve({ items, nextSyncToken: String(this.version) });
-	}
-
-	getEvent(calendarId: string, eventId: string): Promise<GoogleEvent | null> {
-		this.online();
-		const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
-		if (current === null) return Promise.resolve(null);
-		const { version: _version, ...event } = current;
-		return Promise.resolve(event);
-	}
-
-	insertEvent(calendarId: string, body: GoogleEventBody): Promise<GoogleEvent> {
-		this.online();
-		const id = body.id ?? `g${this.version + 1}`;
-		if (this.calendar(calendarId).has(id)) return Promise.reject(new GoogleApiError(409, `${id} exists`));
-		return Promise.resolve(this.store(calendarId, { ...body, id }));
-	}
-
-	patchEvent(calendarId: string, eventId: string, body: GoogleEventBody): Promise<GoogleEvent> {
-		this.online();
-		const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
-		if (current === null) return Promise.reject(new GoogleApiError(404, `${eventId} not found`));
-		const { etag: _etag, updated: _updated, version: _version, ...rest } = current;
-		return Promise.resolve(this.store(calendarId, { ...rest, ...body, id: eventId }));
-	}
-
-	deleteEvent(calendarId: string, eventId: string): Promise<void> {
-		this.online();
-		const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
-		if (current === null || current.status === 'cancelled') return Promise.resolve();
-		const { etag: _etag, updated: _updated, version: _version, ...rest } = current;
-		this.store(calendarId, { ...rest, status: 'cancelled' });
-		return Promise.resolve();
-	}
+	readonly client: GoogleCalendarClient = {
+		calendarList: {
+			list: () => {
+				this.online();
+				return Promise.resolve({ items: this.calendars, nextSyncToken: null });
+			},
+		},
+		events: {
+			delete: (calendarId, eventId) => {
+				this.online();
+				const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
+				if (current === null || current.status === 'cancelled') return Promise.resolve();
+				const { etag: _etag, updated: _updated, version: _version, ...rest } = current;
+				this.store(calendarId, { ...rest, status: 'cancelled' });
+				return Promise.resolve();
+			},
+			get: (calendarId, eventId) => {
+				this.online();
+				const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
+				if (current === null) return Promise.resolve(null);
+				const { version: _version, ...event } = current;
+				return Promise.resolve(event);
+			},
+			insert: (calendarId, body: GoogleEventInput) => {
+				this.online();
+				const id = body.id ?? `g${this.version + 1}`;
+				if (this.calendar(calendarId).has(id)) return Promise.reject(apiError('conflict', 409, `${id} exists`));
+				return Promise.resolve(this.store(calendarId, { ...body, id }));
+			},
+			list: (calendarId, params = {}) => {
+				this.online();
+				const syncToken = params.syncToken ?? null;
+				const since = syncToken === null ? 0 : Number(syncToken);
+				if (syncToken !== null && since < this.expiredBefore) return Promise.reject(apiError('sync_token_expired', 410, 'Sync token expired'));
+				const items = [...this.calendar(calendarId).values()]
+					.filter(event => event.version > since && (params.showDeleted === true || event.status !== 'cancelled'))
+					.filter(event => syncToken !== null || event.status !== 'cancelled' || event.recurringEventId !== undefined)
+					.map(({ version: _version, ...event }) => event);
+				return Promise.resolve({ items, nextSyncToken: String(this.version) });
+			},
+			patch: (calendarId, eventId, body) => {
+				this.online();
+				const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
+				if (current === null) return Promise.reject(apiError('not_found', 404, `${eventId} not found`));
+				const { etag: _etag, updated: _updated, version: _version, ...rest } = current;
+				return Promise.resolve(this.store(calendarId, { ...rest, ...body, id: eventId }));
+			},
+		},
+	};
 }

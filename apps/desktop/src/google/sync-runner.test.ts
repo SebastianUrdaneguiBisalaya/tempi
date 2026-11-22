@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import type { GoogleSyncStatus } from '@tempi/core';
-import { GoogleAuthError, GoogleOfflineError } from '@tempi/google-calendar';
 import type { SyncSummary } from '@tempi/sync-google';
+import { MeshlyError } from '@usemeshly/auth';
 import { createSyncRunner, EDIT_DEBOUNCE_MS, SYNC_INTERVAL_MS } from './sync-runner';
 
 const SUMMARY: SyncSummary = { pulled: 1, pushed: 0, skipped: 0 };
@@ -91,9 +91,9 @@ describe('sync runner', () => {
 		const google = runner();
 		google.start();
 		await settle();
-		outcome = () => Promise.reject(new GoogleOfflineError('down'));
+		outcome = () => Promise.reject(new MeshlyError({ code: 'network_error', message: 'down' }));
 		expect(await google.syncNow()).toEqual({ error: 'google.offline', lastSyncedAt: '2026-11-16T10:00:00.000Z', state: 'offline' });
-		outcome = () => Promise.reject(new GoogleAuthError('revoked'));
+		outcome = () => Promise.reject(new MeshlyError({ code: 'invalid_grant', message: 'revoked' }));
 		expect(await google.syncNow()).toMatchObject({ error: 'google.reconnectRequired', state: 'reconnect' });
 		outcome = () => Promise.reject(new Error('boom'));
 		expect(await google.syncNow()).toMatchObject({ error: 'google.syncFailed', state: 'error' });

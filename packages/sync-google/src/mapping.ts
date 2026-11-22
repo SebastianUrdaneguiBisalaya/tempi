@@ -1,5 +1,5 @@
 import { type CalendarEvent, isValidTimeZone, MAX_REMINDER_MINUTES, toUtcInstant } from '@tempi/core';
-import type { GoogleEvent, GoogleEventBody, GoogleEventTime } from '@tempi/google-calendar';
+import type { GoogleEvent, GoogleEventInput, GoogleEventTime } from '@usemeshly/google-calendar';
 
 /** Private property that keeps Tempi's video link, which Google has no plain field for. */
 export const VIDEO_URL_PROPERTY = 'tempiVideoUrl';
@@ -123,8 +123,8 @@ const timeOf = (instant: string, allDay: boolean, timeZone: string): GoogleEvent
  * A local event as the fields Tempi writes on Google. A series sends its rule and the dates it skips (`exDates`,
  * without those of edited occurrences, which stay as Google exceptions); an edited occurrence sends no recurrence.
  */
-export const toGoogle = (event: CalendarEvent, exDates: string[]): GoogleEventBody => {
-	const body: GoogleEventBody = {
+export const toGoogle = (event: CalendarEvent, exDates: string[]): GoogleEventInput => {
+	const body: GoogleEventInput = {
 		description: event.description,
 		end: timeOf(event.endAt, event.allDay, event.timeZone),
 		extendedProperties: { private: { [VIDEO_URL_PROPERTY]: event.videoUrl ?? '' } },
