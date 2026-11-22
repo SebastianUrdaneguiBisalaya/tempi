@@ -74,7 +74,7 @@ function CommandMenuCell({ copy }: { copy: KeyboardCopy }) {
 export function KeyboardContent({ locale, copy, mockup }: KeyboardContentProps) {
 	const { cells, replicas } = copy;
 	return (
-		<ShowcaseSection index={5} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
+		<ShowcaseSection index={6} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
 			<ShowcaseGrid>
 				<ShowcaseCell title={cells.commandMenu.title} body={cells.commandMenu.body}>
 					<CommandMenuCell copy={copy} />

@@ -15,6 +15,7 @@ export const SECTION_IDS = {
 	why: 'why-tempi',
 	features: 'features',
 	planning: 'planning',
+	integrations: 'integrations',
 	ai: 'ai',
 	faq: 'faq',
 	download: 'download',

@@ -372,6 +372,36 @@
       "nextWeek": "Próximos 7 días"
     }
   },
+  "integrations": {
+    "eyebrow": "Integraciones",
+    "title": "El clima y tus feriados, en tu calendario.",
+    "subtitle": "Activa en Ajustes las integraciones que quieras. No necesitan cuenta ni clave, y cada una se apaga con un solo interruptor.",
+    "points": {
+      "weather": {
+        "title": "Clima",
+        "body": "El clima actual de tu ciudad sobre Pregúntale a Tempi, con un cielo que sigue las condiciones y la hora. Se actualiza solo mientras Tempi está abierto."
+      },
+      "holidays": {
+        "title": "Feriados",
+        "body": "Los feriados de tu país llegan como eventos de todo el día a tu calendario predeterminado, junto al clima de cada día. Si eliminas uno, no vuelve."
+      }
+    },
+    "weather": {
+      "city": "Lima",
+      "condition": "Parcialmente nublado",
+      "high": "Máx. {value}",
+      "low": "Mín. {value}",
+      "feelsLike": "Sensación {value}",
+      "humidity": "Humedad",
+      "wind": "Viento",
+      "credit": "Datos del clima de Open-Meteo.com"
+    },
+    "week": {
+      "holiday": "Día de la Independencia",
+      "high": "Máxima",
+      "low": "Mínima"
+    }
+  },
   "ai": {
     "eyebrow": "Asistente de IA",
     "title": "Pregúntale a tu calendario.",
