@@ -110,10 +110,7 @@ export async function LegalPage({ page }: { page: LegalPageName }) {
 				</address>
 			</article>
 
-			{/* The landing's footer illustration, faded in from the page above. */}
-			<div className='relative isolate mt-auto overflow-hidden pt-40'>
-				<Image src='/bg-tempi-footer.png' alt='' fill sizes='100vw' className='-z-10 object-cover object-bottom' />
-				<div className='absolute inset-x-0 top-0 -z-10 h-2/3 bg-linear-to-b from-background to-transparent' />
+			<div className='mt-auto pt-24'>
 				<SiteFooter />
 			</div>
 		</main>

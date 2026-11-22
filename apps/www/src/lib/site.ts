@@ -17,6 +17,7 @@ export const SECTION_IDS = {
 	planning: 'planning',
 	integrations: 'integrations',
 	ai: 'ai',
+	keyboard: 'keyboard',
 	faq: 'faq',
 	download: 'download',
 } as const;

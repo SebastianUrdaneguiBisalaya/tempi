@@ -17,8 +17,8 @@ export type WeatherCardCopy = {
 	credit: string;
 };
 
-/** A mild afternoon in Lima, in the units the app's card shows (°C, %, km/h). */
-const SAMPLE = { temperature: 19, high: 22, low: 16, feelsLike: 20, humidity: 70, wind: 12 } as const;
+/** An overcast night in Lima, in the units the app's card shows (°C, %, km/h). */
+const SAMPLE = { temperature: 17, high: 22, low: 16, feelsLike: 17, humidity: 84, wind: 9 } as const;
 
 /**
  * Like the app's sidebar weather card (apps/web `WeatherCard`): the same `@useweather` background and layout, with fixed
@@ -47,18 +47,18 @@ export function WeatherCardReplica({ locale, copy }: { locale: Locale; copy: Wea
 			: ' ';
 
 	return (
-		<div className='w-full max-w-64 rounded-xl bg-popover p-2 text-popover-foreground shadow-2xl shadow-black/50 ring-1 ring-foreground/10'>
-			<div ref={ref} className='relative h-36 w-full overflow-hidden rounded-lg'>
-				<WeatherBackground condition='partly-cloudy' intensity={0.5} paused={!visible} timeOfDay='day' wind={0.3}>
-					<div className='flex size-full flex-col justify-between bg-black/15 p-3 text-white'>
+		<div className='w-full max-w-sm rounded-xl bg-popover p-2 text-popover-foreground shadow-2xl shadow-black/50 ring-1 ring-foreground/10'>
+			<div ref={ref} className='relative h-52 w-full overflow-hidden rounded-lg'>
+				<WeatherBackground condition='overcast' intensity={0.5} paused={!visible} timeOfDay='night' wind={0.3}>
+					<div className='flex size-full flex-col justify-between bg-black/15 p-4 text-white'>
 						<div className='flex items-start justify-between gap-2'>
 							<div className='min-w-0'>
-								<p className='truncate text-sm font-medium'>{copy.city}</p>
-								<p className='truncate text-xs opacity-90'>{copy.condition}</p>
+								<p className='truncate text-base font-medium'>{copy.city}</p>
+								<p className='truncate text-sm opacity-90'>{copy.condition}</p>
 							</div>
-							<p className='text-3xl leading-none font-light tabular-nums'>{number(SAMPLE.temperature, 'celsius')}</p>
+							<p className='text-5xl leading-none font-light tabular-nums'>{number(SAMPLE.temperature, 'celsius')}</p>
 						</div>
-						<div className='flex flex-col gap-1 text-[11px] leading-tight'>
+						<div className='flex flex-col gap-1.5 text-xs leading-tight'>
 							<p className='flex flex-wrap gap-x-2 opacity-90'>
 								<span>{copy.high.replace('{value}', number(SAMPLE.high, 'celsius'))}</span>
 								<span>{copy.low.replace('{value}', number(SAMPLE.low, 'celsius'))}</span>

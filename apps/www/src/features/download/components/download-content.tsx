@@ -2,7 +2,7 @@
 
 import { DownloadIcon } from 'lucide-react';
 import Image from 'next/image';
-import { type ReactNode, useRef } from 'react';
+import { useRef } from 'react';
 import { gsap, useMotion } from '@/lib/gsap';
 import { PLATFORMS } from '@/lib/platform';
 import { SECTION_IDS } from '@/lib/site';
@@ -17,8 +17,8 @@ export type DownloadCopy = {
 	firstLaunchLink: string;
 };
 
-/** The download section over the footer illustration; the footer is passed in so both share the background. */
-export function DownloadContent({ copy, footer }: { copy: DownloadCopy; footer: ReactNode }) {
+/** The download section over its illustration, a full screen tall with its content in the middle. */
+export function DownloadContent({ copy }: { copy: DownloadCopy }) {
 	const ref = useRef<HTMLElement>(null);
 
 	useMotion(ref, () => {
@@ -29,15 +29,17 @@ export function DownloadContent({ copy, footer }: { copy: DownloadCopy; footer: 
 	});
 
 	return (
-		<section ref={ref} id={SECTION_IDS.download} className='relative isolate overflow-hidden'>
+		<section ref={ref} id={SECTION_IDS.download} className='relative isolate flex min-h-svh items-center justify-center overflow-hidden'>
 			{/* next/image serves the 2 MB PNG resized and in a modern format. */}
 			<div data-download-bg className='absolute inset-0 -z-10'>
 				<Image src='/bg-tempi-footer.png' alt='' fill sizes='100vw' className='object-cover object-bottom' />
 			</div>
-			{/* Blend the illustration into the page above it. */}
+			{/* Blend the illustration into the page above it… */}
 			<div className='absolute inset-x-0 top-0 -z-10 h-1/2 bg-linear-to-b from-background to-transparent' />
+			{/* And into the footer below it. */}
+			<div className='absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-linear-to-t from-background to-transparent' />
 
-			<div className='mx-auto flex max-w-6xl flex-col items-center px-4 pt-32 pb-40 text-center sm:px-6 md:pt-40 md:pb-56'>
+			<div className='mx-auto flex max-w-6xl flex-col items-center px-4 py-32 text-center sm:px-6'>
 				<DownloadIcon data-download-reveal aria-hidden className='size-6' />
 				<h2 data-download-reveal className='mt-5 font-heading text-4xl font-medium tracking-tight sm:text-5xl'>
 					{copy.title}
@@ -60,7 +62,6 @@ export function DownloadContent({ copy, footer }: { copy: DownloadCopy; footer: 
 					</a>
 				</p>
 			</div>
-			{footer}
 		</section>
 	);
 }

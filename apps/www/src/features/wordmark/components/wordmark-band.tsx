@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { cn } from 'cn';
+import { type RefObject, useEffect, useRef } from 'react';
 import { mountAsciiField } from '@/lib/ascii-field';
 import { measureMark, opaqueBounds } from '../ascii-mark';
 
@@ -10,8 +11,18 @@ const LOGO_SRC = '/tempi-icon.png';
 // Half of clamp(11rem, 30vw, 28rem), the band's former height: the mark keeps that size while the band is taller.
 const markHeight = (width: number) => Math.min(448, Math.max(176, width * 0.3)) / 2;
 
+type WordmarkBandProps = {
+	label: string;
+	/** Sizes the band; it fills the viewport's height by default. */
+	className?: string;
+	/** Where the mouse is followed when content sits on top of the band; defaults to the band itself. */
+	pointerArea?: RefObject<HTMLElement | null>;
+	/** An element at the band's top whose height the mark is centered in, so the field can reach below the mark. */
+	markArea?: RefObject<HTMLElement | null>;
+};
+
 /** The Tempi logo and word drawn with a grid of bracket characters over faint noise, lit around the mouse. */
-export function WordmarkBand({ label }: { label: string }) {
+export function WordmarkBand({ label, className = 'h-svh', pointerArea, markArea }: WordmarkBandProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const labelRef = useRef<HTMLSpanElement>(null);
@@ -40,7 +51,8 @@ export function WordmarkBand({ label }: { label: string }) {
 					container,
 					canvas,
 					glow,
-					measureMark: grid => measureMark(grid, { word: WORD, font, logo, logoBounds, markHeight: markHeight(container.clientWidth) }),
+					pointerArea: pointerArea?.current ?? undefined,
+					measureMark: grid => measureMark(grid, { word: WORD, font, logo, logoBounds, markHeight: markHeight(container.clientWidth), areaHeight: markArea?.current?.clientHeight }),
 				});
 			})
 			.catch((error: unknown) => console.error('Could not draw the wordmark', error));
@@ -49,11 +61,16 @@ export function WordmarkBand({ label }: { label: string }) {
 			cancelled = true;
 			unmount?.();
 		};
-	}, []);
+	}, [pointerArea, markArea]);
 
 	return (
 		// A short vertical fade: the noise fills the band's whole height and only its very edges blend into the page.
-		<div ref={containerRef} role='img' aria-label={label} className='relative h-svh w-full overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]'>
+		<div
+			ref={containerRef}
+			role='img'
+			aria-label={label}
+			className={cn('relative w-full overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]', className)}
+		>
 			{/* A faint lift of the background under the spotlight; the canvas brightens the glyphs themselves. */}
 			<div
 				ref={glowRef}

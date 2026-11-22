@@ -388,7 +388,7 @@
     },
     "weather": {
       "city": "Lima",
-      "condition": "Parcialmente nublado",
+      "condition": "Nublado",
       "high": "Máx. {value}",
       "low": "Mín. {value}",
       "feelsLike": "Sensación {value}",
@@ -621,8 +621,23 @@
     "license": "Licencia ISC",
     "madeBy": "Hecho por",
     "legal": "Legal",
-    "terms": "Términos",
-    "privacy": "Privacidad"
+    "terms": "Términos y Condiciones",
+    "privacy": "Política de Privacidad",
+    "sections": {
+      "why": "Por qué Tempi",
+      "features": "Funciones",
+      "planning": "Planificación",
+      "integrations": "Integraciones",
+      "ai": "IA",
+      "keyboard": "Teclado",
+      "faq": "Preguntas frecuentes",
+      "download": "Descargar"
+    },
+    "groups": {
+      "product": "Producto",
+      "productivity": "Productividad",
+      "start": "Empieza"
+    }
   },
   "wordmark": {
     "label": "Logo de Tempi"

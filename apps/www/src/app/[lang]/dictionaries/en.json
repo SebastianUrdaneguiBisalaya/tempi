@@ -388,7 +388,7 @@
     },
     "weather": {
       "city": "Lima",
-      "condition": "Partly cloudy",
+      "condition": "Overcast",
       "high": "H {value}",
       "low": "L {value}",
       "feelsLike": "Feels like {value}",
@@ -621,8 +621,23 @@
     "license": "ISC License",
     "madeBy": "Made by",
     "legal": "Legal",
-    "terms": "Terms",
-    "privacy": "Privacy"
+    "terms": "Terms and Conditions",
+    "privacy": "Privacy Policy",
+    "sections": {
+      "why": "Why Tempi",
+      "features": "Features",
+      "planning": "Planning",
+      "integrations": "Integrations",
+      "ai": "AI",
+      "keyboard": "Keyboard",
+      "faq": "FAQ",
+      "download": "Download"
+    },
+    "groups": {
+      "product": "Product",
+      "productivity": "Productivity",
+      "start": "Get started"
+    }
   },
   "wordmark": {
     "label": "Tempi logo"
