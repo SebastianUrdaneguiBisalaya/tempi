@@ -40,6 +40,8 @@ describe('payloadSchemas', () => {
 		['calendars:import', { calendarId: '01890a5d-ac96-774b-bcce-b302099a8057' }],
 		['calendars:list', undefined],
 		['data:backup', undefined],
+		['data:folder', undefined],
+		['data:openFolder', undefined],
 		['data:restore', undefined],
 		['google:account', undefined],
 		['google:connect', undefined],

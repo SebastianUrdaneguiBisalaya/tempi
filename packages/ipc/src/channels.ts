@@ -50,6 +50,10 @@ export const CHANNELS = {
 	data: {
 		/** Asks where to save, then writes a backup of the whole database. */
 		backup: 'data:backup',
+		/** The folder that holds all of Tempi's data on this computer (`userData`), to show it in Settings. */
+		folder: 'data:folder',
+		/** Opens the data folder in the system file manager. The main process picks the folder; the renderer sends nothing. */
+		openFolder: 'data:openFolder',
 		/** Asks for a backup, replaces every piece of data with it, then relaunches the app. */
 		restore: 'data:restore',
 	},

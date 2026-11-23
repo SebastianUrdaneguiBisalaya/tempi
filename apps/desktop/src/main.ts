@@ -437,7 +437,9 @@ function dataIo(db: DatabaseSync, deps: CoreDeps, transaction: TransactionQueue,
 			const [file] = filePaths;
 			return canceled || file === undefined ? null : file;
 		},
+		folder: () => app.getPath('userData'),
 		now: () => new Date(),
+		openFolder: folder => shell.openPath(folder),
 		restore: async source => {
 			const live = appDatabasePath();
 			// Everything that can fail on a bad file happens on a staged copy, before the current data is touched.

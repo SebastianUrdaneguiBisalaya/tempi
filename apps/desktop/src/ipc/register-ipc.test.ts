@@ -45,6 +45,8 @@ let written: { path: string; text: string }[];
 let backupPath: string | null;
 let restoreSource: string | null;
 let dataCalls: string[];
+/** What the fake file manager answers when asked to open the data folder ('' when it opened). */
+let openFolderError: string;
 
 const dataIo: DataIo = {
 	backup: target => {
@@ -53,7 +55,12 @@ const dataIo: DataIo = {
 	},
 	chooseBackupPath: name => Promise.resolve(backupPath === null ? null : `${backupPath}/${name}`),
 	chooseRestoreFile: () => Promise.resolve(restoreSource),
+	folder: () => '/Users/ada/Library/Application Support/Tempi',
 	now: () => new Date(T0),
+	openFolder: folder => {
+		dataCalls.push(`open ${folder}`);
+		return Promise.resolve(openFolderError);
+	},
 	restore: source => {
 		dataCalls.push(`restore ${source}`);
 		return Promise.resolve(source.endsWith('.db') ? ok(null) : fail('validation', 'backup.invalidFile'));
@@ -225,6 +232,7 @@ const setup = (override: (deps: CoreDeps) => Partial<CoreDeps> = () => ({}), lis
 	backupPath = '/backups';
 	restoreSource = null;
 	dataCalls = [];
+	openFolderError = '';
 	permissionCalls = [];
 	notificationRefusal = null;
 	aiKeys = new Map();
@@ -738,6 +746,29 @@ describe('backup and restore', () => {
 		backupPath = null;
 		expect(await invoke(CHANNELS.data.backup)).toEqual({ ok: true, value: { status: 'canceled' } });
 		expect(await invoke(CHANNELS.data.restore)).toEqual({ ok: true, value: { status: 'canceled' } });
+		expect(dataCalls).toEqual([]);
+	});
+});
+
+describe('data folder', () => {
+	beforeEach(() => setup());
+
+	test('answers the folder that holds the data', async () => {
+		expect(await invoke(CHANNELS.data.folder)).toEqual({ ok: true, value: '/Users/ada/Library/Application Support/Tempi' });
+	});
+
+	test('opens the data folder in the file manager', async () => {
+		expect(await invoke(CHANNELS.data.openFolder)).toEqual({ ok: true, value: null });
+		expect(dataCalls).toEqual(['open /Users/ada/Library/Application Support/Tempi']);
+	});
+
+	test('reports a folder the OS could not open as an error', async () => {
+		openFolderError = 'Failed to open path';
+		expect(await invoke(CHANNELS.data.openFolder)).toMatchObject({ error: { issues: [{ key: 'data.openFolderFailed' }] }, ok: false });
+	});
+
+	test('ignores any payload the renderer sends', async () => {
+		expect(await invoke(CHANNELS.data.openFolder, '/etc')).toMatchObject({ ok: false });
 		expect(dataCalls).toEqual([]);
 	});
 });
