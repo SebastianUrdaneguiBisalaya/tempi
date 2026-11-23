@@ -1,6 +1,6 @@
 {
   "name": "@tempi/desktop",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Tempi desktop app (Electron shell around the static export of @tempi/web).",
   "homepage": "https://github.com/SebastianUrdaneguiBisalaya/tempi",
