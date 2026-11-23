@@ -412,3 +412,107 @@ describe('Google Meet', () => {
 		expect(google.meetRequests).toHaveLength(1);
 	});
 });
+
+describe('guests', () => {
+	const ME = { email: PRIMARY, organizer: true, responseStatus: 'accepted', self: true };
+	const ROOM = { email: 'room-1@resource.calendar.google.com', resource: true, responseStatus: 'accepted' };
+
+	const createWithGuests = async (guests: string[]) => {
+		await sync();
+		const created = await createEvent(deps, {
+			calendarId: await calendarIdOf(PRIMARY),
+			endAt: '2026-11-21T15:00:00Z',
+			guests,
+			startAt: '2026-11-21T14:00:00Z',
+			timeZone: 'America/Lima',
+			title: 'Planning',
+		});
+		if (!created.ok) throw new Error('create failed');
+		return created.value;
+	};
+
+	test('guests are invited on Google, which emails them about every change and the deletion', async () => {
+		const event = await createWithGuests(['Grace@Example.com', 'alan@example.com']);
+		await sync();
+		expect(google.live(PRIMARY)[0]?.attendees).toEqual([{ email: 'grace@example.com' }, { email: 'alan@example.com' }]);
+		expect(await sync()).toEqual({ pulled: 0, pushed: 0, skipped: 0 });
+
+		at('2026-11-17T10:00:00.000Z');
+		await updateEvent(deps, event.id, { title: 'Planning (moved)' });
+		await sync();
+		at('2026-11-18T10:00:00.000Z');
+		await deleteEvent(deps, event.id);
+		await sync();
+		expect(google.notified).toEqual(['all', 'all', 'all']);
+	});
+
+	test('guests changed on Google show up in Tempi, without the user, the organizer or rooms', async () => {
+		google.put(PRIMARY, {
+			...timed('p', 'Planning', '2026-11-20T09:00:00-05:00', '2026-11-20T10:00:00-05:00'),
+			attendees: [ME, ROOM, { email: 'grace@example.com' }],
+			organizer: { email: PRIMARY, self: true },
+		});
+		await sync();
+		expect(await localEvents(PRIMARY)).toMatchObject([{ guests: ['grace@example.com'], guestsReadOnly: false }]);
+		google.put(PRIMARY, {
+			...timed('p', 'Planning', '2026-11-20T09:00:00-05:00', '2026-11-20T10:00:00-05:00'),
+			attendees: [ME, ROOM, { email: 'alan@example.com' }],
+			organizer: { email: PRIMARY, self: true },
+		});
+		await sync();
+		expect(await localEvents(PRIMARY)).toMatchObject([{ guests: ['alan@example.com'] }]);
+	});
+
+	test('changing guests in Tempi keeps the user, rooms and the names of guests still invited', async () => {
+		google.put(PRIMARY, {
+			...timed('p', 'Planning', '2026-11-20T09:00:00-05:00', '2026-11-20T10:00:00-05:00'),
+			attendees: [ME, ROOM, { displayName: 'Grace Hopper', email: 'grace@example.com', optional: true }, { email: 'alan@example.com' }],
+			organizer: { email: PRIMARY, self: true },
+		});
+		await sync();
+		const [local] = await localEvents(PRIMARY);
+		if (local === undefined) throw new Error('not pulled');
+		at('2026-11-17T10:00:00.000Z');
+		await updateEvent(deps, local.id, { guests: ['grace@example.com', 'ada@lovelace.dev'] });
+		await sync();
+		expect(google.live(PRIMARY)[0]?.attendees).toEqual([
+			{ email: PRIMARY },
+			{ email: ROOM.email },
+			{ displayName: 'Grace Hopper', email: 'grace@example.com', optional: true },
+			{ email: 'ada@lovelace.dev' },
+		]);
+	});
+
+	test("edits that leave the guests as they are don't resend the list", async () => {
+		google.put(PRIMARY, {
+			...timed('p', 'Planning', '2026-11-20T09:00:00-05:00', '2026-11-20T10:00:00-05:00'),
+			attendees: [ME, { email: 'grace@example.com', responseStatus: 'accepted' }],
+			organizer: { email: PRIMARY, self: true },
+		});
+		await sync();
+		const [local] = await localEvents(PRIMARY);
+		if (local === undefined) throw new Error('not pulled');
+		at('2026-11-17T10:00:00.000Z');
+		await updateEvent(deps, local.id, { title: 'Planning (v2)' });
+		await sync();
+		expect(google.live(PRIMARY)[0]?.attendees).toEqual([ME, { email: 'grace@example.com', responseStatus: 'accepted' }]);
+	});
+
+	test("someone else's event keeps its guests read-only unless it lets guests change it", async () => {
+		const theirs = {
+			...timed('t', 'Their meeting', '2026-11-20T09:00:00-05:00', '2026-11-20T10:00:00-05:00'),
+			attendees: [{ email: 'boss@example.com', organizer: true }, { email: PRIMARY, self: true }, { email: 'grace@example.com' }],
+			organizer: { email: 'boss@example.com' },
+		};
+		google.put(PRIMARY, theirs);
+		await sync();
+		const [local] = await localEvents(PRIMARY);
+		if (local === undefined) throw new Error('not pulled');
+		expect(local).toMatchObject({ guests: ['grace@example.com'], guestsReadOnly: true });
+		expect(await updateEvent(deps, local.id, { guests: [] })).toMatchObject({ error: { code: 'conflict' }, ok: false });
+
+		google.put(PRIMARY, { ...theirs, guestsCanModify: true });
+		await sync();
+		expect((await deps.events.findById(local.id))?.guestsReadOnly).toBe(false);
+	});
+});

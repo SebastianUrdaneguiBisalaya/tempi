@@ -1,7 +1,7 @@
 import { type CalendarEvent, type EventPatch, eventFieldsSchema, eventPatchSchema } from '../domain/event';
 import { fail, ok, parseWith, type Result } from '../domain/result';
 import { type CoreDeps, nowIso } from './deps';
-import { allowsGoogleMeet, writableCalendar } from './writable-calendar';
+import { allowsGoogleFields, allowsGuestChange, writableCalendar } from './writable-calendar';
 
 export const updateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | 'events'>, id: string, patch: EventPatch): Promise<Result<CalendarEvent>> => {
 	const current = await deps.events.findById(id);
@@ -20,8 +20,10 @@ export const updateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | '
 
 	const target = fields.value.calendarId === current.calendarId ? source : await writableCalendar(deps, fields.value.calendarId);
 	if (!target.ok) return target;
-	const meet = allowsGoogleMeet(target.value, fields.value.googleMeet);
-	if (!meet.ok) return meet;
+	const google = allowsGoogleFields(target.value, fields.value);
+	if (!google.ok) return google;
+	const guests = allowsGuestChange(current, changes.value.guests);
+	if (!guests.ok) return guests;
 
 	const event: CalendarEvent = { ...fields.value, createdAt, deletedAt, id, updatedAt: nowIso(deps.clock) };
 	await deps.events.save(event);

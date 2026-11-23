@@ -20,6 +20,8 @@ export class FakeGoogle {
 	pendingMeets = false;
 	/** Every `createRequest` received, to check a Meet is asked for only once. */
 	readonly meetRequests: string[] = [];
+	/** Who each write asked Google to email, in order. */
+	readonly notified: (string | undefined)[] = [];
 	private version = 0;
 	private clock = Date.parse('2026-11-16T09:00:00.000Z');
 
@@ -117,8 +119,9 @@ export class FakeGoogle {
 			},
 		},
 		events: {
-			delete: (calendarId, eventId) => {
+			delete: (calendarId, eventId, options) => {
 				this.online();
+				this.notified.push(options?.sendUpdates);
 				const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
 				if (current === null || current.status === 'cancelled') return Promise.resolve();
 				const { etag: _etag, updated: _updated, version: _version, ...rest } = current;
@@ -132,8 +135,9 @@ export class FakeGoogle {
 				const { version: _version, ...event } = current;
 				return Promise.resolve(event);
 			},
-			insert: (calendarId, body: GoogleEventInput) => {
+			insert: (calendarId, body: GoogleEventInput, options) => {
 				this.online();
+				this.notified.push(options?.sendUpdates);
 				const id = body.id ?? `g${this.version + 1}`;
 				if (this.calendar(calendarId).has(id)) return Promise.reject(apiError('conflict', 409, `${id} exists`));
 				return Promise.resolve(this.store(calendarId, this.written(null, body, id)));
@@ -149,8 +153,9 @@ export class FakeGoogle {
 					.map(({ version: _version, ...event }) => event);
 				return Promise.resolve({ items, nextSyncToken: String(this.version) });
 			},
-			patch: (calendarId, eventId, body) => {
+			patch: (calendarId, eventId, body, options) => {
 				this.online();
+				this.notified.push(options?.sendUpdates);
 				const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
 				if (current === null) return Promise.reject(apiError('not_found', 404, `${eventId} not found`));
 				const { etag: _etag, updated: _updated, version: _version, ...rest } = current;

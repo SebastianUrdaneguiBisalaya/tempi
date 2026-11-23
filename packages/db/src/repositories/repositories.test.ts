@@ -40,6 +40,8 @@ const makeEvent = (overrides: Partial<CalendarEvent> = {}): CalendarEvent => ({
 	endAt: '2026-11-20T10:00:00.000Z',
 	exDates: [],
 	googleMeet: false,
+	guests: [],
+	guestsReadOnly: false,
 	icalUid: null,
 	id: 'evt-1',
 	location: null,
@@ -84,6 +86,8 @@ describe('SqliteEventRepository', () => {
 			allDay: true,
 			description: 'Daily',
 			googleMeet: true,
+			guests: ['grace@example.com', 'alan@example.com'],
+			guestsReadOnly: true,
 			location: 'Room 1',
 			reminderMinutes: 10,
 			rrule: 'FREQ=DAILY',
@@ -291,7 +295,7 @@ describe('SqliteGoogleSyncRepository', () => {
 		syncToken: 'tok',
 		timeZone: 'America/Lima',
 	} as const;
-	const eventLink = (eventId: string, googleEventId: string) => ({ etag: '"1"', eventId, googleCalendarId: 'ada@example.com', googleEventId, meet: false, syncedUpdatedAt: T0 });
+	const eventLink = (eventId: string, googleEventId: string) => ({ attendees: [], etag: '"1"', eventId, googleCalendarId: 'ada@example.com', googleEventId, meet: false, syncedUpdatedAt: T0 });
 
 	beforeEach(() => repos.calendars.save(makeCalendar({ readOnly: true, source: 'google' })));
 
@@ -324,6 +328,16 @@ describe('SqliteGoogleSyncRepository', () => {
 		await repos.events.save(makeEvent({ calendarId: 'local', id: 'local-only' }));
 		for (const id of ['synced', 'edited', 'deleted']) await repos.googleSync.saveEventLink(eventLink(id, `g-${id}`));
 		expect((await repos.googleSync.listPendingEvents(['cal-1'])).map(event => event.id)).toEqual(['deleted', 'edited', 'series', 'override']);
+	});
+
+	test("keeps the Google event's attendees", async () => {
+		await repos.events.save(makeEvent());
+		const attendees = [
+			{ email: 'ada@example.com', organizer: true, self: true },
+			{ displayName: 'Grace', email: 'grace@example.com', optional: true },
+		];
+		await repos.googleSync.saveEventLink({ ...eventLink('evt-1', 'g1'), attendees });
+		expect(await repos.googleSync.findEventLink('evt-1')).toMatchObject({ attendees });
 	});
 
 	test('keeps whether the Google event has a Meet', async () => {

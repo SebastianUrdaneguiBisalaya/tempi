@@ -40,6 +40,7 @@ export function EventPanel() {
 		description: '',
 		endAt: toFormTime(draft.endAt, timeZone, draft.allDay, true),
 		googleMeet: false,
+		guests: [],
 		location: '',
 		reminderMinutes: null,
 		startAt: toFormTime(draft.startAt, timeZone, draft.allDay),

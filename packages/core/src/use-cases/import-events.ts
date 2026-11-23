@@ -47,18 +47,29 @@ export const importEvents = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | 
 			...fields.data,
 			...stamps,
 			exDates,
+			guestsReadOnly: false,
 			icalUid: existing === null ? imported.uid : existing.icalUid,
 			id: existing?.id ?? deps.ids.next(),
 			originalStartAt: null,
 			recurringEventId: null,
-			...(existing === null ? {} : { createdAt: existing.createdAt }),
+			// iCalendar files carry no Meet nor guests here: importing again keeps the ones the event has.
+			...(existing === null ? {} : { createdAt: existing.createdAt, googleMeet: existing.googleMeet, guests: existing.guests, guestsReadOnly: existing.guestsReadOnly }),
 		};
 		if (existing !== null) {
 			for (const edited of await deps.events.listBySeries(existing.id)) await deps.events.save({ ...edited, deletedAt: now, updatedAt: now });
 		}
 		await deps.events.save(series);
 		for (const override of overrides) {
-			await deps.events.save({ ...override.fields, ...stamps, exDates: [], icalUid: null, id: deps.ids.next(), originalStartAt: override.originalStartAt, recurringEventId: series.id });
+			await deps.events.save({
+				...override.fields,
+				...stamps,
+				exDates: [],
+				guestsReadOnly: false,
+				icalUid: null,
+				id: deps.ids.next(),
+				originalStartAt: override.originalStartAt,
+				recurringEventId: series.id,
+			});
 		}
 		if (existing === null) summary.created += 1;
 		else summary.updated += 1;

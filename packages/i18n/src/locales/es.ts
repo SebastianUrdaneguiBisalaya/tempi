@@ -235,6 +235,13 @@ export const es = {
 				googleMeet: 'Google Meet',
 				googleMeetHint: 'Crea un enlace de Google Meet cuando el evento se sincroniza.',
 				googleMeetUnavailable: 'Google Meet necesita un calendario de Google.',
+				guestAdd: 'Añadir invitado',
+				guestRemove: 'Quitar a {{email}}',
+				guests: 'Invitados',
+				guestsHint: 'Google les envía la invitación y cada cambio por correo.',
+				guestsPlaceholder: 'nombre@ejemplo.com',
+				guestsReadOnly: 'Solo quien organiza puede cambiar los invitados.',
+				guestsUnavailable: 'Los invitados necesitan un calendario de Google.',
 				location: 'Ubicación',
 				readOnly: 'Este calendario es de solo lectura. Cambia el evento en Google Calendar.',
 				reminder: 'Recordatorio',
@@ -974,8 +981,11 @@ export const es = {
 		event: {
 			endBeforeStart: 'El fin debe ser posterior al inicio.',
 			googleMeetCalendar: 'Google Meet solo está disponible para eventos de un calendario de Google.',
+			guestsCalendar: 'Solo se puede invitar a eventos de un calendario de Google.',
+			guestsReadOnly: 'Solo quien organiza este evento puede cambiar sus invitados.',
 			notFound: 'Este evento ya no existe.',
 			rrule: 'La regla de repetición no es válida.',
+			tooManyGuests: 'Un evento puede tener como máximo {{maximum}} invitados.',
 		},
 		google: {
 			alreadyConnected: 'Ya hay una cuenta de Google conectada. Desconéctala primero.',
@@ -1018,6 +1028,7 @@ export const es = {
 		},
 		validation: {
 			custom: 'Este valor no es válido.',
+			email: 'Introduce un correo electrónico válido.',
 			instant: 'Introduce una fecha y hora válidas.',
 			integer: 'Introduce un número entero.',
 			invalid_element: 'Uno de los elementos no es válido.',

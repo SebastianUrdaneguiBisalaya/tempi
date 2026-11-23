@@ -233,6 +233,13 @@ export const en = {
 				googleMeet: 'Google Meet',
 				googleMeetHint: 'Creates a Google Meet link when the event syncs.',
 				googleMeetUnavailable: 'Google Meet needs a Google calendar.',
+				guestAdd: 'Add guest',
+				guestRemove: 'Remove {{email}}',
+				guests: 'Guests',
+				guestsHint: 'Google emails them the invitation and every change.',
+				guestsPlaceholder: 'name@example.com',
+				guestsReadOnly: 'Only the organizer can change the guests.',
+				guestsUnavailable: 'Guests need a Google calendar.',
 				location: 'Location',
 				readOnly: 'This calendar is read-only. Change the event in Google Calendar.',
 				reminder: 'Reminder',
@@ -973,8 +980,11 @@ export const en = {
 		event: {
 			endBeforeStart: 'The end must be after the start.',
 			googleMeetCalendar: 'Google Meet is only available for events in a Google calendar.',
+			guestsCalendar: 'Guests can only be invited to events in a Google calendar.',
+			guestsReadOnly: 'Only the organizer can change the guests of this event.',
 			notFound: 'This event no longer exists.',
 			rrule: 'The repeat rule isn’t valid.',
+			tooManyGuests: 'An event can have at most {{maximum}} guests.',
 		},
 		google: {
 			alreadyConnected: 'A Google account is already connected. Disconnect it first.',
@@ -1017,6 +1027,7 @@ export const en = {
 		},
 		validation: {
 			custom: 'This value isn’t valid.',
+			email: 'Enter a valid email address.',
 			instant: 'Enter a valid date and time.',
 			integer: 'Enter a whole number.',
 			invalid_element: 'One of the items isn’t valid.',

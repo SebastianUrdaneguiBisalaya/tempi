@@ -1,7 +1,7 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite';
 import { type CalendarEvent, type GoogleCalendarLink, type GoogleEventLink, type GoogleSyncRepository, googleCalendarLinkSchema, googleEventLinkSchema } from '@tempi/core';
 import { z } from 'zod';
-import { booleanColumn, type DomainFields, defer, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
+import { booleanColumn, type DomainFields, defer, jsonColumn, parseRow, toBooleanColumn, toInstantColumn } from '../columns';
 import { EVENT_COLUMNS, eventRowSchema } from './sqlite-event-repository';
 
 const calendarLinkRowSchema = z
@@ -32,9 +32,10 @@ const calendarLinkRowSchema = z
 	.pipe(googleCalendarLinkSchema);
 
 const eventLinkRowSchema = z
-	.object({ etag: z.string(), event_id: z.string(), google_calendar_id: z.string(), google_event_id: z.string(), meet: booleanColumn, synced_updated_at: z.string() })
+	.object({ attendees: jsonColumn, etag: z.string(), event_id: z.string(), google_calendar_id: z.string(), google_event_id: z.string(), meet: booleanColumn, synced_updated_at: z.string() })
 	.transform(
 		(row): DomainFields<typeof googleEventLinkSchema> => ({
+			attendees: row.attendees,
 			etag: row.etag,
 			eventId: row.event_id,
 			googleCalendarId: row.google_calendar_id,
@@ -46,7 +47,7 @@ const eventLinkRowSchema = z
 	.pipe(googleEventLinkSchema);
 
 const CALENDAR_COLUMNS = 'google_id, calendar_id, name, color, access_role, is_primary, time_zone, selected, sync_token';
-const EVENT_LINK_COLUMNS = 'event_id, google_calendar_id, google_event_id, etag, meet, synced_updated_at';
+const EVENT_LINK_COLUMNS = 'event_id, google_calendar_id, google_event_id, etag, meet, attendees, synced_updated_at';
 const PENDING_COLUMNS = EVENT_COLUMNS.split(', ')
 	.map(column => `e.${column}`)
 	.join(', ');
@@ -81,10 +82,10 @@ export class SqliteGoogleSyncRepository implements GoogleSyncRepository {
 		this.listEventLinksStatement = db.prepare(`SELECT ${EVENT_LINK_COLUMNS} FROM google_events WHERE google_calendar_id = :google_calendar_id`);
 		this.saveEventLinkStatement = db.prepare(
 			`INSERT INTO google_events (${EVENT_LINK_COLUMNS})
-			VALUES (:event_id, :google_calendar_id, :google_event_id, :etag, :meet, :synced_updated_at)
+			VALUES (:event_id, :google_calendar_id, :google_event_id, :etag, :meet, :attendees, :synced_updated_at)
 			ON CONFLICT (event_id) DO UPDATE SET
 				google_calendar_id = excluded.google_calendar_id, google_event_id = excluded.google_event_id,
-				etag = excluded.etag, meet = excluded.meet, synced_updated_at = excluded.synced_updated_at`
+				etag = excluded.etag, meet = excluded.meet, attendees = excluded.attendees, synced_updated_at = excluded.synced_updated_at`
 		);
 		this.deleteEventLinkStatement = db.prepare('DELETE FROM google_events WHERE event_id = :event_id');
 		// Calendar ids arrive as one JSON array, so the statement stays prepared whatever their number.
@@ -152,6 +153,7 @@ export class SqliteGoogleSyncRepository implements GoogleSyncRepository {
 	saveEventLink(link: GoogleEventLink): Promise<void> {
 		return defer(() => {
 			this.saveEventLinkStatement.run({
+				attendees: JSON.stringify(link.attendees),
 				etag: link.etag,
 				event_id: link.eventId,
 				google_calendar_id: link.googleCalendarId,

@@ -47,6 +47,8 @@ export {
 	eventInputFieldsSchema,
 	eventOccurrenceSchema,
 	eventPatchSchema,
+	guestEmailSchema,
+	MAX_GUESTS,
 	MAX_REMINDER_MINUTES,
 	NO_SERIES,
 	newEventInputSchema,
@@ -66,7 +68,7 @@ export {
 } from './domain/free-slots';
 export type { GoogleAccount, GoogleConnectResult } from './domain/google-account';
 export { googleAccountSchema, googleConnectResultSchema } from './domain/google-account';
-export type { GoogleAccessRole, GoogleCalendarChoice, GoogleCalendarLink, GoogleEventLink, GoogleSyncState, GoogleSyncStatus, SelectGoogleCalendarsInput } from './domain/google-sync';
+export type { GoogleAccessRole, GoogleAttendee, GoogleCalendarChoice, GoogleCalendarLink, GoogleEventLink, GoogleSyncState, GoogleSyncStatus, SelectGoogleCalendarsInput } from './domain/google-sync';
 export {
 	GOOGLE_ACCESS_ROLES,
 	GOOGLE_SYNC_STATES,

@@ -10,6 +10,12 @@ export type EventStatus = (typeof EVENT_STATUSES)[number];
 /** The earliest a reminder may fire: a week before the start. Bounds how far ahead reminders must be looked for. */
 export const MAX_REMINDER_MINUTES = 7 * 24 * 60;
 
+/** A guest's email, compared and stored in lower case. */
+export const guestEmailSchema = z.string().trim().toLowerCase().pipe(z.email('validation.email'));
+
+/** At most this many guests per event: Google refuses larger lists. */
+export const MAX_GUESTS = 200;
+
 const eventShape = {
 	allDay: z.boolean(),
 	calendarId: idSchema,
@@ -17,6 +23,11 @@ const eventShape = {
 	endAt: utcInstantSchema,
 	/** Whether the event should have a Google Meet, which Google creates on the next push. Only in Google calendars. */
 	googleMeet: z.boolean(),
+	/** Emails Google invites to the event (and notifies of every change). Only in Google calendars. */
+	guests: z
+		.array(guestEmailSchema)
+		.max(MAX_GUESTS, 'event.tooManyGuests')
+		.transform(emails => [...new Set(emails)]),
 	location: optionalTextSchema,
 	reminderMinutes: z
 		.number()
@@ -43,6 +54,8 @@ const eventShape = {
  */
 const seriesShape = {
 	exDates: z.array(utcInstantSchema),
+	/** Set by sync: the event is someone else's on Google and its guests may only change there. */
+	guestsReadOnly: z.boolean(),
 	/** The iCalendar UID of an imported event; null for events made in Tempi, whose UID is their id. */
 	icalUid: z.string().min(1).nullable(),
 	/** Start of the series occurrence this event replaces. */
@@ -55,9 +68,15 @@ const endAfterStart = { message: 'event.endBeforeStart', path: ['endAt'] };
 /** Every event field, fully specified. Used to re-validate after merging a patch. */
 export const eventFieldsSchema = z.object({ ...eventShape, ...seriesShape }).refine(event => event.endAt > event.startAt, endAfterStart);
 
-/** Input for a new event: optional fields default to null, `allDay` and `googleMeet` to false and `status` to confirmed. */
+/** Input for a new event: optional fields default to null, `allDay` and `googleMeet` to false, `guests` to none and `status` to confirmed. */
 export const newEventInputSchema = z
-	.object({ ...eventShape, allDay: eventShape.allDay.default(false), googleMeet: eventShape.googleMeet.default(false), status: eventShape.status.default('confirmed') })
+	.object({
+		...eventShape,
+		allDay: eventShape.allDay.default(false),
+		googleMeet: eventShape.googleMeet.default(false),
+		guests: eventShape.guests.default([]),
+		status: eventShape.status.default('confirmed'),
+	})
 	.refine(event => event.endAt > event.startAt, endAfterStart);
 
 /** Every input field with its own rule and no cross-field rule, to pick fields from (`eventPatchSchema`, quick add). */
@@ -77,7 +96,7 @@ export const calendarEventSchema = eventFieldsSchema.and(storedEntitySchema);
 export type CalendarEvent = z.output<typeof calendarEventSchema>;
 
 /** Fields of a new stored event that isn't part of a series nor imported. */
-export const NO_SERIES = { exDates: [], icalUid: null, originalStartAt: null, recurringEventId: null } as const satisfies Pick<CalendarEvent, keyof typeof seriesShape>;
+export const NO_SERIES = { exDates: [], guestsReadOnly: false, icalUid: null, originalStartAt: null, recurringEventId: null } as const satisfies Pick<CalendarEvent, keyof typeof seriesShape>;
 
 /**
  * An event as views list it: a single event, an edited occurrence (its own event), or one occurrence of a series,

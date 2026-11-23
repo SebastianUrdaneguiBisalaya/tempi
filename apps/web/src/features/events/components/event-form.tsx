@@ -18,6 +18,7 @@ import { convertFormTimes, type EventFormOutput, type EventFormValues, eventForm
 import { useCreateEvent, useUpdateEvent, useUpdateOccurrence } from '../hooks/use-event-mutations';
 import { DateTimeField } from './date-time-field';
 import { useEventPanel } from './event-panel-provider';
+import { GuestsField } from './guests-field';
 import { JoinMeetingButton } from './join-meeting-button';
 import { RecurrenceFields } from './recurrence-fields';
 import { TimeZoneCombobox } from './time-zone-combobox';
@@ -81,7 +82,9 @@ export function EventForm({ calendars, changes, defaultValues, event }: EventFor
 		// Only what the user changed, so an occurrence's edit doesn't copy every field onto the rest of its series.
 		const patch: EventPatch = {
 			...Object.fromEntries(
-				(['calendarId', 'description', 'googleMeet', 'location', 'reminderMinutes', 'status', 'title', 'videoUrl'] as const).filter(key => dirtyFields[key]).map(key => [key, values[key]])
+				(['calendarId', 'description', 'googleMeet', 'guests', 'location', 'reminderMinutes', 'status', 'title', 'videoUrl'] as const)
+					.filter(key => dirtyFields[key])
+					.map(key => [key, values[key]])
 			),
 			...(timesChanged && { allDay: values.allDay, endAt: values.endAt, startAt: values.startAt, timeZone: values.timeZone }),
 			...(repeatChanged && { rrule: values.rrule }),
@@ -106,8 +109,8 @@ export function EventForm({ calendars, changes, defaultValues, event }: EventFor
 		setValue('endAt', times.endAt, { shouldDirty: true });
 	};
 
-	// Google creates the Meet, so only events in a Google calendar Tempi may write to can have one.
-	const meetAvailable = calendars.some(calendar => calendar.id === calendarId && calendar.source === 'google' && !calendar.readOnly);
+	// Google creates the Meet and invites the guests, so only events in a Google calendar Tempi may write to have them.
+	const googleAvailable = calendars.some(calendar => calendar.id === calendarId && calendar.source === 'google' && !calendar.readOnly);
 	const changeCalendar = (value: string) => {
 		setValue('calendarId', value, { shouldDirty: true });
 		if (googleMeet && !calendars.some(calendar => calendar.id === value && calendar.source === 'google')) toggleMeet(false);
@@ -260,14 +263,14 @@ export function EventForm({ calendars, changes, defaultValues, event }: EventFor
 						control={control}
 						name='googleMeet'
 						render={({ field, fieldState }) => (
-							<Field data-disabled={!meetAvailable || undefined} data-invalid={fieldState.invalid || undefined} orientation='horizontal'>
-								<Switch aria-describedby={`${id}-meet-hint`} checked={field.value} disabled={!meetAvailable} id={`${id}-meet`} onCheckedChange={toggleMeet} ref={field.ref} />
+							<Field data-disabled={!googleAvailable || undefined} data-invalid={fieldState.invalid || undefined} orientation='horizontal'>
+								<Switch aria-describedby={`${id}-meet-hint`} checked={field.value} disabled={!googleAvailable} id={`${id}-meet`} onCheckedChange={toggleMeet} ref={field.ref} />
 								<FieldContent>
 									<FieldLabel htmlFor={`${id}-meet`}>
 										<GoogleMeet aria-hidden className='size-4 shrink-0' />
 										{t('events.form.googleMeet')}
 									</FieldLabel>
-									<FieldDescription id={`${id}-meet-hint`}>{t(meetAvailable ? 'events.form.googleMeetHint' : 'events.form.googleMeetUnavailable')}</FieldDescription>
+									<FieldDescription id={`${id}-meet-hint`}>{t(googleAvailable ? 'events.form.googleMeetHint' : 'events.form.googleMeetUnavailable')}</FieldDescription>
 									<FormFieldError error={fieldState.error} />
 								</FieldContent>
 								{/* The saved event's Meet only: a new one gets its link when it syncs. */}
@@ -292,6 +295,21 @@ export function EventForm({ calendars, changes, defaultValues, event }: EventFor
 							)}
 						/>
 					)}
+					<Controller
+						control={control}
+						name='guests'
+						render={({ field, fieldState }) => (
+							<GuestsField
+								available={googleAvailable}
+								error={fieldState.error}
+								id={`${id}-guests`}
+								onChange={field.onChange}
+								readOnly={event?.guestsReadOnly ?? false}
+								ref={field.ref}
+								value={field.value}
+							/>
+						)}
+					/>
 					<Controller
 						control={control}
 						name='location'
