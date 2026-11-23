@@ -163,9 +163,15 @@
       },
       "googleSync": {
         "title": "Google Calendar sync",
-        "body": "Optional two-way sync, including read-only calendars such as holidays.",
-        "badge": "Early access",
-        "note": "For now only invited Google accounts can connect, while Google reviews Tempi."
+        "body": "Optional two-way sync, including read-only calendars such as holidays."
+      },
+      "googleMeet": {
+        "title": "Google Meet in one switch",
+        "body": "Turn on Google Meet in an event of a Google calendar and Google creates the call; Join opens it once the event syncs."
+      },
+      "guests": {
+        "title": "Invite guests",
+        "body": "Add your guests' emails to an event of a Google calendar and Google sends them the invitation and every change."
       },
       "recurrence": {
         "title": "Recurrence and reminders",
@@ -205,6 +211,20 @@
       }
     },
     "replicas": {
+      "googleMeet": {
+        "label": "Google Meet",
+        "hint": "Creates a Google Meet link when the event syncs.",
+        "join": "Join",
+        "joinLabel": "Join on Google Meet"
+      },
+      "guests": {
+        "label": "Guests",
+        "placeholder": "name@example.com",
+        "add": "Add guest",
+        "remove": "Remove {email}",
+        "hint": "Google emails them the invitation and every change.",
+        "emails": ["ana@example.com", "luis@example.com", "maya@example.com"]
+      },
       "recurrence": {
         "repeat": "Repeat",
         "custom": "Custom…",
@@ -575,11 +595,7 @@
       },
       "account": {
         "question": "Do I need a Google account?",
-        "answer": "No. Tempi works fully without any account. Google Calendar sync is optional, and for now it's limited to invited accounts (see below)."
-      },
-      "googleAccess": {
-        "question": "Why can't I connect Google Calendar yet?",
-        "answer": "Google is still reviewing Tempi, and until it approves the app only invited Google accounts can connect; any other account sees an “access denied” error from Google. Everything else works without Google, and you can bring your events over by importing an iCalendar (.ics) file into any calendar. Sync will open to everyone once Google approves Tempi."
+        "answer": "No. Tempi works fully without any account. Google Calendar sync is optional."
       },
       "offline": {
         "question": "Does it work offline?",
@@ -685,13 +701,13 @@
           "list": [
             "openid and email: to know which Google account is connected and show its email address in Settings. Tempi stores the email address and Google's account identifier on your computer.",
             "calendar.calendarlist.readonly (read-only): to list the calendars of your account, with their names, colors and time zones, so you can choose which ones to sync.",
-            "calendar.events: to read the events of the calendars you choose and show them in Tempi, and to create, update and delete events in Google Calendar when you do so in Tempi, so both stay in sync."
+            "calendar.events: to read the events of the calendars you choose and show them in Tempi, and to create, update and delete events in Google Calendar when you do so in Tempi, so both stay in sync. Through this same permission, Tempi asks Google to create a Google Meet link for the events where you turn on Google Meet, and sends Google the email addresses of the guests you invite, so Google can email them the invitation and every change to the event."
           ]
         },
         {
           "title": "How Google data is handled",
           "body": [
-            "The Google data Tempi processes is your calendar list (names, colors, time zones and access level) and the events of the calendars you choose (title, description, location, start and end times, time zone, recurrence, reminders, status and video call links).",
+            "The Google data Tempi processes is your calendar list (names, colors, time zones and access level) and the events of the calendars you choose (title, description, location, start and end times, time zone, recurrence, reminders, status, video call links, Google Meet links and guests' email addresses).",
             "This data travels directly between your computer and Google's servers over an encrypted (HTTPS) connection. It never passes through a server of ours, because we don't have one. Synced calendars and events are stored only in the database on your computer.",
             "Google's access and refresh tokens are encrypted with your operating system's secure storage (Keychain on macOS, DPAPI on Windows, the system keyring on Linux). On Linux without a keyring, Tempi doesn't store the tokens at all. Tokens are never sent to us or shown to the app's interface.",
             "When the sign-in finishes, your browser is sent to a page of this website that only says whether it worked. That page receives no Google data.",

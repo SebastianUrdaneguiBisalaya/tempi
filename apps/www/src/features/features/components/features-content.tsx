@@ -10,6 +10,8 @@ import { SECTION_IDS } from '@/lib/site';
 import { type AppearanceCopy, AppearanceReplica } from './appearance-replica';
 import { type CalendarsCopy, CalendarsReplica } from './calendars-replica';
 import { type EventPreviewCopy, EventPreviewReplica } from './event-preview-replica';
+import { type GoogleMeetCopy, GoogleMeetReplica } from './google-meet-replica';
+import { type GuestsCopy, GuestsReplica } from './guests-replica';
 import { type ImportExportCopy, ImportExportReplica } from './import-export-replica';
 import { type QuickAddCopy, QuickAddReplica } from './quick-add-replica';
 import { type RecurrenceCopy, RecurrenceReplica } from './recurrence-replica';
@@ -19,11 +21,24 @@ import { TrayReplica } from './tray-replica';
 import { type UpdatesCopy, UpdatesReplica } from './updates-replica';
 import { ViewsReplica } from './views-replica';
 
-// `badge` and `note` flag a feature that isn't open to everyone yet (Google sync while Google reviews the app).
-type Feature = { title: string; body: string; badge?: string; note?: string };
+type Feature = { title: string; body: string };
 
 // Only what Tempi ships today (see the README feature list and the command menu's quick add).
-type FeatureKey = 'views' | 'calendars' | 'googleSync' | 'recurrence' | 'timeZones' | 'meetings' | 'quickAdd' | 'importExport' | 'tray' | 'keyboard' | 'languages' | 'updates';
+type FeatureKey =
+	| 'views'
+	| 'calendars'
+	| 'googleSync'
+	| 'googleMeet'
+	| 'guests'
+	| 'recurrence'
+	| 'timeZones'
+	| 'meetings'
+	| 'quickAdd'
+	| 'importExport'
+	| 'tray'
+	| 'keyboard'
+	| 'languages'
+	| 'updates';
 
 export type FeaturesCopy = {
 	eyebrow: string;
@@ -32,6 +47,8 @@ export type FeaturesCopy = {
 	items: Record<FeatureKey, Feature>;
 	replicas: {
 		calendars: CalendarsCopy;
+		googleMeet: GoogleMeetCopy;
+		guests: GuestsCopy;
 		recurrence: RecurrenceCopy;
 		meetings: EventPreviewCopy;
 		quickAdd: QuickAddCopy;
@@ -60,8 +77,7 @@ type FeaturesContentProps = {
 export function FeaturesContent({ locale, copy, shared }: FeaturesContentProps) {
 	const { items, replicas } = copy;
 	const { mockup } = shared;
-	// Each cell's badge and note show only where the feature has them.
-	const cell = (key: FeatureKey) => ({ title: items[key].title, body: items[key].body, badge: items[key].badge, note: items[key].note });
+	const cell = (key: FeatureKey) => ({ title: items[key].title, body: items[key].body });
 
 	return (
 		<ShowcaseSection id={SECTION_IDS.features} index={2} eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.subtitle}>
@@ -74,6 +90,12 @@ export function FeaturesContent({ locale, copy, shared }: FeaturesContentProps) 
 				</ShowcaseCell>
 				<ShowcaseCell {...cell('googleSync')}>
 					<GoogleSyncReplica card={shared.google.card} copy={shared.google.sync} />
+				</ShowcaseCell>
+				<ShowcaseCell align='center' {...cell('googleMeet')}>
+					<GoogleMeetReplica copy={replicas.googleMeet} />
+				</ShowcaseCell>
+				<ShowcaseCell align='center' {...cell('guests')}>
+					<GuestsReplica copy={replicas.guests} />
 				</ShowcaseCell>
 				<ShowcaseCell align='center' {...cell('recurrence')}>
 					<RecurrenceReplica locale={locale} copy={replicas.recurrence} title={mockup.events.standup} />

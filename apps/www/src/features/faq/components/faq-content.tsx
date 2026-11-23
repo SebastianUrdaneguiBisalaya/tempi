@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { gsap, useMotion } from '@/lib/gsap';
 import { GITHUB_URL, SECTION_IDS } from '@/lib/site';
 
-const QUESTIONS = ['free', 'data', 'account', 'googleAccess', 'offline', 'ai', 'macos', 'windows', 'updates', 'languages'] as const;
+const QUESTIONS = ['free', 'data', 'account', 'offline', 'ai', 'macos', 'windows', 'updates', 'languages'] as const;
 
 type Answer = {
 	question: string;
