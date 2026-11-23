@@ -47,6 +47,7 @@ const seed = async (db: DatabaseSync, title: string) => {
 		description: null,
 		endAt: '2026-11-20T15:00:00.000Z',
 		exDates: [],
+		googleMeet: false,
 		icalUid: null,
 		id: `event-${title}`,
 		location: null,

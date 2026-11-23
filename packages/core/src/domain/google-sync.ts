@@ -40,6 +40,8 @@ export const googleEventLinkSchema = z.object({
 	eventId: idSchema,
 	googleCalendarId: z.string().min(1),
 	googleEventId: z.string().min(1),
+	/** Whether that version has a Google Meet (or one being created), so a push only adds or removes it when it changed. */
+	meet: z.boolean(),
 	syncedUpdatedAt: utcInstantSchema,
 });
 

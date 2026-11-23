@@ -62,3 +62,22 @@ describe('duplicateEvent', () => {
 		expect(await duplicateEvent(deps, 'missing')).toEqual(failure('not_found', 'id'));
 	});
 });
+
+describe('duplicateEvent with a Google Meet', () => {
+	test('the copy asks for a Meet of its own instead of sharing the link', async () => {
+		const deps = makeDeps();
+		const calendar = await createCalendar(deps, { color: '#0b8043', name: 'Ada', source: 'google' });
+		if (!calendar.ok) throw new Error('calendar setup failed');
+		const event = await createEvent(deps, {
+			calendarId: calendar.value.id,
+			endAt: '2026-11-20T15:00:00Z',
+			googleMeet: true,
+			startAt: '2026-11-20T14:00:00Z',
+			timeZone: 'UTC',
+			title: 'Kickoff',
+			videoUrl: 'https://meet.google.com/abc-defg-hij',
+		});
+		if (!event.ok) throw new Error('event setup failed');
+		expect(await duplicateEvent(deps, event.value.id)).toMatchObject({ ok: true, value: { googleMeet: true, videoUrl: null } });
+	});
+});

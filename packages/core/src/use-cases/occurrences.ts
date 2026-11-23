@@ -4,7 +4,7 @@ import { isOccurrenceStart, splitRrule } from '../domain/recurrence';
 import { fail, ok, parseWith, type Result } from '../domain/result';
 import { instantToUtc } from '../domain/values';
 import { type CoreDeps, nowIso } from './deps';
-import { writableCalendar } from './writable-calendar';
+import { allowsGoogleMeet, writableCalendar } from './writable-calendar';
 
 type Series = CalendarEvent & { rrule: string };
 type Changes = z.output<typeof eventPatchSchema>;
@@ -47,17 +47,16 @@ const loadSeries = async (deps: Pick<CoreDeps, 'events'>, target: { originalStar
 	return ok({ overrides: await deps.events.listBySeries(series.id), series });
 };
 
-/** The series' calendar and, when the edit moves it, the target must both allow changes. */
-const calendarsWritable = async (deps: Pick<CoreDeps, 'calendars'>, calendarId: string | undefined, current: string): Promise<Result<null>> => {
+/** The series' calendar and, when the edit moves it, the target must both allow changes, and the target the Meet. */
+const calendarsWritable = async (deps: Pick<CoreDeps, 'calendars'>, calendarId: string | undefined, current: string, googleMeet: boolean): Promise<Result<null>> => {
 	const source = await writableCalendar(deps, current);
 	if (!source.ok) return source;
-	if (calendarId === undefined || calendarId === current) return ok(null);
-	const target = await writableCalendar(deps, calendarId);
-	return target.ok ? ok(null) : target;
+	const target = calendarId === undefined || calendarId === current ? source : await writableCalendar(deps, calendarId);
+	return target.ok ? allowsGoogleMeet(target.value, googleMeet) : target;
 };
 
 /** Fields that don't move an occurrence in time; changing only these keeps the edited occurrences. */
-const DETAIL_FIELDS = ['calendarId', 'description', 'location', 'reminderMinutes', 'status', 'title', 'videoUrl'] as const;
+const DETAIL_FIELDS = ['calendarId', 'description', 'googleMeet', 'location', 'reminderMinutes', 'status', 'title', 'videoUrl'] as const;
 
 /**
  * Applies an edit made on one occurrence (shown at `shown`) to a whole series. Times move by the same wall-clock
@@ -116,11 +115,12 @@ export const updateOccurrence = async (deps: Pick<CoreDeps, 'calendars' | 'clock
 
 	const { overrides, series } = loaded.value;
 	const { originalStartAt, scope } = parsedTarget.value;
-	const calendar = await calendarsWritable(deps, changes.value.calendarId, series.calendarId);
+	const edited = overrides.find(override => override.originalStartAt === originalStartAt);
+	const googleMeet = changes.value.googleMeet ?? (scope === 'this' && edited !== undefined ? edited : series).googleMeet;
+	const calendar = await calendarsWritable(deps, changes.value.calendarId, series.calendarId, googleMeet);
 	if (!calendar.ok) return calendar;
 
 	const now = nowIso(deps.clock);
-	const edited = overrides.find(override => override.originalStartAt === originalStartAt);
 	const shown = edited ?? seriesOccurrence(series, originalStartAt);
 
 	if (scope === 'this') {
@@ -154,6 +154,8 @@ export const updateOccurrence = async (deps: Pick<CoreDeps, 'calendars' | 'clock
 		id: tailId,
 		rrule: tail,
 		startAt: originalStartAt,
+		// A new series is a new Google event, which gets its own Meet.
+		videoUrl: series.googleMeet ? null : series.videoUrl,
 	};
 	const tailOverrides = overrides.filter(override => override.originalStartAt !== null && override.originalStartAt >= originalStartAt).map(override => ({ ...override, recurringEventId: tailId }));
 	const applied = applyToSeries(tailSeries, tailOverrides, shown, originalStartAt, changes.value, now);

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { NO_SERIES } from '@tempi/core';
-import { fromGoogle, googleEventIdFor, instanceId, toGoogle } from './mapping';
+import { fromGoogle, googleEventIdFor, hasMeet, instanceId, toGoogle } from './mapping';
 
 const base = { end: { dateTime: '2026-11-20T10:00:00-05:00' }, etag: '"1"', id: 'a', start: { dateTime: '2026-11-20T09:00:00-05:00' }, status: 'confirmed' };
 
@@ -18,6 +18,18 @@ describe('fromGoogle', () => {
 		expect(fromGoogle({ ...base, reminders: { useDefault: true } }, 'UTC')).toMatchObject({ reminderMinutes: null, title: '—' });
 		expect(fromGoogle({ ...base, hangoutLink: 'https://meet.google.com/abc', summary: 'Call' }, 'UTC')).toMatchObject({ title: 'Call', videoUrl: 'https://meet.google.com/abc' });
 		expect(fromGoogle({ ...base, reminders: { overrides: [{ method: 'popup', minutes: 40_320 }], useDefault: false } }, 'UTC')?.reminderMinutes).toBeNull();
+	});
+
+	test("a Google Meet turns the switch on and is the video link, over Tempi's own", () => {
+		const meet = { conferenceData: { conferenceSolution: { key: { type: 'hangoutsMeet' } }, entryPoints: [{ entryPointType: 'video', uri: 'https://meet.google.com/abc' }] } };
+		const own = { extendedProperties: { private: { tempiVideoUrl: 'https://old.example/x' } } };
+		expect(fromGoogle({ ...base, ...meet, ...own }, 'UTC')).toMatchObject({ googleMeet: true, videoUrl: 'https://meet.google.com/abc' });
+		expect(fromGoogle({ ...base, ...own }, 'UTC')).toMatchObject({ googleMeet: false, videoUrl: 'https://old.example/x' });
+	});
+
+	test('a Meet still being created has no link yet', () => {
+		const pending = { conferenceData: { createRequest: { conferenceSolutionKey: { type: 'hangoutsMeet' }, requestId: 'r', status: { statusCode: 'pending' as const } } } };
+		expect(fromGoogle({ ...base, ...pending }, 'UTC')).toMatchObject({ googleMeet: true, videoUrl: null });
 	});
 
 	test('leaves out statuses that are not events, and events without times', () => {
@@ -47,6 +59,7 @@ describe('toGoogle', () => {
 		deletedAt: null,
 		description: null,
 		endAt: '2026-11-20T15:00:00.000Z',
+		googleMeet: false,
 		id: 'e',
 		location: null,
 		reminderMinutes: null,
@@ -60,15 +73,38 @@ describe('toGoogle', () => {
 	};
 
 	test('a single event clears any recurrence; an edited occurrence sends none', () => {
-		expect(toGoogle(event, []).recurrence).toEqual([]);
-		expect(toGoogle({ ...event, originalStartAt: event.startAt, recurringEventId: 's' }, []).recurrence).toBeUndefined();
+		expect(toGoogle(event, [], false).recurrence).toEqual([]);
+		expect(toGoogle({ ...event, originalStartAt: event.startAt, recurringEventId: 's' }, [], false).recurrence).toBeUndefined();
 	});
 
 	test('a series sends its rule and skipped dates in order', () => {
-		expect(toGoogle({ ...event, rrule: 'FREQ=WEEKLY' }, ['2026-12-04T14:00:00.000Z', '2026-11-27T14:00:00.000Z']).recurrence).toEqual([
+		expect(toGoogle({ ...event, rrule: 'FREQ=WEEKLY' }, ['2026-12-04T14:00:00.000Z', '2026-11-27T14:00:00.000Z'], false).recurrence).toEqual([
 			'RRULE:FREQ=WEEKLY',
 			'EXDATE:20261127T140000Z',
 			'EXDATE:20261204T140000Z',
 		]);
+	});
+
+	test('asks for a Meet only when Google has none, and removes it only when Google has one', () => {
+		const withMeet = { ...event, googleMeet: true };
+		expect(toGoogle(withMeet, [], false).conferenceData).toEqual({ createRequest: { conferenceSolutionKey: { type: 'hangoutsMeet' }, requestId: 'e-2026-11-16T10:00:00.000Z' } });
+		expect(toGoogle(withMeet, [], true)).not.toHaveProperty('conferenceData');
+		expect(toGoogle(event, [], true).conferenceData).toBeNull();
+		expect(toGoogle(event, [], false)).not.toHaveProperty('conferenceData');
+	});
+
+	test("with a Meet, Tempi's own video link is not sent", () => {
+		expect(toGoogle({ ...event, googleMeet: true, videoUrl: 'https://meet.google.com/abc' }, [], true).extendedProperties?.private).toEqual({ tempiVideoUrl: '' });
+		expect(toGoogle({ ...event, videoUrl: 'https://zoom.us/j/1' }, [], false).extendedProperties?.private).toEqual({ tempiVideoUrl: 'https://zoom.us/j/1' });
+	});
+});
+
+describe('hasMeet', () => {
+	test('is a Meet or a pending Meet request, never an add-on or a failed request', () => {
+		expect(hasMeet({ conferenceData: { conferenceSolution: { key: { type: 'hangoutsMeet' } } } })).toBe(true);
+		expect(hasMeet({ conferenceData: { createRequest: { conferenceSolutionKey: { type: 'hangoutsMeet' }, requestId: 'r', status: { statusCode: 'pending' } } } })).toBe(true);
+		expect(hasMeet({ conferenceData: { createRequest: { conferenceSolutionKey: { type: 'hangoutsMeet' }, requestId: 'r', status: { statusCode: 'failure' } } } })).toBe(false);
+		expect(hasMeet({ conferenceData: { conferenceSolution: { key: { type: 'addOn' } } } })).toBe(false);
+		expect(hasMeet({})).toBe(false);
 	});
 });

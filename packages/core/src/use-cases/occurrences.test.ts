@@ -132,3 +132,30 @@ test('an edited occurrence lists with its series’ recurrence', async () => {
 	await updateOccurrence(deps, { originalStartAt: MAR(6, 14), scope: 'this', seriesId }, { title: 'Edited' });
 	expect((await list()).find(occurrence => occurrence.title === 'Edited')).toMatchObject({ recurringEventId: seriesId, rrule: 'FREQ=DAILY' });
 });
+
+describe('updateOccurrence with a Google Meet', () => {
+	test("a local series can't get a Meet, for one occurrence or all", async () => {
+		const { deps, seriesId } = await setup();
+		expect(await updateOccurrence(deps, { originalStartAt: MAR(6, 14), scope: 'this', seriesId }, { googleMeet: true })).toEqual(failure('validation', 'googleMeet'));
+		expect(await updateOccurrence(deps, { originalStartAt: MAR(6, 14), scope: 'all', seriesId }, { googleMeet: true })).toEqual(failure('validation', 'googleMeet'));
+	});
+
+	test('splitting a series with a Meet leaves the new series without the old link', async () => {
+		const deps = makeDeps();
+		const calendar = await createCalendar(deps, { color: '#0b8043', name: 'Ada', source: 'google' });
+		if (!calendar.ok) throw new Error('calendar setup failed');
+		const series = await createEvent(deps, {
+			calendarId: calendar.value.id,
+			endAt: MAR(5, 14, 30),
+			googleMeet: true,
+			rrule: 'FREQ=DAILY',
+			startAt: MAR(5, 14),
+			timeZone: 'America/New_York',
+			title: 'Standup',
+			videoUrl: 'https://meet.google.com/abc-defg-hij',
+		});
+		if (!series.ok) throw new Error('series setup failed');
+		const tail = await updateOccurrence(deps, { originalStartAt: MAR(7, 14), scope: 'following', seriesId: series.value.id }, { title: 'New standup' });
+		expect(tail).toMatchObject({ ok: true, value: { googleMeet: true, title: 'New standup', videoUrl: null } });
+	});
+});

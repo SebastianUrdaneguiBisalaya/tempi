@@ -301,3 +301,114 @@ describe('recurring events round-trip', () => {
 		expect(google.live(PRIMARY)[0]).toMatchObject({ end: { date: '2026-11-21' }, recurrence: ['RRULE:FREQ=DAILY;COUNT=3', 'EXDATE;VALUE=DATE:20261121'], start: { date: '2026-11-20' } });
 	});
 });
+
+describe('Google Meet', () => {
+	const createWithMeet = async (overrides: { rrule?: string } = {}) => {
+		await sync();
+		const created = await createEvent(deps, {
+			calendarId: await calendarIdOf(PRIMARY),
+			endAt: '2026-11-21T15:00:00Z',
+			googleMeet: true,
+			startAt: '2026-11-21T14:00:00Z',
+			timeZone: 'America/Lima',
+			title: 'Kickoff',
+			...overrides,
+		});
+		if (!created.ok) throw new Error('create failed');
+		return created.value;
+	};
+
+	test('an event that asks for a Meet gets one on Google, and its link in Tempi', async () => {
+		const event = await createWithMeet();
+		await sync();
+		const [remote] = google.live(PRIMARY);
+		expect(remote?.conferenceData?.conferenceSolution?.key.type).toBe('hangoutsMeet');
+		expect(remote?.extendedProperties?.private?.tempiVideoUrl).toBe('');
+		const local = await deps.events.findById(event.id);
+		expect(local).toMatchObject({ googleMeet: true, updatedAt: event.updatedAt, videoUrl: remote?.hangoutLink });
+		expect(await sync()).toEqual({ pulled: 0, pushed: 0, skipped: 0 });
+	});
+
+	test('editing other fields keeps the same Meet', async () => {
+		const event = await createWithMeet();
+		await sync();
+		const link = google.live(PRIMARY)[0]?.hangoutLink;
+		at('2026-11-17T10:00:00.000Z');
+		await updateEvent(deps, event.id, { title: 'Kickoff (v2)' });
+		await sync();
+		expect(google.meetRequests).toHaveLength(1);
+		expect(google.live(PRIMARY)[0]).toMatchObject({ hangoutLink: link, summary: 'Kickoff (v2)' });
+		expect((await deps.events.findById(event.id))?.videoUrl).toBe(link ?? null);
+	});
+
+	test('turning the Meet off removes it on Google, and on again creates a new one', async () => {
+		const event = await createWithMeet();
+		await sync();
+		at('2026-11-17T10:00:00.000Z');
+		await updateEvent(deps, event.id, { googleMeet: false, videoUrl: null });
+		await sync();
+		expect(google.live(PRIMARY)[0]?.conferenceData).toBeUndefined();
+		expect(google.live(PRIMARY)[0]?.hangoutLink).toBeUndefined();
+		expect(await deps.events.findById(event.id)).toMatchObject({ googleMeet: false, videoUrl: null });
+
+		at('2026-11-18T10:00:00.000Z');
+		await updateEvent(deps, event.id, { googleMeet: true });
+		await sync();
+		expect(google.meetRequests).toHaveLength(2);
+		expect((await deps.events.findById(event.id))?.videoUrl).toBe(google.live(PRIMARY)[0]?.hangoutLink ?? null);
+	});
+
+	test('a Meet Google is still creating arrives with a later pull', async () => {
+		google.pendingMeets = true;
+		const event = await createWithMeet();
+		await sync();
+		expect(await deps.events.findById(event.id)).toMatchObject({ googleMeet: true, videoUrl: null });
+		google.completeMeets(PRIMARY);
+		await sync();
+		expect(google.meetRequests).toHaveLength(1);
+		expect((await deps.events.findById(event.id))?.videoUrl).toBe(google.live(PRIMARY)[0]?.hangoutLink ?? null);
+	});
+
+	test('deleting the event deletes it on Google, Meet included', async () => {
+		const event = await createWithMeet();
+		await sync();
+		at('2026-11-17T10:00:00.000Z');
+		await deleteEvent(deps, event.id);
+		await sync();
+		expect(google.live(PRIMARY)).toEqual([]);
+	});
+
+	test('a Meet made on Google shows as one in Tempi', async () => {
+		google.put(PRIMARY, {
+			...timed('m', 'Design review', '2026-11-20T09:00:00-05:00', '2026-11-20T10:00:00-05:00'),
+			conferenceData: { conferenceId: 'abc', conferenceSolution: { key: { type: 'hangoutsMeet' } }, entryPoints: [{ entryPointType: 'video', uri: 'https://meet.google.com/abc-defg-hij' }] },
+			hangoutLink: 'https://meet.google.com/abc-defg-hij',
+		});
+		await sync();
+		expect(await localEvents(PRIMARY)).toMatchObject([{ googleMeet: true, videoUrl: 'https://meet.google.com/abc-defg-hij' }]);
+	});
+
+	test('an add-on conference is not a Meet, and local edits leave it untouched', async () => {
+		const zoom = { conferenceId: 'z1', conferenceSolution: { key: { type: 'addOn' }, name: 'Zoom' }, entryPoints: [{ entryPointType: 'video', uri: 'https://zoom.us/j/1' }] };
+		google.put(PRIMARY, { ...timed('z', 'Client call', '2026-11-20T09:00:00-05:00', '2026-11-20T10:00:00-05:00'), conferenceData: zoom });
+		await sync();
+		const [local] = await localEvents(PRIMARY);
+		if (local === undefined) throw new Error('not pulled');
+		expect(local.googleMeet).toBe(false);
+		at('2026-11-17T10:00:00.000Z');
+		await updateEvent(deps, local.id, { title: 'Client call (moved)' });
+		await sync();
+		expect(google.live(PRIMARY)[0]).toMatchObject({ conferenceData: zoom, summary: 'Client call (moved)' });
+		expect(google.meetRequests).toEqual([]);
+	});
+
+	test('an edited occurrence of a series keeps the series Meet', async () => {
+		const series = await createWithMeet({ rrule: 'FREQ=DAILY;COUNT=3' });
+		await sync();
+		at('2026-11-17T10:00:00.000Z');
+		const edited = await updateOccurrence(deps, { originalStartAt: '2026-11-22T14:00:00.000Z', scope: 'this', seriesId: series.id }, { title: 'Kickoff (day 2)' });
+		expect(edited.ok).toBe(true);
+		await sync();
+		expect(google.meetRequests).toHaveLength(1);
+	});
+});

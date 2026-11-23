@@ -23,7 +23,7 @@
       "@types/react": "19.3.0",
       "@types/react-dom": "19.3.0",
       "@usemeshly/auth": "0.1.0",
-      "@usemeshly/google-calendar": "0.1.0",
+      "@usemeshly/google-calendar": "0.3.0",
       "@usemeshly/nager-date": "0.1.0",
       "@usemeshly/open-meteo": "0.1.0",
       "@useweather/core": "0.1.0",

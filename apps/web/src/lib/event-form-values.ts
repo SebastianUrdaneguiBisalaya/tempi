@@ -27,6 +27,7 @@ const eventFormValuesSchema = z.object({
 	calendarId: z.string(),
 	description: z.string(),
 	endAt: z.string(),
+	googleMeet: z.boolean(),
 	location: z.string(),
 	/** The custom rule's fields; read only when `repeat` is `custom`. */
 	recurrence: z.object({
@@ -134,7 +135,10 @@ export const recurrenceFormValues = (rrule: string | null, startAt: string, time
 };
 
 /** The fields the form shows, from a stored event or a new one not saved yet (an assistant proposal). */
-type EventFormSource = Pick<CalendarEvent, 'allDay' | 'calendarId' | 'description' | 'endAt' | 'location' | 'reminderMinutes' | 'rrule' | 'startAt' | 'status' | 'timeZone' | 'title' | 'videoUrl'>;
+type EventFormSource = Pick<
+	CalendarEvent,
+	'allDay' | 'calendarId' | 'description' | 'endAt' | 'googleMeet' | 'location' | 'reminderMinutes' | 'rrule' | 'startAt' | 'status' | 'timeZone' | 'title' | 'videoUrl'
+>;
 
 export const eventToFormValues = (event: EventFormSource): EventFormValues => ({
 	...recurrenceFormValues(event.rrule, event.startAt, event.timeZone),
@@ -142,6 +146,7 @@ export const eventToFormValues = (event: EventFormSource): EventFormValues => ({
 	calendarId: event.calendarId,
 	description: event.description ?? '',
 	endAt: toFormTime(event.endAt, event.timeZone, event.allDay, true),
+	googleMeet: event.googleMeet,
 	location: event.location ?? '',
 	reminderMinutes: event.reminderMinutes,
 	startAt: toFormTime(event.startAt, event.timeZone, event.allDay),
