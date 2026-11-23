@@ -230,6 +230,9 @@ export const en = {
 				end: 'Ends',
 				endDate: 'End date',
 				endTime: 'End time',
+				googleMeet: 'Google Meet',
+				googleMeetHint: 'Creates a Google Meet link when the event syncs.',
+				googleMeetUnavailable: 'Google Meet needs a Google calendar.',
 				location: 'Location',
 				readOnly: 'This calendar is read-only. Change the event in Google Calendar.',
 				reminder: 'Reminder',
@@ -969,6 +972,7 @@ export const en = {
 		},
 		event: {
 			endBeforeStart: 'The end must be after the start.',
+			googleMeetCalendar: 'Google Meet is only available for events in a Google calendar.',
 			notFound: 'This event no longer exists.',
 			rrule: 'The repeat rule isn’t valid.',
 		},

@@ -10,7 +10,10 @@ const SKIPPED_TYPES = new Set(['workingLocation', 'outOfOffice', 'focusTime', 'f
 const VIDEO_URL = /^https?:\/\/\S+$/i;
 
 /** The event fields Google carries, ready for core's event schema. */
-export type PulledFields = Pick<CalendarEvent, 'allDay' | 'description' | 'endAt' | 'location' | 'reminderMinutes' | 'rrule' | 'startAt' | 'status' | 'timeZone' | 'title' | 'videoUrl'> & {
+export type PulledFields = Pick<
+	CalendarEvent,
+	'allDay' | 'description' | 'endAt' | 'googleMeet' | 'location' | 'reminderMinutes' | 'rrule' | 'startAt' | 'status' | 'timeZone' | 'title' | 'videoUrl'
+> & {
 	/** EXDATEs of a recurring event, as UTC instants. */
 	exDates: string[];
 };
@@ -76,6 +79,27 @@ const exDatesOf = (line: string, zone: string): string[] => {
 
 const text = (value: string | null | undefined): string | null => (value == null || value.trim() === '' ? null : value);
 
+const MEET = 'hangoutsMeet';
+
+/**
+ * Whether a Google event has a Google Meet, or one Google is still creating. An add-on conference (Zoom, Teams…)
+ * isn't one, and a failed request left nothing.
+ */
+export const hasMeet = (event: Pick<GoogleEvent, 'conferenceData'>): boolean => {
+	const conference = event.conferenceData;
+	if (conference === undefined) return false;
+	if (conference.conferenceSolution !== undefined) return conference.conferenceSolution.key.type === MEET;
+	const request = conference.createRequest;
+	return request?.conferenceSolutionKey?.type === MEET && request.status?.statusCode !== 'failure';
+};
+
+/** The link to join a Google event's Meet; null while Google is still creating it, or when it has none. */
+export const meetLinkOf = (event: Pick<GoogleEvent, 'conferenceData' | 'hangoutLink'>): string | null => {
+	if (!hasMeet(event)) return null;
+	const link = text(event.hangoutLink) ?? text(event.conferenceData?.entryPoints?.find(entry => entry.entryPointType === 'video')?.uri);
+	return link !== null && VIDEO_URL.test(link) ? link : null;
+};
+
 /**
  * A Google event as Tempi event fields, or null when Tempi can't show it (no start, a status rather than an event).
  * All-day dates and floating times take the calendar's `zone`. Google's default reminders map to none.
@@ -95,14 +119,17 @@ export const fromGoogle = (event: GoogleEvent, zone: string): PulledFields | nul
 	const popup = event.reminders?.useDefault === true ? undefined : event.reminders?.overrides?.find(reminder => reminder.method === 'popup');
 	const reminderMinutes = popup !== undefined && popup.minutes >= 0 && popup.minutes <= MAX_REMINDER_MINUTES ? popup.minutes : null;
 
+	const googleMeet = hasMeet(event);
 	const ownVideoUrl = event.extendedProperties?.private?.[VIDEO_URL_PROPERTY];
-	const videoUrl = text(ownVideoUrl) ?? text(event.hangoutLink);
+	// With a Meet, the event's video link is the Meet's; Tempi's own link only stands for other calls.
+	const videoUrl = googleMeet ? meetLinkOf(event) : (text(ownVideoUrl) ?? text(event.hangoutLink));
 
 	return {
 		allDay: start.allDay,
 		description: text(event.description),
 		endAt: end.instant,
 		exDates,
+		googleMeet,
 		location: text(event.location),
 		reminderMinutes,
 		// Core strips the `RRULE:` prefix and checks the rule.
@@ -120,14 +147,28 @@ const timeOf = (instant: string, allDay: boolean, timeZone: string): GoogleEvent
 	allDay ? { date: Temporal.Instant.from(instant).toZonedDateTimeISO(timeZone).toPlainDate().toString() } : { dateTime: instant, timeZone };
 
 /**
+ * The conference change to send: a Meet is asked for when the event wants one and Google's version (`remoteMeet`)
+ * has none, and removed in the opposite case. Otherwise nothing is sent, so add-on conferences stay untouched. The
+ * request id is the event's version, so a retried push asks for the same Meet instead of a second one.
+ */
+const conferenceOf = (event: CalendarEvent, remoteMeet: boolean): Pick<GoogleEventInput, 'conferenceData'> => {
+	if (event.googleMeet === remoteMeet) return {};
+	if (!event.googleMeet) return { conferenceData: null };
+	return { conferenceData: { createRequest: { conferenceSolutionKey: { type: MEET }, requestId: `${event.id}-${event.updatedAt}` } } };
+};
+
+/**
  * A local event as the fields Tempi writes on Google. A series sends its rule and the dates it skips (`exDates`,
  * without those of edited occurrences, which stay as Google exceptions); an edited occurrence sends no recurrence.
+ * `remoteMeet` is whether Google's version of the event already has a Meet.
  */
-export const toGoogle = (event: CalendarEvent, exDates: string[]): GoogleEventInput => {
+export const toGoogle = (event: CalendarEvent, exDates: string[], remoteMeet: boolean): GoogleEventInput => {
 	const body: GoogleEventInput = {
+		...conferenceOf(event, remoteMeet),
 		description: event.description,
 		end: timeOf(event.endAt, event.allDay, event.timeZone),
-		extendedProperties: { private: { [VIDEO_URL_PROPERTY]: event.videoUrl ?? '' } },
+		// With a Meet, Google holds the link; keeping it here too would outlive the Meet.
+		extendedProperties: { private: { [VIDEO_URL_PROPERTY]: event.googleMeet ? '' : (event.videoUrl ?? '') } },
 		location: event.location,
 		reminders: { overrides: event.reminderMinutes === null ? [] : [{ method: 'popup', minutes: event.reminderMinutes }], useDefault: false },
 		start: timeOf(event.startAt, event.allDay, event.timeZone),

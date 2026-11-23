@@ -32,20 +32,21 @@ const calendarLinkRowSchema = z
 	.pipe(googleCalendarLinkSchema);
 
 const eventLinkRowSchema = z
-	.object({ etag: z.string(), event_id: z.string(), google_calendar_id: z.string(), google_event_id: z.string(), synced_updated_at: z.string() })
+	.object({ etag: z.string(), event_id: z.string(), google_calendar_id: z.string(), google_event_id: z.string(), meet: booleanColumn, synced_updated_at: z.string() })
 	.transform(
 		(row): DomainFields<typeof googleEventLinkSchema> => ({
 			etag: row.etag,
 			eventId: row.event_id,
 			googleCalendarId: row.google_calendar_id,
 			googleEventId: row.google_event_id,
+			meet: row.meet,
 			syncedUpdatedAt: row.synced_updated_at,
 		})
 	)
 	.pipe(googleEventLinkSchema);
 
 const CALENDAR_COLUMNS = 'google_id, calendar_id, name, color, access_role, is_primary, time_zone, selected, sync_token';
-const EVENT_LINK_COLUMNS = 'event_id, google_calendar_id, google_event_id, etag, synced_updated_at';
+const EVENT_LINK_COLUMNS = 'event_id, google_calendar_id, google_event_id, etag, meet, synced_updated_at';
 const PENDING_COLUMNS = EVENT_COLUMNS.split(', ')
 	.map(column => `e.${column}`)
 	.join(', ');
@@ -80,10 +81,10 @@ export class SqliteGoogleSyncRepository implements GoogleSyncRepository {
 		this.listEventLinksStatement = db.prepare(`SELECT ${EVENT_LINK_COLUMNS} FROM google_events WHERE google_calendar_id = :google_calendar_id`);
 		this.saveEventLinkStatement = db.prepare(
 			`INSERT INTO google_events (${EVENT_LINK_COLUMNS})
-			VALUES (:event_id, :google_calendar_id, :google_event_id, :etag, :synced_updated_at)
+			VALUES (:event_id, :google_calendar_id, :google_event_id, :etag, :meet, :synced_updated_at)
 			ON CONFLICT (event_id) DO UPDATE SET
 				google_calendar_id = excluded.google_calendar_id, google_event_id = excluded.google_event_id,
-				etag = excluded.etag, synced_updated_at = excluded.synced_updated_at`
+				etag = excluded.etag, meet = excluded.meet, synced_updated_at = excluded.synced_updated_at`
 		);
 		this.deleteEventLinkStatement = db.prepare('DELETE FROM google_events WHERE event_id = :event_id');
 		// Calendar ids arrive as one JSON array, so the statement stays prepared whatever their number.
@@ -155,6 +156,7 @@ export class SqliteGoogleSyncRepository implements GoogleSyncRepository {
 				event_id: link.eventId,
 				google_calendar_id: link.googleCalendarId,
 				google_event_id: link.googleEventId,
+				meet: toBooleanColumn(link.meet),
 				synced_updated_at: toInstantColumn(link.syncedUpdatedAt),
 			});
 		});

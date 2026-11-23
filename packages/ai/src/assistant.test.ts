@@ -35,6 +35,7 @@ const context: AssistantContext = {
 const standup: CalendarEvent = {
 	...NO_SERIES,
 	allDay: false,
+	googleMeet: false,
 	calendarId: 'personal',
 	createdAt: T0,
 	deletedAt: null,
@@ -173,6 +174,7 @@ describe('runAssistant', () => {
 						allDay: false,
 						description: null,
 						endAt: '2026-11-18T21:00:00.000Z',
+						googleMeet: false,
 						location: null,
 						reminderMinutes: null,
 						rrule: null,

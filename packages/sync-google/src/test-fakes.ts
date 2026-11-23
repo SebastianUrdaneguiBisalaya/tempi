@@ -16,6 +16,10 @@ export class FakeGoogle {
 	offline = false;
 	/** Sync tokens issued before this version have expired (410). */
 	expiredBefore = 0;
+	/** Meets are created asynchronously: writes answer with a pending request and no link. */
+	pendingMeets = false;
+	/** Every `createRequest` received, to check a Meet is asked for only once. */
+	readonly meetRequests: string[] = [];
 	private version = 0;
 	private clock = Date.parse('2026-11-16T09:00:00.000Z');
 
@@ -51,6 +55,41 @@ export class FakeGoogle {
 		const stored: Stored = { ...event, etag: `"${this.version}"`, updated: new Date(this.clock).toISOString(), version: this.version };
 		this.calendar(calendarId).set(event.id, stored);
 		return stored;
+	}
+
+	/** A write's body as Google stores it: a create request becomes a Meet (or a pending one), `null` removes the conference. */
+	private written(current: Omit<GoogleEvent, 'etag' | 'updated'> | null, { conferenceData, ...body }: GoogleEventInput, id: string): Omit<GoogleEvent, 'etag' | 'updated'> {
+		const event = { ...(current ?? {}), ...body, id };
+		if (conferenceData === undefined) return event;
+		const { conferenceData: _conference, hangoutLink: _link, ...rest } = event;
+		if (conferenceData === null) return rest;
+		const { requestId } = conferenceData.createRequest;
+		this.meetRequests.push(requestId);
+		const key = { type: 'hangoutsMeet' };
+		if (this.pendingMeets) return { ...rest, conferenceData: { createRequest: { conferenceSolutionKey: key, requestId, status: { statusCode: 'pending' } } } };
+		const uri = `https://meet.google.com/${requestId.slice(0, 12)}`;
+		return {
+			...rest,
+			conferenceData: {
+				conferenceId: requestId,
+				conferenceSolution: { key, name: 'Google Meet' },
+				createRequest: { conferenceSolutionKey: key, requestId, status: { statusCode: 'success' } },
+				entryPoints: [{ entryPointType: 'video', uri }],
+			},
+			hangoutLink: uri,
+		};
+	}
+
+	/** Completes the pending Meets of a calendar, as Google does a moment after the write. */
+	completeMeets(calendarId: string): void {
+		this.pendingMeets = false;
+		for (const event of [...this.calendar(calendarId).values()]) {
+			const request = event.conferenceData?.createRequest;
+			if (request?.status?.statusCode !== 'pending') continue;
+			const { etag: _etag, updated: _updated, version: _version, conferenceData: _conference, ...rest } = event;
+			this.store(calendarId, this.written(rest, { conferenceData: { createRequest: { conferenceSolutionKey: { type: 'hangoutsMeet' }, requestId: request.requestId } } }, event.id));
+			this.meetRequests.pop();
+		}
 	}
 
 	private online(): void {
@@ -97,7 +136,7 @@ export class FakeGoogle {
 				this.online();
 				const id = body.id ?? `g${this.version + 1}`;
 				if (this.calendar(calendarId).has(id)) return Promise.reject(apiError('conflict', 409, `${id} exists`));
-				return Promise.resolve(this.store(calendarId, { ...body, id }));
+				return Promise.resolve(this.store(calendarId, this.written(null, body, id)));
 			},
 			list: (calendarId, params = {}) => {
 				this.online();
@@ -115,7 +154,7 @@ export class FakeGoogle {
 				const current = this.calendar(calendarId).get(eventId) ?? this.instance(calendarId, eventId);
 				if (current === null) return Promise.reject(apiError('not_found', 404, `${eventId} not found`));
 				const { etag: _etag, updated: _updated, version: _version, ...rest } = current;
-				return Promise.resolve(this.store(calendarId, { ...rest, ...body, id: eventId }));
+				return Promise.resolve(this.store(calendarId, this.written(rest, body, eventId)));
 			},
 		},
 	};

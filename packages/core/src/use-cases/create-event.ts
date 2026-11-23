@@ -1,7 +1,7 @@
 import { type CalendarEvent, type NewEventInput, NO_SERIES, newEventInputSchema } from '../domain/event';
 import { ok, parseWith, type Result } from '../domain/result';
 import { type CoreDeps, nowIso } from './deps';
-import { writableCalendar } from './writable-calendar';
+import { allowsGoogleMeet, writableCalendar } from './writable-calendar';
 
 export const createEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | 'events' | 'ids'>, input: NewEventInput): Promise<Result<CalendarEvent>> => {
 	const fields = parseWith(newEventInputSchema, input);
@@ -9,6 +9,8 @@ export const createEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | '
 
 	const calendar = await writableCalendar(deps, fields.value.calendarId);
 	if (!calendar.ok) return calendar;
+	const meet = allowsGoogleMeet(calendar.value, fields.value.googleMeet);
+	if (!meet.ok) return meet;
 
 	const now = nowIso(deps.clock);
 	const event: CalendarEvent = { ...fields.value, ...NO_SERIES, createdAt: now, deletedAt: null, id: deps.ids.next(), updatedAt: now };

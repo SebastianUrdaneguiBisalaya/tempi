@@ -9,3 +9,9 @@ export const writableCalendar = async (deps: Pick<CoreDeps, 'calendars'>, calend
 	if (calendar.readOnly) return fail('conflict', 'calendar.readOnly', { detail: `Calendar ${calendarId} is read-only`, field });
 	return ok(calendar);
 };
+
+/** A Google Meet is created by Google, so only events in a Google calendar may ask for one. */
+export const allowsGoogleMeet = (calendar: Calendar, googleMeet: boolean): Result<null> =>
+	googleMeet && calendar.source !== 'google'
+		? fail('validation', 'event.googleMeetCalendar', { detail: `Calendar ${calendar.id} is not a Google calendar, so its events can't have a Google Meet`, field: 'googleMeet' })
+		: ok(null);

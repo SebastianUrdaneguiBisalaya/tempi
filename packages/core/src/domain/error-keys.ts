@@ -27,6 +27,7 @@ export const ERROR_KEYS = {
 	'calendar.synced': 'A synced calendar is removed by unselecting it in the integration settings, not deleted',
 	'data.openFolderFailed': 'The OS could not open the data folder in the file manager; see detail',
 	'event.endBeforeStart': 'Event end must be after its start',
+	'event.googleMeetCalendar': 'A Google Meet can only be added to events in a Google calendar',
 	'event.notFound': 'Event not found',
 	'event.rrule': 'Recurrence must be an RFC 5545 RRULE',
 	'google.alreadyConnected': 'A Google account is already connected; disconnect it first',

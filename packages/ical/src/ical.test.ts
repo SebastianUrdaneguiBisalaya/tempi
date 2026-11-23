@@ -16,6 +16,7 @@ const event = (overrides: Partial<CalendarEvent>): CalendarEvent => ({
 	description: null,
 	endAt: '2026-11-20T15:00:00.000Z',
 	exDates: [],
+	googleMeet: false,
 	icalUid: null,
 	id: 'event-1',
 	location: null,

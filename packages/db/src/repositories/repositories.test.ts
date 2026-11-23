@@ -39,6 +39,7 @@ const makeEvent = (overrides: Partial<CalendarEvent> = {}): CalendarEvent => ({
 	description: null,
 	endAt: '2026-11-20T10:00:00.000Z',
 	exDates: [],
+	googleMeet: false,
 	icalUid: null,
 	id: 'evt-1',
 	location: null,
@@ -79,7 +80,16 @@ describe('SqliteEventRepository', () => {
 	beforeEach(() => repos.calendars.save(makeCalendar()));
 
 	test('round-trips every field', async () => {
-		const event = makeEvent({ allDay: true, description: 'Daily', location: 'Room 1', reminderMinutes: 10, rrule: 'FREQ=DAILY', status: 'tentative', videoUrl: 'https://meet.example/x' });
+		const event = makeEvent({
+			allDay: true,
+			description: 'Daily',
+			googleMeet: true,
+			location: 'Room 1',
+			reminderMinutes: 10,
+			rrule: 'FREQ=DAILY',
+			status: 'tentative',
+			videoUrl: 'https://meet.example/x',
+		});
 		await repos.events.save(event);
 		expect(await repos.events.findById('evt-1')).toEqual(event);
 	});
@@ -281,7 +291,7 @@ describe('SqliteGoogleSyncRepository', () => {
 		syncToken: 'tok',
 		timeZone: 'America/Lima',
 	} as const;
-	const eventLink = (eventId: string, googleEventId: string) => ({ etag: '"1"', eventId, googleCalendarId: 'ada@example.com', googleEventId, syncedUpdatedAt: T0 });
+	const eventLink = (eventId: string, googleEventId: string) => ({ etag: '"1"', eventId, googleCalendarId: 'ada@example.com', googleEventId, meet: false, syncedUpdatedAt: T0 });
 
 	beforeEach(() => repos.calendars.save(makeCalendar({ readOnly: true, source: 'google' })));
 
@@ -314,6 +324,14 @@ describe('SqliteGoogleSyncRepository', () => {
 		await repos.events.save(makeEvent({ calendarId: 'local', id: 'local-only' }));
 		for (const id of ['synced', 'edited', 'deleted']) await repos.googleSync.saveEventLink(eventLink(id, `g-${id}`));
 		expect((await repos.googleSync.listPendingEvents(['cal-1'])).map(event => event.id)).toEqual(['deleted', 'edited', 'series', 'override']);
+	});
+
+	test('keeps whether the Google event has a Meet', async () => {
+		await repos.events.save(makeEvent());
+		await repos.googleSync.saveEventLink({ ...eventLink('evt-1', 'g1'), meet: true });
+		expect(await repos.googleSync.findEventLink('evt-1')).toMatchObject({ meet: true });
+		await repos.googleSync.saveEventLink(eventLink('evt-1', 'g1'));
+		expect(await repos.googleSync.findEventLink('evt-1')).toMatchObject({ meet: false });
 	});
 
 	test('deleting a calendar or clearing forgets its event links', async () => {

@@ -1,7 +1,7 @@
 import { type CalendarEvent, type EventPatch, eventFieldsSchema, eventPatchSchema } from '../domain/event';
 import { fail, ok, parseWith, type Result } from '../domain/result';
 import { type CoreDeps, nowIso } from './deps';
-import { writableCalendar } from './writable-calendar';
+import { allowsGoogleMeet, writableCalendar } from './writable-calendar';
 
 export const updateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | 'events'>, id: string, patch: EventPatch): Promise<Result<CalendarEvent>> => {
 	const current = await deps.events.findById(id);
@@ -18,10 +18,10 @@ export const updateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' | '
 	const fields = parseWith(eventFieldsSchema, { ...currentFields, ...changes.value });
 	if (!fields.ok) return fields;
 
-	if (fields.value.calendarId !== current.calendarId) {
-		const target = await writableCalendar(deps, fields.value.calendarId);
-		if (!target.ok) return target;
-	}
+	const target = fields.value.calendarId === current.calendarId ? source : await writableCalendar(deps, fields.value.calendarId);
+	if (!target.ok) return target;
+	const meet = allowsGoogleMeet(target.value, fields.value.googleMeet);
+	if (!meet.ok) return meet;
 
 	const event: CalendarEvent = { ...fields.value, createdAt, deletedAt, id, updatedAt: nowIso(deps.clock) };
 	await deps.events.save(event);

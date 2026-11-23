@@ -13,7 +13,7 @@ import {
 } from '@tempi/core';
 import { isMeshlyError } from '@usemeshly/auth';
 import type { GoogleCalendarClient, GoogleCalendarListEntry, GoogleEvent } from '@usemeshly/google-calendar';
-import { fromGoogle, googleEventIdFor, instanceId, instantOf, type PulledFields, toGoogle } from './mapping';
+import { fromGoogle, googleEventIdFor, hasMeet, instanceId, instantOf, meetLinkOf, type PulledFields, toGoogle } from './mapping';
 
 export type SyncDeps = Pick<CoreDeps, 'calendars' | 'clock' | 'events' | 'googleSync' | 'ids'>;
 
@@ -141,7 +141,7 @@ const applyPull = async (deps: SyncDeps, link: GoogleCalendarLink & { calendarId
 		}
 		const event: CalendarEvent = { ...fields.data, createdAt: local?.createdAt ?? updatedAt, deletedAt: null, id: local?.id ?? deps.ids.next(), updatedAt };
 		await deps.events.save(event);
-		await deps.googleSync.saveEventLink({ etag: item.etag, eventId: event.id, googleCalendarId: link.googleId, googleEventId: item.id, syncedUpdatedAt: updatedAt });
+		await deps.googleSync.saveEventLink({ etag: item.etag, eventId: event.id, googleCalendarId: link.googleId, googleEventId: item.id, meet: hasMeet(item), syncedUpdatedAt: updatedAt });
 		counts.pulled += 1;
 		return event;
 	};
@@ -300,7 +300,14 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 	const record = (googleCalendarId: string, sent: GoogleEvent) => {
 		const { etag } = sent;
 		if (etag === undefined) throw new Error(`Google answered ${sent.id} without an etag`);
-		return transact(deps => deps.googleSync.saveEventLink({ etag, eventId: event.id, googleCalendarId, googleEventId: sent.id, syncedUpdatedAt: event.updatedAt }));
+		return transact(async deps => {
+			await deps.googleSync.saveEventLink({ etag, eventId: event.id, googleCalendarId, googleEventId: sent.id, meet: hasMeet(sent), syncedUpdatedAt: event.updatedAt });
+			// Pulls skip Tempi's own writes, so the Meet link Google just made is copied here, without counting as a local
+			// change. A pending Meet has no link yet: it arrives with the pull after Google finishes it.
+			const meetLink = event.googleMeet ? meetLinkOf(sent) : null;
+			const current = meetLink === null ? null : await deps.events.findById(event.id);
+			if (current !== null && current.updatedAt === event.updatedAt && current.videoUrl !== meetLink) await deps.events.save({ ...current, videoUrl: meetLink });
+		});
 	};
 	const forget = () => transact(deps => deps.googleSync.deleteEventLink(event.id));
 
@@ -318,11 +325,12 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 		const seriesLink = await transact(deps => deps.googleSync.findEventLink(event.recurringEventId ?? ''));
 		if (series === null || seriesLink === null || seriesLink.googleCalendarId !== target.googleId || event.originalStartAt === null) return false;
 		const id = link?.googleEventId ?? instanceId(seriesLink.googleEventId, event.originalStartAt, series.allDay, series.timeZone);
-		await record(target.googleId, await api.events.patch(target.googleId, id, toGoogle(event, [])));
+		// An occurrence edited for the first time shares its series' Meet on Google.
+		await record(target.googleId, await api.events.patch(target.googleId, id, toGoogle(event, [], link?.meet ?? seriesLink.meet)));
 		return true;
 	}
 
-	const body = toGoogle(event, exDates);
+	const body = toGoogle(event, exDates, link?.meet ?? false);
 	if (link !== null) {
 		try {
 			await record(target.googleId, await api.events.patch(target.googleId, link.googleEventId, body));

@@ -15,6 +15,8 @@ const eventShape = {
 	calendarId: idSchema,
 	description: optionalTextSchema,
 	endAt: utcInstantSchema,
+	/** Whether the event should have a Google Meet, which Google creates on the next push. Only in Google calendars. */
+	googleMeet: z.boolean(),
 	location: optionalTextSchema,
 	reminderMinutes: z
 		.number()
@@ -53,9 +55,9 @@ const endAfterStart = { message: 'event.endBeforeStart', path: ['endAt'] };
 /** Every event field, fully specified. Used to re-validate after merging a patch. */
 export const eventFieldsSchema = z.object({ ...eventShape, ...seriesShape }).refine(event => event.endAt > event.startAt, endAfterStart);
 
-/** Input for a new event: optional fields default to null, `allDay` to false and `status` to confirmed. */
+/** Input for a new event: optional fields default to null, `allDay` and `googleMeet` to false and `status` to confirmed. */
 export const newEventInputSchema = z
-	.object({ ...eventShape, allDay: eventShape.allDay.default(false), status: eventShape.status.default('confirmed') })
+	.object({ ...eventShape, allDay: eventShape.allDay.default(false), googleMeet: eventShape.googleMeet.default(false), status: eventShape.status.default('confirmed') })
 	.refine(event => event.endAt > event.startAt, endAfterStart);
 
 /** Every input field with its own rule and no cross-field rule, to pick fields from (`eventPatchSchema`, quick add). */

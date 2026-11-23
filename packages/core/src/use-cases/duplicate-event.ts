@@ -21,7 +21,19 @@ export const duplicateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' 
 	const exDates = source.exDates.filter(date => !editedStarts.has(date));
 
 	const now = nowIso(deps.clock);
-	const copy: CalendarEvent = { ...source, createdAt: now, exDates, deletedAt: null, icalUid: null, id: deps.ids.next(), originalStartAt: null, recurringEventId: null, updatedAt: now };
+	const copy: CalendarEvent = {
+		...source,
+		createdAt: now,
+		exDates,
+		deletedAt: null,
+		icalUid: null,
+		id: deps.ids.next(),
+		originalStartAt: null,
+		recurringEventId: null,
+		updatedAt: now,
+		// The copy gets a Meet of its own when it reaches Google, not the original's link.
+		videoUrl: source.googleMeet ? null : source.videoUrl,
+	};
 	await deps.events.save(copy);
 	return ok(copy);
 };

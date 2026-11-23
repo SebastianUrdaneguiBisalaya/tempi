@@ -232,6 +232,9 @@ export const es = {
 				end: 'Termina',
 				endDate: 'Fecha de fin',
 				endTime: 'Hora de fin',
+				googleMeet: 'Google Meet',
+				googleMeetHint: 'Crea un enlace de Google Meet cuando el evento se sincroniza.',
+				googleMeetUnavailable: 'Google Meet necesita un calendario de Google.',
 				location: 'Ubicación',
 				readOnly: 'Este calendario es de solo lectura. Cambia el evento en Google Calendar.',
 				reminder: 'Recordatorio',
@@ -970,6 +973,7 @@ export const es = {
 		},
 		event: {
 			endBeforeStart: 'El fin debe ser posterior al inicio.',
+			googleMeetCalendar: 'Google Meet solo está disponible para eventos de un calendario de Google.',
 			notFound: 'Este evento ya no existe.',
 			rrule: 'La regla de repetición no es válida.',
 		},

@@ -44,6 +44,7 @@ const event = (id: string, calendarId: string, overrides: Partial<CalendarEvent>
 	...NO_SERIES,
 	...stamps,
 	allDay: false,
+	googleMeet: false,
 	calendarId,
 	description: null,
 	endAt: '2026-11-20T15:00:00.000Z',
@@ -108,7 +109,7 @@ describe('Google calendar selection', () => {
 	test('unselecting removes the calendar and its events from Tempi and forgets their links', async () => {
 		const { deps } = await setup();
 		await deps.events.save(event('standup', 'work'));
-		await deps.googleSync.saveEventLink({ etag: '"1"', eventId: 'standup', googleCalendarId: 'work@example.com', googleEventId: 'g1', syncedUpdatedAt: T0 });
+		await deps.googleSync.saveEventLink({ etag: '"1"', eventId: 'standup', googleCalendarId: 'work@example.com', googleEventId: 'g1', meet: false, syncedUpdatedAt: T0 });
 		deps.clock.set('2026-11-16T00:00:00.000Z');
 
 		const choices = await selectGoogleCalendars(deps, { googleIds: ['holidays#google', 'team@example.com'] });

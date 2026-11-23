@@ -194,3 +194,34 @@ describe('listEvents', () => {
 		expect(result).toEqual(failure('validation', 'end'));
 	});
 });
+
+describe('Google Meet', () => {
+	const withGoogleCalendar = async () => {
+		const context = await setup();
+		const google = await createCalendar(context.deps, { color: '#0b8043', name: 'Ada', source: 'google' });
+		if (!google.ok) throw new Error('calendar setup failed');
+		return { ...context, googleId: google.value.id };
+	};
+
+	test('only events in a Google calendar may have a Meet', async () => {
+		const { deps, googleId, input } = await withGoogleCalendar();
+		expect(await createEvent(deps, { ...input, googleMeet: true })).toEqual(failure('validation', 'googleMeet'));
+		const created = await createEvent(deps, { ...input, calendarId: googleId, googleMeet: true });
+		expect(created).toMatchObject({ ok: true, value: { googleMeet: true } });
+	});
+
+	test('a new event has no Meet unless asked', async () => {
+		const { deps, input } = await setup();
+		expect(await createEvent(deps, input)).toMatchObject({ ok: true, value: { googleMeet: false } });
+	});
+
+	test('an event with a Meet can turn it off, but not move to a local calendar with it', async () => {
+		const { calendarId, deps, googleId, input } = await withGoogleCalendar();
+		const created = await createEvent(deps, { ...input, calendarId: googleId, googleMeet: true });
+		if (!created.ok) throw new Error('create failed');
+		expect(await updateEvent(deps, created.value.id, { calendarId })).toEqual(failure('validation', 'googleMeet'));
+		expect(await updateEvent(deps, created.value.id, { googleMeet: false })).toMatchObject({ ok: true, value: { googleMeet: false } });
+		expect(await updateEvent(deps, created.value.id, { calendarId })).toMatchObject({ ok: true, value: { calendarId } });
+		expect(await updateEvent(deps, created.value.id, { googleMeet: true })).toEqual(failure('validation', 'googleMeet'));
+	});
+});
