@@ -44,7 +44,7 @@ const fakeApi = (response: () => Promise<unknown>) => {
 		},
 		availability: { freeSlots: answer },
 		calendars: { create: answer, delete: answer, export: answer, import: answer, list: answer, update: answer },
-		data: { backup: answer, restore: answer },
+		data: { backup: answer, folder: answer, openFolder: answer, restore: answer },
 		events: { create: answer, delete: answer, deleteOccurrence: answer, duplicate: answer, list: answer, restore: answer, search: answer, update: answer, updateOccurrence: answer },
 		google: { account: answer, calendars: answer, connect: answer, disconnect: answer, onSyncStatus: () => () => undefined, selectCalendars: answer, sync: answer, syncStatus: answer },
 		holidays: { sync: answer },

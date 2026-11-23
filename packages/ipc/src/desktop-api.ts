@@ -44,6 +44,8 @@ type Api<Raw extends boolean> = {
 	};
 	data: {
 		backup: CallWithoutInput<'data:backup', Raw>;
+		folder: CallWithoutInput<'data:folder', Raw>;
+		openFolder: CallWithoutInput<'data:openFolder', Raw>;
 		restore: CallWithoutInput<'data:restore', Raw>;
 	};
 	events: {

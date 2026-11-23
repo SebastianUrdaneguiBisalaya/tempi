@@ -66,6 +66,8 @@ export const createIpcClient = (api: DesktopApi): TempiApi => ({
 	},
 	data: {
 		backup: () => call(CHANNELS.data.backup, () => api.data.backup()),
+		folder: () => call(CHANNELS.data.folder, () => api.data.folder()),
+		openFolder: () => call(CHANNELS.data.openFolder, () => api.data.openFolder()),
 		restore: () => call(CHANNELS.data.restore, () => api.data.restore()),
 	},
 	events: {

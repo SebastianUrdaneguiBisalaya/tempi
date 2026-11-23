@@ -461,6 +461,10 @@ export const en = {
 				confirm: 'Choose backup…',
 				confirmDescription: 'Everything in Tempi will be replaced by the backup you choose next. Tempi then restarts.',
 				confirmTitle: 'Replace all data with a backup?',
+				copyFolder: 'Copy path',
+				folderDescription: 'Tempi keeps all your data in this folder on your computer.',
+				folderTitle: 'Data folder',
+				openFolder: 'Open folder',
 				restore: 'Restore backup…',
 				restoreDescription: 'Replace everything in Tempi with a backup. Tempi restarts afterwards.',
 				restoreTitle: 'Restore',
@@ -798,6 +802,7 @@ export const en = {
 			calendarDeleted: 'Calendar deleted.',
 			calendarUpdated: 'Calendar updated.',
 			creatingBackup: 'Creating backup…',
+			dataFolderCopied: 'Data folder path copied.',
 			googleConnected: 'Google account connected.',
 			googleCalendarsSaved: 'Google calendars updated.',
 			googleDisconnected: 'Google account disconnected.',
@@ -942,6 +947,9 @@ export const en = {
 		avatar: {
 			fileName: 'This photo can’t be found.',
 			tooLarge: 'This photo is too large.',
+		},
+		data: {
+			openFolderFailed: 'Couldn’t open the data folder. Copy its path and open it yourself.',
 		},
 		backup: {
 			invalidFile: 'This file isn’t a Tempi backup.',

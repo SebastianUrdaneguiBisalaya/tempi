@@ -22,6 +22,7 @@ export const STORAGE_UNAVAILABLE: DomainError = {
 export const queryKeys = {
 	ai: { all: ['ai'], settings: ['ai', 'settings'], voices: ['ai', 'voices'] },
 	calendars: { all: ['calendars'] },
+	data: { folder: ['data', 'folder'] },
 	events: {
 		all: ['events'],
 		// Under `events`, so every event change refreshes the free time it leaves.

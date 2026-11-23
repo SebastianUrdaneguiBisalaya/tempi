@@ -1,13 +1,56 @@
 'use client';
 
-import { DatabaseBackupIcon, HistoryIcon } from 'lucide-react';
+import { CopyIcon, DatabaseBackupIcon, FolderOpenIcon, HistoryIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCreateBackup, useRestoreBackup } from '../hooks/use-data-backup';
+import { useCopyDataFolder, useDataFolder, useOpenDataFolder } from '../hooks/use-data-folder';
 
-/** Backups of all data to a file, and restoring one after confirming, which relaunches the app. */
+/** Where Tempi keeps its data on this computer, to copy the path or open the folder. Hidden outside the desktop app. */
+function DataFolder() {
+	const { t } = useTranslation();
+	const titleId = useId();
+	const descriptionId = useId();
+	const folder = useDataFolder();
+	const copy = useCopyDataFolder();
+	const open = useOpenDataFolder();
+	if (folder.data === undefined) return null;
+	const path = folder.data;
+	const copyLabel = t('settings.data.copyFolder');
+
+	return (
+		<section aria-labelledby={titleId} className='flex flex-col items-start gap-2'>
+			<h3 className='font-heading text-sm font-semibold' id={titleId}>
+				{t('settings.data.folderTitle')}
+			</h3>
+			<p className='text-muted-foreground' id={descriptionId}>
+				{t('settings.data.folderDescription')}
+			</p>
+			<InputGroup className='w-full'>
+				{/* Read-only rather than plain text so a long path scrolls inside the field and can still be selected by hand. */}
+				<InputGroupInput aria-describedby={descriptionId} aria-label={t('settings.data.folderTitle')} className='font-mono' readOnly value={path} />
+				<InputGroupAddon align='inline-end'>
+					<Tooltip>
+						<TooltipTrigger render={<InputGroupButton aria-label={copyLabel} disabled={copy.isPending} onClick={() => copy.mutate(path)} size='icon-xs' />}>
+							<CopyIcon />
+						</TooltipTrigger>
+						<TooltipContent>{copyLabel}</TooltipContent>
+					</Tooltip>
+				</InputGroupAddon>
+			</InputGroup>
+			<Button disabled={open.isPending} onClick={() => open.mutate()} variant='outline'>
+				<FolderOpenIcon data-icon='inline-start' />
+				{t('settings.data.openFolder')}
+			</Button>
+		</section>
+	);
+}
+
+/** The data folder, backups of all data to a file, and restoring one after confirming, which relaunches the app. */
 export function DataSettings() {
 	const { t } = useTranslation();
 	const backupId = useId();
@@ -19,6 +62,7 @@ export function DataSettings() {
 
 	return (
 		<div className='flex flex-col gap-6 text-xs'>
+			<DataFolder />
 			<section aria-labelledby={backupId} className='flex flex-col items-start gap-2'>
 				<h3 className='font-heading text-sm font-semibold' id={backupId}>
 					{t('settings.data.backupTitle')}

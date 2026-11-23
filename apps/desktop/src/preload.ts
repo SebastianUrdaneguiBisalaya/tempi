@@ -97,6 +97,8 @@ const desktop: DesktopApi = {
 	},
 	data: {
 		backup: () => ipcRenderer.invoke(CHANNELS.data.backup),
+		folder: () => ipcRenderer.invoke(CHANNELS.data.folder),
+		openFolder: () => ipcRenderer.invoke(CHANNELS.data.openFolder),
 		restore: () => ipcRenderer.invoke(CHANNELS.data.restore),
 	},
 	events: {

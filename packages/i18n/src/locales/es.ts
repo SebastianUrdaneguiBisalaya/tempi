@@ -463,6 +463,10 @@ export const es = {
 				confirm: 'Elegir copia…',
 				confirmDescription: 'Todo lo que hay en Tempi se reemplazará por la copia que elijas a continuación. Luego Tempi se reinicia.',
 				confirmTitle: '¿Reemplazar todos los datos por una copia?',
+				copyFolder: 'Copiar ruta',
+				folderDescription: 'Tempi guarda todos tus datos en esta carpeta de tu computadora.',
+				folderTitle: 'Carpeta de datos',
+				openFolder: 'Abrir carpeta',
 				restore: 'Restaurar copia…',
 				restoreDescription: 'Reemplaza todo lo que hay en Tempi por una copia de seguridad. Después Tempi se reinicia.',
 				restoreTitle: 'Restaurar',
@@ -800,6 +804,7 @@ export const es = {
 			calendarDeleted: 'Calendario eliminado.',
 			calendarUpdated: 'Calendario actualizado.',
 			creatingBackup: 'Creando copia de seguridad…',
+			dataFolderCopied: 'Ruta de la carpeta de datos copiada.',
 			googleConnected: 'Cuenta de Google conectada.',
 			googleCalendarsSaved: 'Calendarios de Google actualizados.',
 			googleDisconnected: 'Cuenta de Google desconectada.',
@@ -943,6 +948,9 @@ export const es = {
 		avatar: {
 			fileName: 'No se encuentra esta foto.',
 			tooLarge: 'Esta foto es demasiado grande.',
+		},
+		data: {
+			openFolderFailed: 'No se pudo abrir la carpeta de datos. Copia su ruta y ábrela tú mismo.',
 		},
 		backup: {
 			invalidFile: 'Este archivo no es una copia de seguridad de Tempi.',

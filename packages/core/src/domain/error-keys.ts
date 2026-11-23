@@ -25,6 +25,7 @@ export const ERROR_KEYS = {
 	'calendar.notFound': 'Calendar not found',
 	'calendar.readOnly': 'The calendar is read-only: its events cannot be created, changed or deleted',
 	'calendar.synced': 'A synced calendar is removed by unselecting it in the integration settings, not deleted',
+	'data.openFolderFailed': 'The OS could not open the data folder in the file manager; see detail',
 	'event.endBeforeStart': 'Event end must be after its start',
 	'event.notFound': 'Event not found',
 	'event.rrule': 'Recurrence must be an RFC 5545 RRULE',
