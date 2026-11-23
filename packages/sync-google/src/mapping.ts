@@ -1,4 +1,4 @@
-import { type CalendarEvent, isValidTimeZone, MAX_REMINDER_MINUTES, toUtcInstant } from '@tempi/core';
+import { type CalendarEvent, type GoogleAttendee, type GoogleEventLink, isValidTimeZone, MAX_REMINDER_MINUTES, toUtcInstant } from '@tempi/core';
 import type { GoogleEvent, GoogleEventInput, GoogleEventTime } from '@usemeshly/google-calendar';
 
 /** Private property that keeps Tempi's video link, which Google has no plain field for. */
@@ -12,7 +12,7 @@ const VIDEO_URL = /^https?:\/\/\S+$/i;
 /** The event fields Google carries, ready for core's event schema. */
 export type PulledFields = Pick<
 	CalendarEvent,
-	'allDay' | 'description' | 'endAt' | 'googleMeet' | 'location' | 'reminderMinutes' | 'rrule' | 'startAt' | 'status' | 'timeZone' | 'title' | 'videoUrl'
+	'allDay' | 'description' | 'endAt' | 'googleMeet' | 'guests' | 'guestsReadOnly' | 'location' | 'reminderMinutes' | 'rrule' | 'startAt' | 'status' | 'timeZone' | 'title' | 'videoUrl'
 > & {
 	/** EXDATEs of a recurring event, as UTC instants. */
 	exDates: string[];
@@ -93,6 +93,28 @@ export const hasMeet = (event: Pick<GoogleEvent, 'conferenceData'>): boolean => 
 	return request?.conferenceSolutionKey?.type === MEET && request.status?.statusCode !== 'failure';
 };
 
+/** A Google event's attendees with an email, as Tempi keeps them. */
+export const attendeesOf = (event: Pick<GoogleEvent, 'attendees'>): GoogleAttendee[] =>
+	(event.attendees ?? []).flatMap(({ displayName, email, optional, organizer, resource, self }) => {
+		const address = text(email);
+		if (address === null) return [];
+		return [
+			{
+				email: address,
+				...(displayName !== undefined && { displayName }),
+				...(optional !== undefined && { optional }),
+				...(organizer !== undefined && { organizer }),
+				...(resource !== undefined && { resource }),
+				...(self !== undefined && { self }),
+			},
+		];
+	});
+
+/** Guests are the people invited: never the user, the organizer, nor a room or other resource. */
+const isGuest = (attendee: GoogleAttendee): boolean => attendee.self !== true && attendee.organizer !== true && attendee.resource !== true;
+
+const guestsOf = (attendees: GoogleAttendee[]): string[] => [...new Set(attendees.filter(isGuest).map(attendee => attendee.email.trim().toLowerCase()))];
+
 /** The link to join a Google event's Meet; null while Google is still creating it, or when it has none. */
 export const meetLinkOf = (event: Pick<GoogleEvent, 'conferenceData' | 'hangoutLink'>): string | null => {
 	if (!hasMeet(event)) return null;
@@ -130,6 +152,9 @@ export const fromGoogle = (event: GoogleEvent, zone: string): PulledFields | nul
 		endAt: end.instant,
 		exDates,
 		googleMeet,
+		guests: guestsOf(attendeesOf(event)),
+		// Someone else's event only lets guests change when its organizer allows it.
+		guestsReadOnly: event.organizer !== undefined && event.organizer.self !== true && event.guestsCanModify !== true,
 		location: text(event.location),
 		reminderMinutes,
 		// Core strips the `RRULE:` prefix and checks the rule.
@@ -157,14 +182,38 @@ const conferenceOf = (event: CalendarEvent, remoteMeet: boolean): Pick<GoogleEve
 	return { conferenceData: { createRequest: { conferenceSolutionKey: { type: MEET }, requestId: `${event.id}-${event.updatedAt}` } } };
 };
 
+/** What Google's version of an event has, as last synced: nothing yet for an event Google doesn't have. */
+export type RemoteState = Pick<GoogleEventLink, 'attendees' | 'meet'>;
+
+export const NOT_ON_GOOGLE: RemoteState = { attendees: [], meet: false };
+
+/**
+ * The attendees to send, only when the guests changed: the ones Tempi doesn't show (the user, the organizer, rooms)
+ * stay, and guests already invited keep their name and whether they are optional.
+ */
+const attendeesFor = (event: CalendarEvent, remote: GoogleAttendee[]): Pick<GoogleEventInput, 'attendees'> => {
+	const invited = guestsOf(remote);
+	if (event.guests.length === invited.length && event.guests.every(email => invited.includes(email))) return {};
+	const kept = remote.filter(attendee => !isGuest(attendee));
+	const guests = event.guests.map(email => remote.find(attendee => isGuest(attendee) && attendee.email.toLowerCase() === email) ?? { email });
+	return {
+		attendees: [...kept, ...guests].map(({ displayName, email, optional }) => ({
+			email,
+			...(displayName !== undefined && { displayName }),
+			...(optional !== undefined && { optional }),
+		})),
+	};
+};
+
 /**
  * A local event as the fields Tempi writes on Google. A series sends its rule and the dates it skips (`exDates`,
  * without those of edited occurrences, which stay as Google exceptions); an edited occurrence sends no recurrence.
- * `remoteMeet` is whether Google's version of the event already has a Meet.
+ * `remote` is what Google's version of the event has, so the Meet and the guests are only sent when they changed.
  */
-export const toGoogle = (event: CalendarEvent, exDates: string[], remoteMeet: boolean): GoogleEventInput => {
+export const toGoogle = (event: CalendarEvent, exDates: string[], remote: RemoteState): GoogleEventInput => {
 	const body: GoogleEventInput = {
-		...conferenceOf(event, remoteMeet),
+		...conferenceOf(event, remote.meet),
+		...attendeesFor(event, remote.attendees),
 		description: event.description,
 		end: timeOf(event.endAt, event.allDay, event.timeZone),
 		// With a Meet, Google holds the link; keeping it here too would outlive the Meet.

@@ -12,6 +12,8 @@ export const eventRowSchema = z
 		description: z.string().nullable(),
 		end_at: z.string(),
 		google_meet: booleanColumn,
+		guests: jsonColumn,
+		guests_read_only: booleanColumn,
 		ical_uid: z.string().nullable(),
 		ex_dates: jsonColumn,
 		id: z.string(),
@@ -37,6 +39,8 @@ export const eventRowSchema = z
 			endAt: row.end_at,
 			exDates: row.ex_dates,
 			googleMeet: row.google_meet,
+			guests: row.guests,
+			guestsReadOnly: row.guests_read_only,
 			icalUid: row.ical_uid,
 			id: row.id,
 			location: row.location,
@@ -64,6 +68,8 @@ const toRow = (event: CalendarEvent) => ({
 	end_at: toInstantColumn(event.endAt),
 	ex_dates: JSON.stringify(event.exDates.map(toInstantColumn)),
 	google_meet: toBooleanColumn(event.googleMeet),
+	guests: JSON.stringify(event.guests),
+	guests_read_only: toBooleanColumn(event.guestsReadOnly),
 	ical_uid: event.icalUid,
 	id: event.id,
 	location: event.location,
@@ -92,7 +98,7 @@ export const toSearchQuery = (text: string): string | null => {
 };
 
 export const EVENT_COLUMNS =
-	'id, calendar_id, title, description, location, video_url, start_at, end_at, all_day, time_zone, rrule, ex_dates, recurring_event_id, original_start_at, reminder_minutes, status, ical_uid, google_meet, created_at, updated_at, deleted_at';
+	'id, calendar_id, title, description, location, video_url, start_at, end_at, all_day, time_zone, rrule, ex_dates, recurring_event_id, original_start_at, reminder_minutes, status, ical_uid, google_meet, guests, guests_read_only, created_at, updated_at, deleted_at';
 
 export class SqliteEventRepository implements EventRepository {
 	private readonly findByIdStatement: StatementSync;
@@ -122,13 +128,13 @@ export class SqliteEventRepository implements EventRepository {
 		);
 		this.saveStatement = db.prepare(
 			`INSERT INTO events (${EVENT_COLUMNS})
-			VALUES (:id, :calendar_id, :title, :description, :location, :video_url, :start_at, :end_at, :all_day, :time_zone, :rrule, :ex_dates, :recurring_event_id, :original_start_at, :reminder_minutes, :status, :ical_uid, :google_meet, :created_at, :updated_at, :deleted_at)
+			VALUES (:id, :calendar_id, :title, :description, :location, :video_url, :start_at, :end_at, :all_day, :time_zone, :rrule, :ex_dates, :recurring_event_id, :original_start_at, :reminder_minutes, :status, :ical_uid, :google_meet, :guests, :guests_read_only, :created_at, :updated_at, :deleted_at)
 			ON CONFLICT (id) DO UPDATE SET
 				calendar_id = excluded.calendar_id, title = excluded.title, description = excluded.description,
 				location = excluded.location, video_url = excluded.video_url, start_at = excluded.start_at, end_at = excluded.end_at,
 				all_day = excluded.all_day, time_zone = excluded.time_zone, rrule = excluded.rrule, ex_dates = excluded.ex_dates,
 				recurring_event_id = excluded.recurring_event_id, original_start_at = excluded.original_start_at,
-				reminder_minutes = excluded.reminder_minutes, status = excluded.status, ical_uid = excluded.ical_uid, google_meet = excluded.google_meet,
+				reminder_minutes = excluded.reminder_minutes, status = excluded.status, ical_uid = excluded.ical_uid, google_meet = excluded.google_meet, guests = excluded.guests, guests_read_only = excluded.guests_read_only,
 				created_at = excluded.created_at, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at`
 		);
 		this.moveToCalendarStatement = db.prepare('UPDATE events SET calendar_id = :to, updated_at = :updated_at WHERE calendar_id = :from AND deleted_at IS NULL');

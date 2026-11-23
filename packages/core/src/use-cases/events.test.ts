@@ -225,3 +225,47 @@ describe('Google Meet', () => {
 		expect(await updateEvent(deps, created.value.id, { googleMeet: true })).toEqual(failure('validation', 'googleMeet'));
 	});
 });
+
+describe('guests', () => {
+	const withGoogleCalendar = async () => {
+		const context = await setup();
+		const google = await createCalendar(context.deps, { color: '#0b8043', name: 'Ada', source: 'google' });
+		if (!google.ok) throw new Error('calendar setup failed');
+		return { ...context, googleId: google.value.id };
+	};
+
+	test('are stored in lower case, once each', async () => {
+		const { deps, googleId, input } = await withGoogleCalendar();
+		const created = await createEvent(deps, { ...input, calendarId: googleId, guests: [' Grace@Example.com ', 'grace@example.com', 'alan@example.com'] });
+		expect(created).toMatchObject({ ok: true, value: { guests: ['grace@example.com', 'alan@example.com'], guestsReadOnly: false } });
+	});
+
+	test('must be emails, and at most the maximum', async () => {
+		const { deps, googleId, input } = await withGoogleCalendar();
+		const invalid = await createEvent(deps, { ...input, calendarId: googleId, guests: ['grace@example.com', 'not an email'] });
+		expect(invalid).toEqual({ error: { code: 'validation', issues: [expect.objectContaining({ field: 'guests.1', key: 'validation.email' })] }, ok: false });
+		const many = Array.from({ length: 201 }, (_, index) => `guest${index}@example.com`);
+		expect(await createEvent(deps, { ...input, calendarId: googleId, guests: many })).toEqual({
+			error: { code: 'validation', issues: [expect.objectContaining({ key: 'event.tooManyGuests', params: expect.objectContaining({ maximum: 200 }) })] },
+			ok: false,
+		});
+	});
+
+	test('only events in a Google calendar may have guests', async () => {
+		const { calendarId, deps, googleId, input } = await withGoogleCalendar();
+		expect(await createEvent(deps, { ...input, guests: ['grace@example.com'] })).toEqual(failure('validation', 'guests'));
+		const created = await createEvent(deps, { ...input, calendarId: googleId, guests: ['grace@example.com'] });
+		if (!created.ok) throw new Error('create failed');
+		expect(await updateEvent(deps, created.value.id, { calendarId })).toEqual(failure('validation', 'guests'));
+		expect(await updateEvent(deps, created.value.id, { calendarId, guests: [] })).toMatchObject({ ok: true, value: { calendarId, guests: [] } });
+	});
+
+	test("of someone else's event can't change, while its other fields can", async () => {
+		const { deps, googleId, input } = await withGoogleCalendar();
+		const created = await createEvent(deps, { ...input, calendarId: googleId, guests: ['grace@example.com'] });
+		if (!created.ok) throw new Error('create failed');
+		await deps.events.save({ ...created.value, guestsReadOnly: true });
+		expect(await updateEvent(deps, created.value.id, { guests: [] })).toEqual(failure('conflict', 'guests'));
+		expect(await updateEvent(deps, created.value.id, { guests: ['GRACE@example.com'], title: 'Renamed' })).toMatchObject({ ok: true, value: { title: 'Renamed' } });
+	});
+});

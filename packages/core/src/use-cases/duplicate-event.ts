@@ -26,6 +26,8 @@ export const duplicateEvent = async (deps: Pick<CoreDeps, 'calendars' | 'clock' 
 		createdAt: now,
 		exDates,
 		deletedAt: null,
+		// The copy is the user's own event on Google.
+		guestsReadOnly: false,
 		icalUid: null,
 		id: deps.ids.next(),
 		originalStartAt: null,

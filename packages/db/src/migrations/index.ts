@@ -17,6 +17,7 @@ import workingHours from './0013_working_hours.sql' with { type: 'text' };
 import weather from './0014_weather.sql' with { type: 'text' };
 import holidays from './0015_holidays.sql' with { type: 'text' };
 import googleMeet from './0016_google_meet.sql' with { type: 'text' };
+import eventGuests from './0017_event_guests.sql' with { type: 'text' };
 
 export const MIGRATION_FILES: Record<string, string> = {
 	'0001_init.sql': init,
@@ -35,4 +36,5 @@ export const MIGRATION_FILES: Record<string, string> = {
 	'0014_weather.sql': weather,
 	'0015_holidays.sql': holidays,
 	'0016_google_meet.sql': googleMeet,
+	'0017_event_guests.sql': eventGuests,
 };

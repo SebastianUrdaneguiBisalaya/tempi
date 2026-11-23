@@ -31,11 +31,25 @@ export const googleCalendarLinkSchema = z.object({
 
 export type GoogleCalendarLink = z.output<typeof googleCalendarLinkSchema>;
 
+/** An attendee of a Google event as Google last returned it: a guest, or someone Tempi keeps but doesn't show. */
+export const googleAttendeeSchema = z.object({
+	displayName: z.string().optional(),
+	email: z.string().min(1),
+	optional: z.boolean().optional(),
+	organizer: z.boolean().optional(),
+	resource: z.boolean().optional(),
+	self: z.boolean().optional(),
+});
+
+export type GoogleAttendee = z.output<typeof googleAttendeeSchema>;
+
 /**
  * A local event that has been synced with Google: where it lives there, the version Google last returned (`etag`), and
  * the local `updatedAt` that version matches. A later local `updatedAt` means a change still to push.
  */
 export const googleEventLinkSchema = z.object({
+	/** The attendees of that version, so a push only sends the list when the guests changed, keeping the rest. */
+	attendees: z.array(googleAttendeeSchema),
 	etag: z.string().min(1),
 	eventId: idSchema,
 	googleCalendarId: z.string().min(1),

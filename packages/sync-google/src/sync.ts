@@ -13,7 +13,7 @@ import {
 } from '@tempi/core';
 import { isMeshlyError } from '@usemeshly/auth';
 import type { GoogleCalendarClient, GoogleCalendarListEntry, GoogleEvent } from '@usemeshly/google-calendar';
-import { fromGoogle, googleEventIdFor, hasMeet, instanceId, instantOf, meetLinkOf, type PulledFields, toGoogle } from './mapping';
+import { attendeesOf, fromGoogle, googleEventIdFor, hasMeet, instanceId, instantOf, meetLinkOf, NOT_ON_GOOGLE, type PulledFields, toGoogle } from './mapping';
 
 export type SyncDeps = Pick<CoreDeps, 'calendars' | 'clock' | 'events' | 'googleSync' | 'ids'>;
 
@@ -141,7 +141,15 @@ const applyPull = async (deps: SyncDeps, link: GoogleCalendarLink & { calendarId
 		}
 		const event: CalendarEvent = { ...fields.data, createdAt: local?.createdAt ?? updatedAt, deletedAt: null, id: local?.id ?? deps.ids.next(), updatedAt };
 		await deps.events.save(event);
-		await deps.googleSync.saveEventLink({ etag: item.etag, eventId: event.id, googleCalendarId: link.googleId, googleEventId: item.id, meet: hasMeet(item), syncedUpdatedAt: updatedAt });
+		await deps.googleSync.saveEventLink({
+			attendees: attendeesOf(item),
+			etag: item.etag,
+			eventId: event.id,
+			googleCalendarId: link.googleId,
+			googleEventId: item.id,
+			meet: hasMeet(item),
+			syncedUpdatedAt: updatedAt,
+		});
 		counts.pulled += 1;
 		return event;
 	};
@@ -289,6 +297,9 @@ const planPushes = async (deps: SyncDeps, calendarIds: string[]): Promise<Push[]
 	return pushes;
 };
 
+/** Google emails the guests about every create, change and delete Tempi sends. */
+const NOTIFY = { sendUpdates: 'all' } as const;
+
 const isGone = (error: unknown) => isMeshlyError(error) && (error.status === 404 || error.status === 410);
 
 /** Sends one local change to Google and records what Google answered. Returns whether anything was sent. */
@@ -301,7 +312,15 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 		const { etag } = sent;
 		if (etag === undefined) throw new Error(`Google answered ${sent.id} without an etag`);
 		return transact(async deps => {
-			await deps.googleSync.saveEventLink({ etag, eventId: event.id, googleCalendarId, googleEventId: sent.id, meet: hasMeet(sent), syncedUpdatedAt: event.updatedAt });
+			await deps.googleSync.saveEventLink({
+				attendees: attendeesOf(sent),
+				etag,
+				eventId: event.id,
+				googleCalendarId,
+				googleEventId: sent.id,
+				meet: hasMeet(sent),
+				syncedUpdatedAt: event.updatedAt,
+			});
 			// Pulls skip Tempi's own writes, so the Meet link Google just made is copied here, without counting as a local
 			// change. A pending Meet has no link yet: it arrives with the pull after Google finishes it.
 			const meetLink = event.googleMeet ? meetLinkOf(sent) : null;
@@ -313,7 +332,7 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 
 	// Deleted here, or moved out of the Google calendar it was on: delete it there.
 	if (link !== null && (event.deletedAt !== null || target?.googleId !== link.googleCalendarId)) {
-		await api.events.delete(link.googleCalendarId, link.googleEventId);
+		await api.events.delete(link.googleCalendarId, link.googleEventId, NOTIFY);
 		await forget();
 		if (event.deletedAt !== null || target === undefined) return true;
 		link = null;
@@ -325,15 +344,15 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 		const seriesLink = await transact(deps => deps.googleSync.findEventLink(event.recurringEventId ?? ''));
 		if (series === null || seriesLink === null || seriesLink.googleCalendarId !== target.googleId || event.originalStartAt === null) return false;
 		const id = link?.googleEventId ?? instanceId(seriesLink.googleEventId, event.originalStartAt, series.allDay, series.timeZone);
-		// An occurrence edited for the first time shares its series' Meet on Google.
-		await record(target.googleId, await api.events.patch(target.googleId, id, toGoogle(event, [], link?.meet ?? seriesLink.meet)));
+		// An occurrence edited for the first time has its series' Meet and guests on Google.
+		await record(target.googleId, await api.events.patch(target.googleId, id, toGoogle(event, [], link ?? seriesLink), NOTIFY));
 		return true;
 	}
 
-	const body = toGoogle(event, exDates, link?.meet ?? false);
+	const body = toGoogle(event, exDates, link ?? NOT_ON_GOOGLE);
 	if (link !== null) {
 		try {
-			await record(target.googleId, await api.events.patch(target.googleId, link.googleEventId, body));
+			await record(target.googleId, await api.events.patch(target.googleId, link.googleEventId, body, NOTIFY));
 			return true;
 		} catch (error) {
 			if (!isGone(error)) throw error;
@@ -341,11 +360,11 @@ const push = async (options: GoogleSyncOptions, { event, exDates, link, series }
 	}
 	const id = googleEventIdFor(event.id);
 	try {
-		await record(target.googleId, await api.events.insert(target.googleId, id === undefined ? body : { ...body, id }));
+		await record(target.googleId, await api.events.insert(target.googleId, id === undefined ? body : { ...body, id }, NOTIFY));
 	} catch (error) {
 		// The id is already taken: an earlier insert went through, or the event was deleted there and is coming back.
 		if (!isMeshlyError(error, 'conflict') || id === undefined) throw error;
-		await record(target.googleId, await api.events.patch(target.googleId, id, body));
+		await record(target.googleId, await api.events.patch(target.googleId, id, body, NOTIFY));
 	}
 	return true;
 };

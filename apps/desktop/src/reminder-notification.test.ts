@@ -16,6 +16,8 @@ const reminder = (overrides: Partial<Reminder['occurrence']> = {}, fireAt = '202
 		endAt: '2026-11-20T15:00:00.000Z',
 		exDates: [],
 		googleMeet: false,
+		guests: [],
+		guestsReadOnly: false,
 		icalUid: null,
 		id: 'event-1',
 		key: 'event-1',
