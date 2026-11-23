@@ -39,6 +39,7 @@ export function EventPanel() {
 		calendarId: defaultCalendar?.id ?? '',
 		description: '',
 		endAt: toFormTime(draft.endAt, timeZone, draft.allDay, true),
+		googleMeet: false,
 		location: '',
 		reminderMinutes: null,
 		startAt: toFormTime(draft.startAt, timeZone, draft.allDay),
