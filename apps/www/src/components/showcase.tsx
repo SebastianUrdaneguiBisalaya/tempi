@@ -3,7 +3,6 @@
 import { cn } from 'cn';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { gsap, ScrollTrigger, useMotion } from '@/lib/gsap';
 
 type ShowcaseSectionProps = {
@@ -62,8 +61,6 @@ export function ShowcaseGrid({ children }: { children: ReactNode }) {
 type ShowcaseCellProps = {
 	title: string;
 	body: string;
-	badge?: string;
-	note?: string;
 	/** The replica on top. It is decorative: the title and body say what it shows. */
 	children: ReactNode;
 	/** `top` pins a tall replica so only its bottom is cut; `center` suits replicas shorter than the cell. */
@@ -71,7 +68,7 @@ type ShowcaseCellProps = {
 	className?: string;
 };
 
-export function ShowcaseCell({ title, body, badge, note, children, align = 'top', className }: ShowcaseCellProps) {
+export function ShowcaseCell({ title, body, children, align = 'top', className }: ShowcaseCellProps) {
 	return (
 		<li data-showcase-cell className={cn('flex min-w-0 flex-col border-b', className)}>
 			{/* When pinned to the top, a replica taller than the cell is cut only at the bottom, where it fades out, as at the sides. */}
@@ -86,12 +83,8 @@ export function ShowcaseCell({ title, body, badge, note, children, align = 'top'
 				{children}
 			</div>
 			<div className='px-0 pt-2 pb-8 md:px-8'>
-				<h3 className='flex flex-wrap items-center gap-2 text-base font-medium'>
-					{title}
-					{badge && <Badge variant='outline'>{badge}</Badge>}
-				</h3>
+				<h3 className='text-base font-medium'>{title}</h3>
 				<p className='mt-1.5 max-w-lg text-sm leading-relaxed text-muted-foreground'>{body}</p>
-				{note && <p className='mt-1.5 text-xs leading-relaxed text-muted-foreground/80'>{note}</p>}
 			</div>
 		</li>
 	);

@@ -163,9 +163,15 @@
       },
       "googleSync": {
         "title": "Sincronización con Google Calendar",
-        "body": "Sincronización opcional en ambos sentidos, incluso con calendarios de solo lectura como los feriados.",
-        "badge": "Acceso anticipado",
-        "note": "Por ahora solo pueden conectarse cuentas de Google invitadas, mientras Google revisa Tempi."
+        "body": "Sincronización opcional en ambos sentidos, incluso con calendarios de solo lectura como los feriados."
+      },
+      "googleMeet": {
+        "title": "Google Meet con un interruptor",
+        "body": "Activa Google Meet en un evento de un calendario de Google y Google crea la llamada; Unirse la abre en cuanto el evento se sincroniza."
+      },
+      "guests": {
+        "title": "Invita a otras personas",
+        "body": "Añade los correos de tus invitados a un evento de un calendario de Google y Google les envía la invitación y cada cambio."
       },
       "recurrence": {
         "title": "Recurrencia y recordatorios",
@@ -205,6 +211,20 @@
       }
     },
     "replicas": {
+      "googleMeet": {
+        "label": "Google Meet",
+        "hint": "Crea un enlace de Google Meet cuando el evento se sincroniza.",
+        "join": "Unirse",
+        "joinLabel": "Unirse en Google Meet"
+      },
+      "guests": {
+        "label": "Invitados",
+        "placeholder": "nombre@ejemplo.com",
+        "add": "Añadir invitado",
+        "remove": "Quitar a {email}",
+        "hint": "Google les envía la invitación y cada cambio por correo.",
+        "emails": ["ana@ejemplo.com", "luis@ejemplo.com", "maya@ejemplo.com"]
+      },
       "recurrence": {
         "repeat": "Repetir",
         "custom": "Personalizado…",
@@ -575,11 +595,7 @@
       },
       "account": {
         "question": "¿Necesito una cuenta de Google?",
-        "answer": "No. Tempi funciona por completo sin ninguna cuenta. La sincronización con Google Calendar es opcional y, por ahora, está limitada a cuentas invitadas (ver abajo)."
-      },
-      "googleAccess": {
-        "question": "¿Por qué todavía no puedo conectar Google Calendar?",
-        "answer": "Google aún está revisando Tempi y, hasta que apruebe la app, solo pueden conectarse cuentas de Google invitadas; cualquier otra cuenta ve un error de “acceso denegado” de Google. Todo lo demás funciona sin Google, y puedes traer tus eventos importando un archivo iCalendar (.ics) en cualquier calendario. La sincronización se abrirá para todos cuando Google apruebe Tempi."
+        "answer": "No. Tempi funciona por completo sin ninguna cuenta. La sincronización con Google Calendar es opcional."
       },
       "offline": {
         "question": "¿Funciona sin conexión?",
@@ -685,13 +701,13 @@
           "list": [
             "openid y email: para saber qué cuenta de Google está conectada y mostrar su correo en Ajustes. Tempi guarda el correo y el identificador de la cuenta de Google en tu computadora.",
             "calendar.calendarlist.readonly (solo lectura): para listar los calendarios de tu cuenta, con sus nombres, colores y zonas horarias, y que elijas cuáles sincronizar.",
-            "calendar.events: para leer los eventos de los calendarios que elijas y mostrarlos en Tempi, y para crear, editar y eliminar eventos en Google Calendar cuando lo haces en Tempi, de modo que ambos estén sincronizados."
+            "calendar.events: para leer los eventos de los calendarios que elijas y mostrarlos en Tempi, y para crear, editar y eliminar eventos en Google Calendar cuando lo haces en Tempi, de modo que ambos estén sincronizados. Con este mismo permiso, Tempi pide a Google que cree un enlace de Google Meet en los eventos donde activas Google Meet, y envía a Google los correos de los invitados que agregas, para que Google les envíe por correo la invitación y cada cambio del evento."
           ]
         },
         {
           "title": "Cómo se tratan los datos de Google",
           "body": [
-            "Los datos de Google que Tempi procesa son tu lista de calendarios (nombres, colores, zonas horarias y nivel de acceso) y los eventos de los calendarios que elijas (título, descripción, ubicación, horas de inicio y fin, zona horaria, repetición, recordatorios, estado y enlaces de videollamada).",
+            "Los datos de Google que Tempi procesa son tu lista de calendarios (nombres, colores, zonas horarias y nivel de acceso) y los eventos de los calendarios que elijas (título, descripción, ubicación, horas de inicio y fin, zona horaria, repetición, recordatorios, estado, enlaces de videollamada, enlaces de Google Meet y correos de los invitados).",
             "Estos datos viajan directamente entre tu computadora y los servidores de Google mediante una conexión cifrada (HTTPS). Nunca pasan por un servidor nuestro, porque no tenemos uno. Los calendarios y eventos sincronizados se guardan solo en la base de datos de tu computadora.",
             "Los tokens de acceso y de actualización de Google se cifran con el almacenamiento seguro de tu sistema operativo (Llavero en macOS, DPAPI en Windows, el llavero del sistema en Linux). En Linux sin llavero, Tempi no guarda los tokens. Los tokens nunca se nos envían ni llegan a la interfaz de la app.",
             "Al terminar el inicio de sesión, tu navegador va a una página de este sitio web que solo indica si funcionó. Esa página no recibe ningún dato de Google.",
