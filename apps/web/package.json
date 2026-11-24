@@ -27,7 +27,7 @@
     "@usecalendar/core": "0.4.1",
     "@usecalendar/react": "0.6.1",
     "@usehotkeys/core": "0.1.0",
-    "@usehotkeys/react": "0.1.0",
+    "@usehotkeys/react": "0.1.1",
     "@usesounds/core": "0.1.0",
     "@usesounds/react": "0.1.0",
     "@useweather/core": "catalog:",
