@@ -15,6 +15,10 @@ const MESH_A =
 	'radial-gradient(circle at 25% 30%, oklch(0.97 0 0) 0%, transparent 45%), radial-gradient(circle at 75% 25%, oklch(0.62 0 0) 0%, transparent 45%), radial-gradient(circle at 70% 78%, oklch(0.25 0 0) 0%, transparent 45%), radial-gradient(circle at 25% 75%, oklch(0.8 0 0) 0%, transparent 45%)';
 const MESH_B = 'radial-gradient(circle at 60% 40%, oklch(1 0 0 / 0.8) 0%, transparent 35%), radial-gradient(circle at 35% 60%, oklch(0.15 0 0 / 0.9) 0%, transparent 40%)';
 
+// The halo's glow, round by construction: it fades out before the edge of its square box, so no corner shows when the
+// blurred layer is scaled, whether or not the engine clips it to its rounded border (desktop Chrome and Safari don't).
+const HALO = 'radial-gradient(circle closest-side, oklch(0.9 0 0) 0%, oklch(0.55 0 0) 45%, transparent 75%)';
+
 /**
  * Follows a changing scale smoothly. `quickTo` drives one property only, and `scale` is GSAP's shorthand for `scaleX`
  * and `scaleY`, so it warns on every call; each axis gets its own setter instead.
@@ -102,7 +106,7 @@ export function VoiceOrb({ disabled, label, onTap, phase }: VoiceOrbProps) {
 			title={label}
 			type='button'
 		>
-			<span aria-hidden className='absolute inset-0 rounded-full opacity-25 blur-2xl' data-orb='halo' style={{ background: MESH_A }} />
+			<span aria-hidden className='absolute inset-0 rounded-full opacity-25 blur-2xl' data-orb='halo' style={{ background: HALO }} />
 			<span
 				aria-hidden
 				className='relative block size-full overflow-hidden rounded-full shadow-lg ring-1 ring-black/5 transition-[box-shadow] group-focus-visible:ring-4 group-focus-visible:ring-ring/60 motion-reduce:transition-none dark:ring-white/10'

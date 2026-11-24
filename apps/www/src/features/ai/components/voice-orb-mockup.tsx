@@ -17,6 +17,10 @@ const MESH_A =
 	'radial-gradient(circle at 25% 30%, oklch(0.97 0 0) 0%, transparent 45%), radial-gradient(circle at 75% 25%, oklch(0.62 0 0) 0%, transparent 45%), radial-gradient(circle at 70% 78%, oklch(0.25 0 0) 0%, transparent 45%), radial-gradient(circle at 25% 75%, oklch(0.8 0 0) 0%, transparent 45%)';
 const MESH_B = 'radial-gradient(circle at 60% 40%, oklch(1 0 0 / 0.8) 0%, transparent 35%), radial-gradient(circle at 35% 60%, oklch(0.15 0 0 / 0.9) 0%, transparent 40%)';
 
+// The halo's glow, round by construction: it fades out before the edge of its square box, so no corner shows when the
+// blurred layer is scaled, whether or not the engine clips it to its rounded border (desktop Chrome and Safari don't).
+const HALO = 'radial-gradient(circle closest-side, oklch(0.9 0 0) 0%, oklch(0.55 0 0) 45%, transparent 75%)';
+
 /**
  * Replica of the app's voice orb. The app follows the microphone and the speech; here the levels are simulated with
  * random pulses. With reduced motion it stays still.
@@ -49,7 +53,7 @@ export function VoiceOrbMockup({ phase }: { phase: VoicePhase }) {
 
 	return (
 		<div ref={root} data-phase={phase} className='relative flex size-36 shrink-0 items-center justify-center rounded-full sm:size-40'>
-			<span className='absolute inset-0 rounded-full opacity-25 blur-2xl' data-orb='halo' style={{ background: MESH_A }} />
+			<span className='absolute inset-0 rounded-full opacity-25 blur-2xl' data-orb='halo' style={{ background: HALO }} />
 			<span className='relative block size-full rounded-full shadow-lg ring-1 ring-white/10' data-orb='core'>
 				{/* iOS WebKit ignores a rounded overflow clip over blurred, blended and rotated layers and shows a square.
 				    clip-path clips them on every engine (an inner layer, so the ring and shadow stay outside the clip), and
