@@ -1,6 +1,6 @@
 'use client';
 
-import { DEFAULT_SETTINGS, type EventOccurrence, resolveLanguage } from '@tempi/core';
+import { DEFAULT_SETTINGS, type EventOccurrence, isSameRange, resolveLanguage } from '@tempi/core';
 import type { CalendarEvent, TimeRange } from '@usecalendar/core';
 import { Calendar } from '@usecalendar/react';
 import { useTranslation } from 'react-i18next';
@@ -58,7 +58,8 @@ export function CalendarMain() {
 	const createEvent = (range: TimeRange) => newEvent({ allDay: false, ...range });
 
 	const changeEvent = async (event: EventOccurrence, range: TimeRange) => {
-		if (range.startAt === event.startAt && range.endAt === event.endAt) return;
+		// Compared as instants: the calendar writes `…00Z` and storage `…00.000Z`, so a drop back in place is no change.
+		if (isSameRange(range, event)) return;
 		// An occurrence of a recurring event asks how far the change reaches; cancelling leaves it where it was.
 		const scope = event.series === null ? undefined : await chooseScope({ action: 'edit', allowThis: true, title: event.title });
 		if (scope === null) return;
