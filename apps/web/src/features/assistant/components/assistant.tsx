@@ -1,6 +1,7 @@
 'use client';
 
 import { MinusIcon, SquarePenIcon } from 'lucide-react';
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
@@ -22,8 +23,10 @@ function AssistantPanel({ onEdit, onMinimize }: { onEdit: () => void; onMinimize
 	const setTab = useAssistant(state => state.setTab);
 	const empty = useAssistant(state => state.turns.length === 0);
 	const { clear } = useAssistantRequests();
+	// The Voice tab's Space push-to-talk listens anywhere in the panel, the tab list included.
+	const panel = useRef<HTMLDivElement>(null);
 	return (
-		<Tabs className='flex h-full min-h-0 flex-col gap-0' onValueChange={value => isTab(value) && setTab(value)} value={tab}>
+		<Tabs className='flex h-full min-h-0 flex-col gap-0' onValueChange={value => isTab(value) && setTab(value)} ref={panel} value={tab}>
 			<div className='flex items-center gap-1 border-b px-2 py-1.5'>
 				<TabsList>
 					<TabsTrigger value='chat'>{t('assistant.tabs.chat')}</TabsTrigger>
@@ -40,7 +43,7 @@ function AssistantPanel({ onEdit, onMinimize }: { onEdit: () => void; onMinimize
 				<ChatTab onEdit={onEdit} />
 			</TabsContent>
 			<TabsContent className='flex min-h-0 flex-1 flex-col' value='voice'>
-				<VoiceTab onEdit={onEdit} />
+				<VoiceTab onEdit={onEdit} panel={panel} />
 			</TabsContent>
 		</Tabs>
 	);

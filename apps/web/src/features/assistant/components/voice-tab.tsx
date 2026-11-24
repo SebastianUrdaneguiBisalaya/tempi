@@ -4,7 +4,7 @@ import type { TextProvider } from '@tempi/core';
 import { TEXT_PROVIDERS } from '@tempi/core';
 import { issueTranslation } from '@tempi/i18n';
 import { AudioLinesIcon, MicOffIcon } from 'lucide-react';
-import { useEffect, useEffectEvent, useRef } from 'react';
+import { type RefObject, useEffect, useEffectEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useSettingsDialog } from '@/features/settings/components/settings-dialog-provider';
@@ -111,13 +111,22 @@ function LastReplyProposals({ onEdit }: { onEdit: () => void }) {
 	);
 }
 
+/** Controls that keep Space for themselves: fields, links, menus and buttons other than the orb and the tabs. */
+const OWN_SPACE = 'a[href], button, input, select, textarea, [contenteditable], [role=combobox], [role=menuitem], [role=option]';
+
+const keepsSpace = (event: KeyboardEvent): boolean => {
+	const target = event.target;
+	if (!(target instanceof Element) || target.closest('[role=tab], [data-assistant-focus]') !== null) return false;
+	return target.closest(OWN_SPACE) !== null;
+};
+
 /**
- * Space while focus is in the Voice tab: a quick press taps the orb, a long one talks until Space is released. Off
- * while the orb is disabled; typing in a field never triggers it.
+ * Space while focus is anywhere in the assistant panel (the tab list included) and the Voice tab is shown: a quick
+ * press taps the orb, a long one talks until Space is released. Off while the orb is disabled; fields and the other
+ * buttons (provider picker, proposal cards, New chat) keep Space for themselves.
  */
-function useHoldToTalk(provider: TextProvider, disabled: boolean) {
-	const ref = useRef<HTMLDivElement>(null);
-	// Whether Space went down here, so only that press's release is taken (and other buttons keep Space).
+function useHoldToTalk(provider: TextProvider, disabled: boolean, panel: RefObject<HTMLDivElement | null>) {
+	// Whether Space went down here, so only that press's release is taken.
 	const pressing = useRef(false);
 	const press = useVoice(state => state.press);
 	const release = useVoice(state => state.release);
@@ -132,7 +141,7 @@ function useHoldToTalk(provider: TextProvider, disabled: boolean) {
 			pressing.current = true;
 			press(provider);
 		},
-		{ element: ref, enabled: () => !disabled }
+		{ element: panel, enabled: () => !disabled, ignoreInputs: keepsSpace }
 	);
 	// The release is caught anywhere, so moving focus mid-press still sends.
 	useShortcut('holdToTalk', end, { enabled: () => pressing.current, on: 'keyup' });
@@ -146,11 +155,10 @@ function useHoldToTalk(provider: TextProvider, disabled: boolean) {
 			listener();
 		};
 	}, []);
-	return ref;
 }
 
 /** The Voice tab once set up: provider picker, orb (and Space) and what the last reply proposed. */
-function VoiceTalk({ enabled, onEdit, provider }: { enabled: TextProvider[]; onEdit: () => void; provider: TextProvider }) {
+function VoiceTalk({ enabled, onEdit, panel, provider }: { enabled: TextProvider[]; onEdit: () => void; panel: RefObject<HTMLDivElement | null>; provider: TextProvider }) {
 	const { t } = useTranslation();
 	const { data: settings } = useAiSettings();
 	const microphoneEnabled = useSettings().data?.microphoneEnabled !== false;
@@ -160,11 +168,11 @@ function VoiceTalk({ enabled, onEdit, provider }: { enabled: TextProvider[]; onE
 	// A reply typed in the Chat tab is still streaming: wait for it before talking.
 	const streaming = useAssistant(state => state.requestId !== null);
 	const disabled = phase === 'idle' && (streaming || !microphoneEnabled);
-	const ref = useHoldToTalk(provider, disabled);
+	useHoldToTalk(provider, disabled, panel);
 	if (settings === undefined) return null;
 
 	return (
-		<div className='flex min-h-0 flex-1 flex-col' ref={ref}>
+		<div className='flex min-h-0 flex-1 flex-col'>
 			<div className='flex items-center gap-2 border-b px-2 py-1.5'>
 				<ProviderSelect enabled={enabled} onChange={setVoiceProvider} settings={settings} value={provider} />
 			</div>
@@ -191,7 +199,7 @@ function VoiceTalk({ enabled, onEdit, provider }: { enabled: TextProvider[]; onE
  * Talking to the assistant, with no message list: the orb records, sends, cancels and stops; the reply is read aloud.
  * It continues the Chat tab's conversation, and changes still wait for Confirm on the cards under the orb.
  */
-export function VoiceTab({ onEdit }: { onEdit: () => void }) {
+export function VoiceTab({ onEdit, panel }: { onEdit: () => void; panel: RefObject<HTMLDivElement | null> }) {
 	const { data: settings } = useAiSettings();
 	const picked = useAssistant(state => state.voiceProvider);
 	if (settings === undefined) return null;
@@ -199,5 +207,5 @@ export function VoiceTab({ onEdit }: { onEdit: () => void }) {
 	// Only providers with a key are offered; one whose key was removed falls back to the first left.
 	const provider = picked !== null && enabled.includes(picked) ? picked : enabled[0];
 	if (provider === undefined || !settings.keys.elevenlabs) return <VoiceSetup />;
-	return <VoiceTalk enabled={enabled} onEdit={onEdit} provider={provider} />;
+	return <VoiceTalk enabled={enabled} onEdit={onEdit} panel={panel} provider={provider} />;
 }

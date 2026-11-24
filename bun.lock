@@ -51,7 +51,7 @@
         "@usecalendar/core": "0.4.0",
         "@usecalendar/react": "0.6.0",
         "@usehotkeys/core": "0.1.0",
-        "@usehotkeys/react": "0.1.0",
+        "@usehotkeys/react": "0.1.1",
         "@usesounds/core": "0.1.0",
         "@usesounds/react": "0.1.0",
         "@useweather/core": "catalog:",
@@ -732,7 +732,7 @@
 
     "@usehotkeys/core": ["@usehotkeys/core@0.1.0", "", {}, "sha512-JY2uU39HKpgBCFCmFm3QYlHtWcqOPcotCByutZgJARy/CX7Y0L3dd5XBkJwWgBzisOT401HHLXd53xMaJisRjA=="],
 
-    "@usehotkeys/react": ["@usehotkeys/react@0.1.0", "", { "peerDependencies": { "@usehotkeys/core": "0.1.0", "react": ">=18.0.0" } }, "sha512-o8S0mNw53vAxft32i6nzcXED8axF4cjbTbLos+k/OHmLkZNKnzAF4EEo1oKs17poKLZjcZgB/kM35O3zwVqsEw=="],
+    "@usehotkeys/react": ["@usehotkeys/react@0.1.1", "", { "peerDependencies": { "@usehotkeys/core": "0.1.0", "react": ">=18.0.0" } }, "sha512-nvIrVjPYX+2vore4oP42A5MQqr3cEGCijzRDjz1WYNYSpAaHIUSZyqS3fxYsewoAoyf5paOmlvqbkfW7sjiOGQ=="],
 
     "@usemeshly/auth": ["@usemeshly/auth@0.1.0", "", { "dependencies": { "oauth4webapi": "3.8.9", "zod": "4.6.7" } }, "sha512-Fob38cQloegKYxL5MlObjv6PjvhHtbOIxai2YhNvdKMuDWq1R8ZXvmg6kDN1dw5IR9yE7hJNA0BdTxgUYVOD0Q=="],
 
