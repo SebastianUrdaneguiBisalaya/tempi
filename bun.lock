@@ -48,8 +48,8 @@
         "@tempi/core": "workspace:*",
         "@tempi/i18n": "workspace:*",
         "@tempi/ipc": "workspace:*",
-        "@usecalendar/core": "0.4.0",
-        "@usecalendar/react": "0.6.0",
+        "@usecalendar/core": "0.4.1",
+        "@usecalendar/react": "0.6.1",
         "@usehotkeys/core": "0.1.0",
         "@usehotkeys/react": "0.1.0",
         "@usesounds/core": "0.1.0",
@@ -726,9 +726,9 @@
 
     "@ungap/structured-clone": ["@ungap/structured-clone@1.4.0", "", {}, "sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ=="],
 
-    "@usecalendar/core": ["@usecalendar/core@0.4.0", "", {}, "sha512-oNYcpuL6wUOE7NxiZimVoLJ7+AM4TIQlbo2fqxjLb5tsqS0S0SOvF5rD4akwbpZ25EtUL4RKhqEzdcPr7qmMGA=="],
+    "@usecalendar/core": ["@usecalendar/core@0.4.1", "", {}, "sha512-gVzoP2qjMePrsrWrboVTTtqEVSByamHGZYTbPSgP2F3ykpQaiALjC+J8HAUCuWrGF2Ib/cnpC2BR6HEqBM2icQ=="],
 
-    "@usecalendar/react": ["@usecalendar/react@0.6.0", "", { "dependencies": { "@usecalendar/core": "0.4.0", "clsx": "^2.1.1", "tailwind-merge": "^3.7.0" }, "peerDependencies": { "react": ">=19.0.0", "react-dom": ">=19.0.0" } }, "sha512-h8br/Ed3OWWuwQR1Npf3YZ/QekuWFzs+xCjKKQiaibeX5IJQmYJsvufFs/+UqmegdhxYRwxuXVz7Ddk7GyJ+Tw=="],
+    "@usecalendar/react": ["@usecalendar/react@0.6.1", "", { "dependencies": { "@usecalendar/core": "0.4.1", "clsx": "^2.1.1", "tailwind-merge": "^3.7.0" }, "peerDependencies": { "react": ">=19.0.0", "react-dom": ">=19.0.0" } }, "sha512-qU2K/Fegz6CO11Za61cDHoomODsaHh2ZCKChjZxuVD3NpGeLejwrQEAkmTzBHK66+1lqtMWLKuFS/AJAaw2pYw=="],
 
     "@usehotkeys/core": ["@usehotkeys/core@0.1.0", "", {}, "sha512-JY2uU39HKpgBCFCmFm3QYlHtWcqOPcotCByutZgJARy/CX7Y0L3dd5XBkJwWgBzisOT401HHLXd53xMaJisRjA=="],
 

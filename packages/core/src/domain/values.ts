@@ -10,6 +10,18 @@ export const toUtcInstant = (value: string): string | null => {
 	return Number.isNaN(ms) ? null : new Date(ms).toISOString();
 };
 
+/**
+ * Whether two ranges cover the same instants, whatever text they use (`…00.000Z` from storage, `…00Z` from Temporal
+ * or another offset). An invalid instant never matches.
+ */
+export const isSameRange = (a: { endAt: string; startAt: string }, b: { endAt: string; startAt: string }): boolean => {
+	const same = (x: string, y: string) => {
+		const utc = toUtcInstant(x);
+		return utc !== null && utc === toUtcInstant(y);
+	};
+	return same(a.startAt, b.startAt) && same(a.endAt, b.endAt);
+};
+
 /** A Temporal instant in the same normalized UTC text the schemas output, so stored instants compare as strings. */
 export const instantToUtc = (instant: Temporal.Instant): string => new Date(instant.epochMilliseconds).toISOString();
 

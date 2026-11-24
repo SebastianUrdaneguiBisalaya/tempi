@@ -137,7 +137,7 @@ export { UPCOMING_WINDOW_HOURS, upcomingEvents } from './domain/upcoming';
 export type { ProfileInput, ProfileUpdateInput, UserProfile } from './domain/user-profile';
 export { profileInputSchema, profileUpdateInputSchema, userProfileSchema } from './domain/user-profile';
 export { uuidv7 } from './domain/uuidv7';
-export { idSchema, isValidTimeZone, toUtcInstant, utcInstantSchema } from './domain/values';
+export { idSchema, isSameRange, isValidTimeZone, toUtcInstant, utcInstantSchema } from './domain/values';
 export type { Weather, WeatherConditions, WeatherLocation, WeatherScene, WeatherSceneCondition, WeatherTimeOfDay } from './domain/weather';
 export {
 	timeZoneCity,
