@@ -149,3 +149,10 @@
 	--consent-dialog-z-index: 62;
 	--consent-dialog-overlay-z-index: 61;
 }
+
+/* The banner's Accept and Reject are its primary actions, outlined in the primary color (near white). Give them the same
+   soft gray outline as the preferences dialog's buttons; focus keeps c15t's ring. */
+[data-prompt] button[data-variant="primary"][data-mode="stroke"]:not(:focus-visible) {
+	border-color: var(--input);
+	box-shadow: inset 0 0 0 1px var(--input);
+}
