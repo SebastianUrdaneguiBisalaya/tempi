@@ -27,5 +27,3 @@ export const DOWNLOADS = {
 		{ key: 'deb', label: '.deb', url: latest('Tempi-linux-amd64.deb') },
 	],
 } as const satisfies Record<Platform, readonly [Download, ...Download[]]>;
-
-export const defaultDownloadUrl = (platform: Platform): string => DOWNLOADS[platform][0].url;

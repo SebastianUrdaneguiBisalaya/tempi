@@ -3,6 +3,7 @@
 import { ArrowUpRightIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { track } from '@/lib/analytics';
 import { gsap, useMotion } from '@/lib/gsap';
 import { GITHUB_URL, SECTION_IDS } from '@/lib/site';
 
@@ -49,6 +50,7 @@ export function FaqContent({ copy }: { copy: FaqCopy }) {
 						href={`${GITHUB_URL}/issues`}
 						target='_blank'
 						rel='noreferrer'
+						onClick={() => track('github_click', { source: 'faq' })}
 						className='mt-6 inline-flex items-center gap-1 rounded-sm text-sm font-medium underline-offset-4 hover:underline'
 					>
 						{copy.askOnGitHub}
@@ -60,7 +62,15 @@ export function FaqContent({ copy }: { copy: FaqCopy }) {
 						const item = copy.items[key];
 						return (
 							<AccordionItem key={key} value={key} data-faq-item>
-								<AccordionTrigger className='px-4 py-4 text-sm font-medium hover:no-underline sm:px-5'>{item.question}</AccordionTrigger>
+								<AccordionTrigger
+									// Read before the toggle: only opening a question counts.
+									onClick={event => {
+										if (event.currentTarget.getAttribute('aria-expanded') !== 'true') track('faq_open', { question: key });
+									}}
+									className='px-4 py-4 text-sm font-medium hover:no-underline sm:px-5'
+								>
+									{item.question}
+								</AccordionTrigger>
 								<AccordionContent className='px-2 text-sm leading-relaxed text-muted-foreground sm:px-3'>
 									<p>{item.answer}</p>
 									{item.command && (

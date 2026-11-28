@@ -5,6 +5,7 @@ import { cn } from 'cn';
 import { ChevronDownIcon } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { track } from '@/lib/analytics';
 import { DOWNLOADS } from '@/lib/downloads';
 import { PLATFORM_NAMES, type Platform } from '@/lib/platform';
 
@@ -21,10 +22,11 @@ const PILL = 'h-11 rounded-full border-foreground/15 bg-background/30! px-5 text
 export function PlatformButton({ platform, chooseLabel }: { platform: Platform; chooseLabel: string }) {
 	const variants = DOWNLOADS[platform];
 	const name = PLATFORM_NAMES[platform];
+	const trackDownload = (variant: (typeof variants)[number]['key']) => () => track('download_click', { platform, variant, source: 'download_section' });
 
 	if (variants.length === 1) {
 		return (
-			<a href={variants[0].url} className={cn(buttonVariants({ variant: 'outline', className: `${PILL} gap-2` }))}>
+			<a href={variants[0].url} onClick={trackDownload(variants[0].key)} className={cn(buttonVariants({ variant: 'outline', className: `${PILL} gap-2` }))}>
 				{ICONS[platform]}
 				{name}
 			</a>
@@ -40,7 +42,7 @@ export function PlatformButton({ platform, chooseLabel }: { platform: Platform; 
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='center' className='w-44' data-lenis-prevent>
 				{variants.map(variant => (
-					<DropdownMenuItem key={variant.key} render={<a href={variant.url} />}>
+					<DropdownMenuItem key={variant.key} render={<a href={variant.url} onClick={trackDownload(variant.key)} />}>
 						{variant.label}
 					</DropdownMenuItem>
 				))}

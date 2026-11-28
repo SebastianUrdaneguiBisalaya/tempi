@@ -6,6 +6,7 @@ import { MenuIcon, XIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useId, useRef, useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { track } from '@/lib/analytics';
 import { gsap, useMotion } from '@/lib/gsap';
 import type { Locale } from '@/lib/i18n';
 import { GITHUB_URL, SECTION_IDS } from '@/lib/site';
@@ -71,7 +72,14 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 				</nav>
 
 				<div className='hidden items-center gap-1 md:flex' data-header-item>
-					<a href={GITHUB_URL} target='_blank' rel='noreferrer' aria-label={copy.github} className={cn(buttonVariants({ variant: 'ghost', size: 'icon', className: 'rounded-full' }))}>
+					<a
+						href={GITHUB_URL}
+						target='_blank'
+						rel='noreferrer'
+						aria-label={copy.github}
+						onClick={() => track('github_click', { source: 'header' })}
+						className={cn(buttonVariants({ variant: 'ghost', size: 'icon', className: 'rounded-full' }))}
+					>
 						<GitHubDark aria-hidden className='size-4' />
 					</a>
 					<LanguageSwitcher locale={locale} label={copy.language} />
@@ -104,7 +112,13 @@ export function HeaderBar({ locale, copy }: HeaderBarProps) {
 						</a>
 					))}
 					<div className='mt-2 flex items-center justify-between border-t border-border px-2 pt-4'>
-						<a href={GITHUB_URL} target='_blank' rel='noreferrer' className='flex items-center gap-2 rounded-md text-sm text-foreground/80 hover:text-foreground'>
+						<a
+							href={GITHUB_URL}
+							target='_blank'
+							rel='noreferrer'
+							onClick={() => track('github_click', { source: 'header_menu' })}
+							className='flex items-center gap-2 rounded-md text-sm text-foreground/80 hover:text-foreground'
+						>
 							<GitHubDark aria-hidden className='size-4' />
 							{copy.github}
 						</a>

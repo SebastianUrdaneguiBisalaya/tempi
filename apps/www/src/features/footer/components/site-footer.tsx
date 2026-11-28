@@ -1,6 +1,8 @@
 import { GitHubDark } from '@ridemountainpig/svgl-react';
 import Image from 'next/image';
 import { getDictionary, getLocale } from '@/app/[lang]/dictionaries';
+import { TrackedLink } from '@/components/tracked-link';
+import { CookiePreferencesLink } from '@/features/consent/components/cookie-preferences-link';
 import { LanguageSwitcher } from '@/features/header/components/language-switcher';
 import { AUTHOR_URL, GITHUB_URL, LEGAL_PAGES, SECTION_IDS } from '@/lib/site';
 import { WordmarkFooterFrame } from './wordmark-footer-frame';
@@ -47,6 +49,7 @@ export async function SiteFooter() {
 								{footer[page]}
 							</a>
 						))}
+						<CookiePreferencesLink label={footer.cookiePreferences} className={`w-fit text-left ${LINK}`} />
 					</nav>
 				</div>
 			</div>
@@ -59,14 +62,22 @@ export async function SiteFooter() {
 				</p>
 				<p>
 					{footer.madeBy}{' '}
-					<a href={AUTHOR_URL} target='_blank' rel='noreferrer' className='rounded-sm text-foreground underline-offset-4 hover:underline'>
+					<TrackedLink event='author_click' params={{}} href={AUTHOR_URL} target='_blank' rel='noreferrer' className='rounded-sm text-foreground underline-offset-4 hover:underline'>
 						Sebastian Urdanegui
-					</a>
+					</TrackedLink>
 				</p>
 				<div className='flex items-center gap-2'>
-					<a href={GITHUB_URL} target='_blank' rel='noreferrer' aria-label={header.github} className='flex size-8 items-center justify-center rounded-full hover:bg-muted/50'>
+					<TrackedLink
+						event='github_click'
+						params={{ source: 'footer' }}
+						href={GITHUB_URL}
+						target='_blank'
+						rel='noreferrer'
+						aria-label={header.github}
+						className='flex size-8 items-center justify-center rounded-full hover:bg-muted/50'
+					>
 						<GitHubDark aria-hidden className='size-4' />
-					</a>
+					</TrackedLink>
 					<LanguageSwitcher locale={locale} label={header.language} />
 				</div>
 			</div>

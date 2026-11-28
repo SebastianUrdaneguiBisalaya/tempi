@@ -110,3 +110,49 @@
 		cursor: pointer;
 	}
 }
+
+/* The c15t cookie banner and dialog (src/features/consent) in the landing's tokens. `:root:root` beats the defaults the
+   components render, whichever stylesheet loads first. */
+:root:root {
+	--c15t-font-family: var(--font-sans);
+	--c15t-surface: var(--popover);
+	--c15t-surface-hover: var(--muted);
+	--c15t-text: var(--foreground);
+	--c15t-text-muted: var(--muted-foreground);
+	--c15t-text-on-primary: var(--primary-foreground);
+	--c15t-primary: var(--primary);
+	--c15t-primary-hover: oklch(0.85 0 0);
+	--c15t-border: var(--border);
+	--c15t-border-hover: var(--input);
+	--c15t-overlay: oklch(0 0 0 / 60%);
+	--c15t-switch-track: var(--muted-foreground);
+	--c15t-switch-track-active: var(--primary);
+	--c15t-switch-thumb: var(--background);
+	--c15t-radius-sm: calc(var(--radius) * 0.6);
+	--c15t-radius-md: var(--radius);
+	/* Pill buttons, like the rest of the landing. */
+	--button-border-radius: 9999px;
+	/* c15t draws button outlines as an inset shadow in the button's own color, which is near white here; use the
+	   landing's soft outline (`border-foreground/15`) instead. */
+	--button-shadow-primary: var(--button-shadow), inset 0 0 0 1px var(--input);
+	--button-shadow-primary-dark: var(--button-shadow-dark), inset 0 0 0 1px var(--input);
+	--button-shadow-neutral: var(--button-shadow), inset 0 0 0 1px var(--input);
+	--button-shadow-neutral-dark: var(--button-shadow-dark), inset 0 0 0 1px var(--input);
+	--button-border: var(--input);
+	--button-border-color: var(--input);
+	--button-border-dark: var(--input);
+	--c15t-radius-lg: calc(var(--radius) * 2.2);
+	--c15t-shadow-lg: 0 20px 40px -12px oklch(0 0 0 / 50%);
+	/* Above the floating header (z-50), below nothing else on the page. */
+	--consent-banner-z-index: 60;
+	--consent-banner-overlay-z-index: 59;
+	--consent-dialog-z-index: 62;
+	--consent-dialog-overlay-z-index: 61;
+}
+
+/* The banner's Accept and Reject are its primary actions, outlined in the primary color (near white). Give them the same
+   soft gray outline as the preferences dialog's buttons; focus keeps c15t's ring. */
+[data-prompt] button[data-variant="primary"][data-mode="stroke"]:not(:focus-visible) {
+	border-color: var(--input);
+	box-shadow: inset 0 0 0 1px var(--input);
+}

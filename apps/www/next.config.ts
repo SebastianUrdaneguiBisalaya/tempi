@@ -1,3 +1,4 @@
+import { withConsentManifest } from 'c15t/next/build';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -12,4 +13,5 @@ const nextConfig: NextConfig = {
 	},
 };
 
-export default nextConfig;
+// Makes `c15t.config.ts` reachable to the consent root. In `local()` mode the build fetches nothing.
+export default withConsentManifest(nextConfig);
