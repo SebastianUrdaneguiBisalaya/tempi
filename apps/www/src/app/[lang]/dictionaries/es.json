@@ -637,6 +637,7 @@
     "legal": "Legal",
     "terms": "Términos y Condiciones",
     "privacy": "Política de Privacidad",
+    "cookiePreferences": "Preferencias de cookies",
     "sections": {
       "why": "Por qué Tempi",
       "features": "Funciones",
@@ -656,17 +657,44 @@
   "wordmark": {
     "label": "Logo de Tempi"
   },
+  "consent": {
+    "common": {
+      "acceptAll": "Aceptar",
+      "rejectAll": "Rechazar",
+      "customize": "Preferencias",
+      "save": "Guardar",
+      "close": "Cerrar"
+    },
+    "cookieBanner": {
+      "title": "Cookies en este sitio",
+      "description": "Con tu permiso, este sitio usa Google Analytics para contar visitas y clics, como las descargas. La app Tempi nunca te rastrea."
+    },
+    "consentManagerDialog": {
+      "title": "Preferencias de cookies",
+      "description": "Elige qué cookies puede usar este sitio. Puedes cambiar tu elección cuando quieras desde el pie de página."
+    },
+    "consentTypes": {
+      "necessary": {
+        "title": "Estrictamente necesarias",
+        "description": "Recuerdan tu elección de cookies. Siempre están activas."
+      },
+      "measurement": {
+        "title": "Analítica",
+        "description": "Google Analytics, a través de Google Tag Manager, para contar las visitas y los clics en descargas y enlaces."
+      }
+    }
+  },
   "legal": {
     "updatedLabel": "Última actualización",
-    "updated": "21 de noviembre de 2026",
+    "updated": "28 de noviembre de 2026",
     "onThisPage": "En esta página",
     "contactLabel": "Contacto",
     "privacy": {
       "metaTitle": "Política de Privacidad · Tempi",
-      "metaDescription": "Cómo Tempi trata tus datos: local-first, sin cuentas, sin rastreo, con sincronización opcional de Google Calendar e IA con tus propias claves.",
+      "metaDescription": "Cómo Tempi trata tus datos: local-first, sin cuentas, sin rastreo en la app, con sincronización opcional de Google Calendar e IA con tus propias claves.",
       "title": "Política de Privacidad",
       "intro": [
-        "Tempi es un calendario de escritorio local-first. Tu calendario vive en tu computadora: no hay cuenta de Tempi, no hay servidor de Tempi y no hay rastreo. Esta política explica en detalle qué datos manejan la app y este sitio web, a dónde van y por qué.",
+        "Tempi es un calendario de escritorio local-first. Tu calendario vive en tu computadora: no hay cuenta de Tempi, no hay servidor de Tempi y la app no te rastrea. Esta política explica en detalle qué datos manejan la app y este sitio web, a dónde van y por qué.",
         "Tempi es desarrollado y mantenido por Sebastian Urdanegui, desarrollador independiente con sede en Perú (\"nosotros\"). Esta política cubre la app de escritorio Tempi para macOS, Windows y Linux y el sitio web tempi.sebastianurdanegui.com."
       ],
       "sections": [
@@ -766,13 +794,15 @@
           "title": "Este sitio web",
           "body": [
             "Este sitio web está alojado en Vercel. Para entregar las páginas y mantenerlas seguras, Vercel procesa datos técnicos estándar como tu dirección IP, el tipo de navegador y las páginas solicitadas.",
-            "El sitio no usa analítica, publicidad ni cookies de rastreo. Lee el idioma de tu navegador solo para mostrar la página en inglés o en español."
+            "El sitio no usa publicidad. Lee el idioma de tu navegador solo para mostrar la página en inglés o en español.",
+            "Analítica, solo con tu permiso: en tu primera visita, un aviso te pregunta si el sitio puede usar cookies de analítica. Hasta que aceptes, no se envía nada a Google. Si aceptas, el sitio carga Google Tag Manager, que ejecuta Google Analytics. Cuenta las visitas a las páginas y estos clics: descargas (con la plataforma y el instalador), enlaces a GitHub y al sitio web del autor, cambios de idioma y las preguntas frecuentes que abres. Google Analytics también recibe tu dirección IP y datos del navegador, como en cualquier solicitud, y guarda sus cookies _ga para distinguir visitas; no recibe tu nombre, tu correo ni datos de tu calendario.",
+            "Tu elección se guarda solo en tu navegador. Puedes cambiarla cuando quieras desde Preferencias de cookies en el pie de página; si la retiras, la analítica se detiene en la siguiente página. La política de privacidad de Google (policies.google.com/privacy) se aplica a los datos que recibe."
           ]
         },
         {
           "title": "Compartir y vender datos",
           "body": [
-            "No vendemos, alquilamos ni compartimos tus datos con nadie. No podríamos, porque no los tenemos. Tus datos solo llegan a un tercero (Google, el proveedor de IA que elegiste, GitHub, Open-Meteo o Nager.Date) cuando usas una función que lo necesita, como se describe arriba."
+            "No vendemos, alquilamos ni compartimos tus datos con nadie. No podríamos, porque no los tenemos. Tus datos solo llegan a un tercero (Google, el proveedor de IA que elegiste, GitHub, Open-Meteo o Nager.Date) cuando usas una función que lo necesita, o a Google Analytics cuando permites la analítica en este sitio, como se describe arriba."
           ]
         },
         {

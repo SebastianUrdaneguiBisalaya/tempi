@@ -637,6 +637,7 @@
     "legal": "Legal",
     "terms": "Terms and Conditions",
     "privacy": "Privacy Policy",
+    "cookiePreferences": "Cookie preferences",
     "sections": {
       "why": "Why Tempi",
       "features": "Features",
@@ -656,17 +657,44 @@
   "wordmark": {
     "label": "Tempi logo"
   },
+  "consent": {
+    "common": {
+      "acceptAll": "Accept",
+      "rejectAll": "Reject",
+      "customize": "Preferences",
+      "save": "Save",
+      "close": "Close"
+    },
+    "cookieBanner": {
+      "title": "Cookies on this website",
+      "description": "With your permission, this website uses Google Analytics to count visits and clicks, such as downloads. The Tempi app never tracks you."
+    },
+    "consentManagerDialog": {
+      "title": "Cookie preferences",
+      "description": "Choose which cookies this website may use. You can change your choice at any time from the footer."
+    },
+    "consentTypes": {
+      "necessary": {
+        "title": "Strictly necessary",
+        "description": "Remember your cookie choice. They are always on."
+      },
+      "measurement": {
+        "title": "Analytics",
+        "description": "Google Analytics, through Google Tag Manager, to count page visits and clicks on downloads and links."
+      }
+    }
+  },
   "legal": {
     "updatedLabel": "Last updated",
-    "updated": "November 21, 2026",
+    "updated": "November 28, 2026",
     "onThisPage": "On this page",
     "contactLabel": "Contact",
     "privacy": {
       "metaTitle": "Privacy Policy · Tempi",
-      "metaDescription": "How Tempi handles your data: local-first, no accounts, no tracking, optional Google Calendar sync and AI with your own keys.",
+      "metaDescription": "How Tempi handles your data: local-first, no accounts, no tracking in the app, optional Google Calendar sync and AI with your own keys.",
       "title": "Privacy Policy",
       "intro": [
-        "Tempi is a local-first desktop calendar. Your calendar lives on your computer: there is no Tempi account, no Tempi server and no tracking. This policy explains, in detail, what data the app and this website handle, where that data goes and why.",
+        "Tempi is a local-first desktop calendar. Your calendar lives on your computer: there is no Tempi account, no Tempi server and no tracking in the app. This policy explains, in detail, what data the app and this website handle, where that data goes and why.",
         "Tempi is developed and maintained by Sebastian Urdanegui, an individual developer based in Peru (\"we\", \"us\"). This policy covers the Tempi desktop app for macOS, Windows and Linux and the website tempi.sebastianurdanegui.com."
       ],
       "sections": [
@@ -766,13 +794,15 @@
           "title": "This website",
           "body": [
             "This website is hosted by Vercel. To deliver the pages and keep them secure, Vercel processes standard technical data such as your IP address, browser type and the pages requested.",
-            "The website uses no analytics, no advertising and no tracking cookies. It reads your browser's language only to show the page in English or Spanish."
+            "The website uses no advertising. It reads your browser's language only to show the page in English or Spanish.",
+            "Analytics, only with your permission: on your first visit, a banner asks whether the website may use analytics cookies. Until you accept, nothing is sent to Google. If you accept, the website loads Google Tag Manager, which runs Google Analytics. It counts page visits and these clicks: downloads (with the platform and installer), links to GitHub and to the author's website, language changes and the FAQ questions you open. Google Analytics also receives your IP address and browser data, like any request, and sets its _ga cookies to tell visits apart; it doesn't receive your name, email or calendar data.",
+            "Your choice is stored only in your browser. You can change it at any time from Cookie preferences in the footer; if you withdraw it, analytics stops on the next page. Google's privacy policy (policies.google.com/privacy) applies to the data it receives."
           ]
         },
         {
           "title": "Sharing and selling",
           "body": [
-            "We don't sell, rent or share your data with anyone. We can't, because we don't have it. Your data only reaches a third party (Google, the AI provider you chose, GitHub, Open-Meteo or Nager.Date) when you use a feature that needs it, as described above."
+            "We don't sell, rent or share your data with anyone. We can't, because we don't have it. Your data only reaches a third party (Google, the AI provider you chose, GitHub, Open-Meteo or Nager.Date) when you use a feature that needs it, or reaches Google Analytics when you allow analytics on this website, as described above."
           ]
         },
         {

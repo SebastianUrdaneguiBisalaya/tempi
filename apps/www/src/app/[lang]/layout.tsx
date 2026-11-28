@@ -1,6 +1,7 @@
 import { cn } from 'cn';
 import type { Metadata } from 'next';
 import { Geist_Mono, Instrument_Sans, Manrope } from 'next/font/google';
+import { ConsentManager } from '@/features/consent/components/consent-manager';
 import { SiteHeader } from '@/features/header/components/site-header';
 import { type Locale, locales } from '@/lib/i18n';
 import { SITE_URL } from '@/lib/site';
@@ -49,12 +50,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: LayoutProps<'/[lang]'>) {
+	const [locale, { consent, footer }] = await Promise.all([getLocale(), getDictionary()]);
 	return (
-		<html lang={await getLocale()} className={cn('h-full antialiased', manrope.variable, instrumentSans.variable, geistMono.variable)}>
+		<html lang={locale} className={cn('h-full antialiased', manrope.variable, instrumentSans.variable, geistMono.variable)}>
 			<body className='flex min-h-full flex-col'>
-				<SmoothScroll />
-				<SiteHeader />
-				{children}
+				<ConsentManager locale={locale} copy={consent} privacyLabel={footer.privacy}>
+					<SmoothScroll />
+					<SiteHeader />
+					{children}
+				</ConsentManager>
 			</body>
 		</html>
 	);

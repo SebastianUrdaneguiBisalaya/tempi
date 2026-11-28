@@ -4,7 +4,8 @@ import { ChevronDownIcon } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { type Locale, locales } from '@/lib/i18n';
+import { track } from '@/lib/analytics';
+import { hasLocale, type Locale, locales } from '@/lib/i18n';
 
 type LanguageSwitcherProps = {
 	locale: Locale;
@@ -22,7 +23,8 @@ export function LanguageSwitcher({ locale, label }: LanguageSwitcherProps) {
 	const pathname = usePathname();
 
 	function changeLocale(next: string) {
-		if (next === locale) return;
+		if (next === locale || !hasLocale(next)) return;
+		track('language_change', { from: locale, to: next });
 		// Keep the page and the hash so the visitor lands on the same spot in the other language.
 		router.push(`${pathname.replace(/^\/[^/]+/, `/${next}`)}${window.location.hash}`);
 	}
