@@ -38,7 +38,7 @@ export function ConsentManager({ locale, copy, privacyLabel, children }: Consent
 				}}
 			>
 				{children}
-				<ConsentBanner legalLinks={['privacyPolicy']} primaryButton={['accept', 'reject']} hideBranding />
+				<ConsentBanner position='bottom-right' legalLinks={['privacyPolicy']} primaryButton={['accept', 'reject']} hideBranding />
 				<ConsentDialog legalLinks={['privacyPolicy']} hideBranding />
 			</ConsentRoot>
 		</ConsentEnabled>

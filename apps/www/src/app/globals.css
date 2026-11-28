@@ -132,6 +132,15 @@
 	--c15t-radius-md: var(--radius);
 	/* Pill buttons, like the rest of the landing. */
 	--button-border-radius: 9999px;
+	/* c15t draws button outlines as an inset shadow in the button's own color, which is near white here; use the
+	   landing's soft outline (`border-foreground/15`) instead. */
+	--button-shadow-primary: var(--button-shadow), inset 0 0 0 1px var(--input);
+	--button-shadow-primary-dark: var(--button-shadow-dark), inset 0 0 0 1px var(--input);
+	--button-shadow-neutral: var(--button-shadow), inset 0 0 0 1px var(--input);
+	--button-shadow-neutral-dark: var(--button-shadow-dark), inset 0 0 0 1px var(--input);
+	--button-border: var(--input);
+	--button-border-color: var(--input);
+	--button-border-dark: var(--input);
 	--c15t-radius-lg: calc(var(--radius) * 2.2);
 	--c15t-shadow-lg: 0 20px 40px -12px oklch(0 0 0 / 50%);
 	/* Above the floating header (z-50), below nothing else on the page. */
